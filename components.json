@@ -15,5 +15,8 @@
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
+  },
+  "registries": {
+    "@supabase": "https://supabase.com/ui/r/{name}.json"
   }
 }

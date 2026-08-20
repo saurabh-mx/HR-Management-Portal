@@ -1,26 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Shield, UserCheck, Briefcase } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 interface Employee {
   id: string;
   name: string;
   role: string;
   department: string;
-  status: "Active" | "On Leave" | "Off Duty";
+  status: string;
   callsign: string;
 }
 
-const initialEmployees: Employee[] = [
-  { id: "1", name: "Alex Hawk", role: "Captain / HR", department: "Law Enforcement", status: "Active", callsign: "L-01" },
-  { id: "2", name: "Jai Singh", role: "Senior Associate", department: "Operations", status: "Active", callsign: "OPS-40" },
-  { id: "3", name: "Sarah Connor", role: "Officer", department: "Law Enforcement", status: "On Leave", callsign: "L-14" },
-  { id: "4", name: "Marcus Vance", role: "Supervisor", department: "Management", status: "Active", callsign: "M-02" },
-];
-
 export default function EmployeeDirectory() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [employees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+
+  useEffect(() => {
+    async function fetchEmployees() {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*');
+      
+      if (error) {
+        console.error("Error fetching data:", error);
+      } else if (data) {
+        setEmployees(data);
+      }
+    }
+    
+    fetchEmployees();
+  }, []);
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -65,7 +75,9 @@ export default function EmployeeDirectory() {
             <Briefcase className="w-4 h-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">2</div>
+            <div className="text-2xl font-bold text-white">
+              {new Set(employees.map(e => e.department)).size}
+            </div>
           </CardContent>
         </Card>
       </div>
