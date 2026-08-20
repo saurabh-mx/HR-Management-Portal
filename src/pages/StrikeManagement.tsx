@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, ShieldAlert, UserX, Plus } from "lucide-react";
+import { AlertTriangle, ShieldAlert, UserX, } from "lucide-react";
 
 interface Strike {
   id: string;

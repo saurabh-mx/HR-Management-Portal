@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { FileText, Clock, CheckCircle2, } from "lucide-react";
 
 interface RequestItem {
   id: string;

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, Bell, Send } from "lucide-react";
+import { MessageSquare, Bell, } from "lucide-react";
 
 export default function CommunicationsFeed() {
   return (

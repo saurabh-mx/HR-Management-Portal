@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, UserCheck } from "lucide-react";
 
 export default function LOAManagement() {
   return (
