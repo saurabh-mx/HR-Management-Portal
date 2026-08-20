@@ -1,26 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Shield, UserCheck, Briefcase } from "lucide-react";
+import { Search, Shield, UserCheck, Briefcase, Plus, X } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 interface Employee {
   id: string;
   name: string;
   role: string;
   department: string;
-  status: "Active" | "On Leave" | "Off Duty";
+  status: string;
   callsign: string;
 }
 
-const initialEmployees: Employee[] = [
-  { id: "1", name: "Alex Hawk", role: "Captain / HR", department: "Law Enforcement", status: "Active", callsign: "L-01" },
-  { id: "2", name: "Jai Singh", role: "Senior Associate", department: "Operations", status: "Active", callsign: "OPS-40" },
-  { id: "3", name: "Sarah Connor", role: "Officer", department: "Law Enforcement", status: "On Leave", callsign: "L-14" },
-  { id: "4", name: "Marcus Vance", role: "Supervisor", department: "Management", status: "Active", callsign: "M-02" },
-];
-
 export default function EmployeeDirectory() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [employees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newEmp, setNewEmp] = useState({ name: "", role: "", department: "", status: "Active", callsign: "" });
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  async function fetchEmployees() {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*')
+      .order('created_at', { ascending: true });
+    
+    if (error) console.error("Error fetching data:", error);
+    else if (data) setEmployees(data);
+  }
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+      .from('employees')
+      .insert([newEmp])
+      .select();
+
+    if (error) {
+      console.error("Error adding employee:", error);
+    } else if (data) {
+      setEmployees([...employees, data[0]]);
+      setIsAdding(false);
+      setNewEmp({ name: "", role: "", department: "", status: "Active", callsign: "" });
+    }
+  };
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -36,7 +62,50 @@ export default function EmployeeDirectory() {
           <h1 className="text-3xl font-bold tracking-tight text-white">Employee Directory</h1>
           <p className="text-sm text-slate-400">Manage and view personnel rosters, department allocations, and statuses.</p>
         </div>
+        <button 
+          onClick={() => setIsAdding(!isAdding)}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+        >
+          {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {isAdding ? "Cancel" : "Add Personnel"}
+        </button>
       </div>
+
+      {isAdding && (
+        <Card className="bg-slate-900 border-slate-800 text-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium text-emerald-400">Onboard New Recruit</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddEmployee} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Name</label>
+                <input required type="text" value={newEmp.name} onChange={e => setNewEmp({...newEmp, name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. John Doe" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Callsign</label>
+                <input required type="text" value={newEmp.callsign} onChange={e => setNewEmp({...newEmp, callsign: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. L-99" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Role</label>
+                <input required type="text" value={newEmp.role} onChange={e => setNewEmp({...newEmp, role: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Officer" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Department</label>
+                <select value={newEmp.department} onChange={e => setNewEmp({...newEmp, department: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                  <option value="">Select Dept...</option>
+                  <option value="Law Enforcement">Law Enforcement</option>
+                  <option value="Operations">Operations</option>
+                  <option value="Management">Management</option>
+                </select>
+              </div>
+              <button type="submit" className="w-full bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-md font-medium transition-colors border border-slate-700">
+                Save Record
+              </button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-slate-900 border-slate-800 text-slate-200">
@@ -65,7 +134,9 @@ export default function EmployeeDirectory() {
             <Briefcase className="w-4 h-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">2</div>
+            <div className="text-2xl font-bold text-white">
+              {new Set(employees.filter(e => e.department).map(e => e.department)).size}
+            </div>
           </CardContent>
         </Card>
       </div>
