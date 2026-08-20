@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, ShieldAlert, UserX, Plus, X, Search } from "lucide-react";
+import { AlertTriangle, ShieldAlert, UserX, Plus, X, Search, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface Strike {
@@ -46,6 +46,24 @@ export default function StrikeManagement() {
       setStrikes([data[0], ...strikes]);
       setIsAdding(false);
       setNewStrike({ name: "", reason: "", severity: "Verbal Warning", issued_by: "" });
+    }
+  };
+
+  // NEW: Function to delete a strike from the database
+  const handleDeleteStrike = async (id: string) => {
+    if (!window.confirm("Are you sure you want to expunge this official record?")) return;
+
+    const { error } = await supabase
+      .from('strikes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error deleting strike:", error);
+      alert("Failed to remove record.");
+    } else {
+      // Remove it from the screen instantly
+      setStrikes(strikes.filter(strike => strike.id !== id));
     }
   };
 
@@ -166,6 +184,7 @@ export default function StrikeManagement() {
                   <th className="pb-3 font-medium">Severity</th>
                   <th className="pb-3 font-medium">Reason</th>
                   <th className="pb-3 font-medium">Issued By</th>
+                  <th className="pb-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -188,6 +207,16 @@ export default function StrikeManagement() {
                     </td>
                     <td className="py-3 text-slate-300">{strike.reason}</td>
                     <td className="py-3 text-slate-400">{strike.issued_by}</td>
+                    <td className="py-3 text-right">
+                      {/* NEW: Trash Button */}
+                      <button 
+                        onClick={() => handleDeleteStrike(strike.id)}
+                        className="text-slate-500 hover:text-rose-400 transition-colors p-1"
+                        title="Expunge Record"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
