@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+import  MainLayout  from "@/components/layout/MainLayout";
 import { Dashboard } from "./pages/Dashboard";
 import EmployeeDirectory from "./pages/EmployeeDirectory";
 import  CommunicationsFeed  from "./pages/CommunicationsFeed";
@@ -23,6 +23,7 @@ function App() {
           <Route path="/strikes" element={<StrikeManagement />} />
           <Route path="/promotions" element={<RankManagement />} />
           <Route path="/hr-requests" element={<HRRequestsDashboard />} />
+
         </Route>
       </Routes>
     </BrowserRouter>
