@@ -11,6 +11,7 @@ import StrikeManagement from "./pages/StrikeManagement";
 import RankManagement from "./pages/RankManagement";
 import HRRequestsDashboard from "./pages/HRRequestsDashboard";
 import Login from "./pages/Login";
+import AdminPanel from "./pages/AdminPanel";
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -54,6 +55,7 @@ function App() {
           <Route path="/strikes" element={<StrikeManagement />} />
           <Route path="/promotions" element={<RankManagement />} />
           <Route path="/hr-requests" element={<HRRequestsDashboard />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Route>
       </Routes>
     </BrowserRouter>
