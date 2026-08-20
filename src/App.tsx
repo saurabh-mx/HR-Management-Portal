@@ -8,6 +8,8 @@ import  LOAManagement  from "./pages/LOAManagement";
 import  StrikeManagement  from "./pages/StrikeManagement";
 import  RankManagement  from "./pages/RankManagement";
 import  HRRequestsDashboard  from "./pages/HRRequestsDashboard";
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from "@vercel/analytics/next"
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
           <Route path="/strikes" element={<StrikeManagement />} />
           <Route path="/promotions" element={<RankManagement />} />
           <Route path="/hr-requests" element={<HRRequestsDashboard />} />
+           <SpeedInsights />
+           <Analytics />
         </Route>
       </Routes>
     </BrowserRouter>
