@@ -23,7 +23,7 @@ export const Sidebar = () => {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Directory', path: '/directory', icon: Users },
-    { name: 'Communications', path: '/communications', icon: Megaphone },
+    { name: 'Announcements', path: '/communications', icon: Megaphone },
     { name: 'Meetings', path: '/meetings', icon: MapPin },
     { name: 'LOA Requests', path: '/loa', icon: CalendarOff },
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },

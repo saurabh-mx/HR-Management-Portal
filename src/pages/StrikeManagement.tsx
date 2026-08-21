@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertOctagon, AlertTriangle, Shield, Trash2 } from "lucide-react";
+import { AlertOctagon, AlertTriangle, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface Strike {
