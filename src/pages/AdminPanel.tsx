@@ -1,30 +1,36 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ShieldAlert, ShieldCheck, UserCog, AlertOctagon } from "lucide-react";
+import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import { Link } from "react-router-dom";
 
-interface EmployeeAccess {
+interface Employee {
   id: string;
   name: string;
   callsign: string;
+  rank: string;
   email: string;
   is_admin: boolean;
 }
 
 export default function AdminPanel() {
-  const [personnel, setPersonnel] = useState<EmployeeAccess[]>([]);
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [newEmployee, setNewEmployee] = useState({
+    name: "",
+    callsign: "",
+    rank: "Cadet",
+    email: ""
+  });
 
   useEffect(() => {
-    verifyCommandAccess();
+    checkAdminAccess();
   }, []);
 
-  // SECURITY CHECK: Verify they are High Command before loading the page
-  async function verifyCommandAccess() {
+  // SECURITY CHECK: Verify High Command clearance
+  async function checkAdminAccess() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.email) {
-      setIsAuthorized(false);
+      setIsAdmin(false);
       return;
     }
 
@@ -35,134 +41,168 @@ export default function AdminPanel() {
       .single();
     
     if (data?.is_admin) {
-      setIsAuthorized(true);
-      fetchAccessList(); // Only fetch data if they are authorized
+      setIsAdmin(true);
+      fetchEmployees(); // Only fetch roster if they are authorized
     } else {
-      setIsAuthorized(false);
+      setIsAdmin(false);
     }
   }
 
-  async function fetchAccessList() {
+  async function fetchEmployees() {
     const { data, error } = await supabase
       .from('employees')
-      .select('id, name, callsign, email, is_admin')
+      .select('*')
+      .order('rank', { ascending: true })
       .order('name', { ascending: true });
     
-    if (error) console.error("Error fetching access list:", error);
-    else if (data) setPersonnel(data);
+    if (error) console.error("Error fetching roster:", error);
+    else if (data) setEmployees(data);
   }
 
-  const toggleAdminAccess = async (id: string, currentStatus: boolean) => {
-    const newStatus = !currentStatus;
-    const confirmMsg = newStatus 
-      ? "Grant High Command access to this officer?" 
-      : "Revoke High Command access from this officer?";
-      
-    if (!window.confirm(confirmMsg)) return;
-
-    const { error } = await supabase
+  const handleAddEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { data, error } = await supabase
       .from('employees')
-      .update({ is_admin: newStatus })
-      .eq('id', id);
+      .insert([{ ...newEmployee, is_admin: false }])
+      .select();
 
-    if (error) {
-      alert("Failed to update access: " + error.message);
-    } else {
-      setPersonnel(personnel.map(p => p.id === id ? { ...p, is_admin: newStatus } : p));
+    if (error) alert("Failed to add officer: " + error.message);
+    else if (data) {
+      setEmployees([...employees, data[0]]);
+      setNewEmployee({ name: "", callsign: "", rank: "Cadet", email: "" });
     }
   };
 
-  // SHOW LOADING SCREEN WHILE CHECKING
-  if (isAuthorized === null) {
+  const handleToggleAdmin = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase
+      .from('employees')
+      .update({ is_admin: !currentStatus })
+      .eq('id', id);
+
+    if (error) alert("Failed to update clearance: " + error.message);
+    else {
+      setEmployees(employees.map(emp => emp.id === id ? { ...emp, is_admin: !currentStatus } : emp));
+    }
+  };
+
+  const handleDeleteEmployee = async (id: string) => {
+    if (!window.confirm("Are you sure you want to completely remove this officer from the database?")) return;
+    const { error } = await supabase.from('employees').delete().eq('id', id);
+    if (!error) setEmployees(employees.filter(emp => emp.id !== id));
+  };
+
+  // 🚨 RESTRICTED AREA SCREEN FOR NON-ADMINS 🚨
+  if (isAdmin === false) {
     return (
-      <div className="flex items-center justify-center h-full text-slate-400">
-        Verifying security clearance...
+      <div className="flex flex-col items-center justify-center h-[70vh] text-center space-y-6">
+        <ShieldAlert className="w-32 h-32 text-rose-600 animate-pulse drop-shadow-[0_0_15px_rgba(225,29,72,0.5)]" />
+        <div>
+          <h1 className="text-5xl font-black text-white tracking-widest uppercase mb-2">Restricted Area</h1>
+          <p className="text-lg text-slate-400 max-w-lg mx-auto">
+            You do not possess the required High Command security clearance to access this terminal. Unauthorized access attempts are logged.
+          </p>
+        </div>
       </div>
     );
   }
 
-  // SHOW RESTRICTED ACCESS SCREEN TO STANDARD OFFICERS
-  if (isAuthorized === false) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
-        <AlertOctagon className="w-20 h-20 text-rose-500 animate-pulse" />
-        <h1 className="text-4xl font-bold text-white tracking-tight">RESTRICTED AREA</h1>
-        <p className="text-slate-400 max-w-md">
-          Your current clearance level does not permit access to the High Command Admin Panel. This incident has been logged.
-        </p>
-        <Link to="/dashboard" className="mt-4 bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-md transition-colors border border-slate-700">
-          Return to Dashboard
-        </Link>
-      </div>
-    );
+  // LOADING SCREEN WHILE CHECKING CLEARANCE
+  if (isAdmin === null) {
+    return <div className="p-6 text-slate-400 flex items-center gap-2"><Shield className="w-5 h-5 animate-spin" /> Verifying security clearance...</div>;
   }
 
-  // RENDER ACTUAL ADMIN PANEL FOR AUTHORIZED USERS
+  // ✅ AUTHORIZED HIGH COMMAND VIEW ✅
   return (
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-          <ShieldAlert className="w-8 h-8 text-rose-500" />
-          Command Access Panel
+          <ShieldCheck className="w-8 h-8 text-rose-500" />
+          High Command Terminal
         </h1>
-        <p className="text-sm text-slate-400 mt-1">Manage portal permissions and High Command access levels.</p>
+        <p className="text-sm text-slate-400 mt-1">Manage departmental roster, access control, and security clearances.</p>
       </div>
 
-      <Card className="bg-slate-900 border-rose-900/50 text-slate-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <UserCog className="w-5 h-5 text-rose-400" />
-            Active Roster Permissions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-slate-400">
-                <tr>
-                  <th className="pb-3 font-medium">Officer</th>
-                  <th className="pb-3 font-medium">Callsign</th>
-                  <th className="pb-3 font-medium">Linked Email</th>
-                  <th className="pb-3 font-medium">Current Access</th>
-                  <th className="pb-3 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {personnel.map((officer) => (
-                  <tr key={officer.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 font-medium text-white">{officer.name}</td>
-                    <td className="py-3 text-slate-400">{officer.callsign}</td>
-                    <td className="py-3 text-slate-400">{officer.email || "No Email Linked"}</td>
-                    <td className="py-3">
-                      {officer.is_admin ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-400 border border-rose-500/20">
-                          <ShieldCheck className="w-3 h-3" /> Command
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-slate-500/10 px-2.5 py-0.5 text-xs font-semibold text-slate-400 border border-slate-500/20">
-                          <Shield className="w-3 h-3" /> Standard
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 text-right">
-                      <button 
-                        onClick={() => toggleAdminAccess(officer.id, officer.is_admin)}
-                        className={`px-3 py-1 text-xs rounded-md font-medium transition-colors border ${
-                          officer.is_admin 
-                            ? "bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700" 
-                            : "bg-rose-600/10 text-rose-400 hover:bg-rose-600/20 border-rose-500/20"
-                        }`}
-                      >
-                        {officer.is_admin ? "Revoke Access" : "Grant Command"}
-                      </button>
-                    </td>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ADD NEW OFFICER FORM */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-200 lg:col-span-1 h-fit">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-rose-400" /> Onboard Recruit
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddEmployee} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Full Name</label>
+                <input required type="text" value={newEmployee.name} onChange={e => setNewEmployee({...newEmployee, name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. John Doe" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Callsign</label>
+                <input required type="text" value={newEmployee.callsign} onChange={e => setNewEmployee({...newEmployee, callsign: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. 104" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Portal Login Email</label>
+                <input type="email" value={newEmployee.email} onChange={e => setNewEmployee({...newEmployee, email: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Required for portal access" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Starting Rank</label>
+                <input required type="text" value={newEmployee.rank} onChange={e => setNewEmployee({...newEmployee, rank: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. Cadet" />
+              </div>
+              <button type="submit" className="w-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md font-medium transition-colors mt-2">
+                Add to Database
+              </button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* ROSTER MANAGEMENT TABLE */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-200 lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <Users className="w-5 h-5 text-slate-400" /> Database Roster & Access Control
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-800 text-slate-400">
+                  <tr>
+                    <th className="pb-3 font-medium">Officer</th>
+                    <th className="pb-3 font-medium">Rank</th>
+                    <th className="pb-3 font-medium">Email</th>
+                    <th className="pb-3 font-medium">Clearance</th>
+                    <th className="pb-3 font-medium text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {employees.map((emp) => (
+                    <tr key={emp.id} className="hover:bg-slate-800/40">
+                      <td className="py-3 font-medium text-white">{emp.name} <span className="text-slate-500 font-normal">({emp.callsign})</span></td>
+                      <td className="py-3 text-slate-300">{emp.rank}</td>
+                      <td className="py-3 text-slate-500 text-xs">{emp.email || "No access"}</td>
+                      <td className="py-3">
+                        <button 
+                          onClick={() => handleToggleAdmin(emp.id, emp.is_admin)}
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border transition-colors ${
+                            emp.is_admin ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
+                          }`}
+                        >
+                          {emp.is_admin ? "Command" : "Standard"}
+                        </button>
+                      </td>
+                      <td className="py-3 text-right">
+                        <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1" title="Delete Officer">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
