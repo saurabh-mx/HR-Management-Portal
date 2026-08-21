@@ -5,7 +5,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Dashboard } from "./pages/Dashboard";
 import EmployeeDirectory from "./pages/EmployeeDirectory";
 import CommunicationsFeed from "./pages/CommunicationsFeed";
-import { MeetingsDashboard } from "./pages/MeetingsDashboard";
+import  MeetingsDashboard  from "./pages/MeetingsDashboard";
 import LOAManagement from "./pages/LOAManagement";
 import StrikeManagement from "./pages/StrikeManagement";
 import RankManagement from "./pages/RankManagement";
