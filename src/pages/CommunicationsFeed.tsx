@@ -16,7 +16,7 @@ export default function CommunicationsFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", message: "", category: "Announcement" });
-  const [authorName, setAuthorName] = useState("Officer");
+  const [authorName, setAuthorName] = useState("Patrol Officer");
 
   useEffect(() => {
     fetchPosts();

@@ -21,8 +21,8 @@ export default function EmployeeDirectory() {
   const [newEmployee, setNewEmployee] = useState({ 
     name: "", 
     badge_number: "", 
-    role: "Officer", 
-    department: "Law Enforcement",
+    role: "Patrol Officer", 
+    department: "SASP",
     email: ""
   });
 
@@ -59,9 +59,10 @@ export default function EmployeeDirectory() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isAdmin = ['High Command', 'Command', 'HR'].includes(newEmployee.role);
     const { data, error } = await supabase
       .from('employees')
-      .insert([{ ...newEmployee, status: 'Active' }])
+      .insert([{ ...newEmployee, status: 'Active', is_admin: isAdmin }])
       .select();
 
     if (error) {
@@ -70,7 +71,7 @@ export default function EmployeeDirectory() {
     } else if (data) {
       setEmployees([...employees, data[0]]);
       setIsAdding(false);
-      setNewEmployee({ name: "", badge_number: "", role: "Officer", department: "Law Enforcement", email: "" });
+      setNewEmployee({ name: "", badge_number: "", role: "Patrol Officer", department: "SASP", email: "" });
     }
   };
 
@@ -123,16 +124,15 @@ export default function EmployeeDirectory() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Role / Rank</label>
-                <input required type="text" value={newEmployee.role} onChange={e => setNewEmployee({...newEmployee, role: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Officer" />
+                <input required type="text" value={newEmployee.role} onChange={e => setNewEmployee({...newEmployee, role: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Patrol Officer" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Department</label>
                 <select value={newEmployee.department} onChange={e => setNewEmployee({...newEmployee, department: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                  <option value="Law Enforcement">Law Enforcement</option>
-                  <option value="Medical">Medical</option>
-                  <option value="Fire & Rescue">Fire & Rescue</option>
-                  <option value="Dispatch">Dispatch</option>
-                  <option value="Command">Command</option>
+                  <option value="SASP">SASP</option>
+                  <option value="LSPD">LSPD</option>
+                  <option value="BCSO">BCSO</option>
+                  <option value="SAPR">SAPR</option>
                 </select>
               </div>
               <button type="submit" className="w-full lg:col-span-5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 px-4 py-2 rounded-md font-medium transition-colors border border-emerald-500/20 mt-2">

@@ -21,32 +21,52 @@ export default function LoginModal({ children }: LoginModalProps) {
     setError("");
     setLoading(true);
     
-    let authError = null;
-    
-    // Automatically append @soulcity.com if they just typed their ID (e.g. james.bond)
-    const formattedEmail = email.includes('@') ? email : `${email}@soulcity.com`;
+    try {
+      let authError = null;
+      
+      // Automatically append @soulcity.com if they just typed their ID (e.g. james.bond)
+      const formattedEmail = email.includes('@') ? email : `${email}@soulcity.com`;
 
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email: formattedEmail,
-        password,
-      });
-      authError = error;
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formattedEmail,
-        password,
-      });
-      authError = error;
-    }
-    
-    if (authError) {
-      setError(authError.message);
+      if (isSignUp) {
+        // Security Pre-check: Ensure their Discord ID actually exists in the database
+        const discordId = email.includes('@') ? email.split('@')[0] : email;
+        const { data: rosterData, error: dbError } = await supabase
+          .from('employees')
+          .select('discord_tag')
+          .eq('discord_tag', discordId)
+          .maybeSingle();
+          
+        if (!rosterData) {
+          setError("Unauthorized: Your Discord ID is not in the official roster. Contact High Command.");
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.signUp({
+          email: formattedEmail,
+          password,
+        });
+        authError = error;
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formattedEmail,
+          password,
+        });
+        authError = error;
+      }
+      
+      if (authError) {
+        setError(authError.message);
+      } else {
+        // Upon successful login, the parent AuthProvider state will change
+        // and redirect away from the landing page.
+        setOpen(false);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError("An unexpected error occurred. Please check your network connection.");
+    } finally {
       setLoading(false);
-    } else {
-      // Upon successful login, the parent AuthProvider state will change
-      // and redirect away from the landing page.
-      setOpen(false);
     }
   };
 

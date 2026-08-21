@@ -29,10 +29,13 @@ interface Employee {
   cert_meu?: boolean;
   cert_k9?: boolean;
   cert_sop?: boolean;
+  role?: string;
+  department?: string;
 }
 
 export default function AdminPanel() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [newEmployee, setNewEmployee] = useState({
     name: "",
@@ -41,6 +44,9 @@ export default function AdminPanel() {
     discord_tag: ""
   });
   
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ role: "Patrol Officer", department: "SASP" });
+
   const [csvUrl, setCsvUrl] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -68,12 +74,13 @@ export default function AdminPanel() {
     const discordId = session.user.email.split('@')[0];
     const { data } = await supabase
       .from('employees')
-      .select('is_admin')
+      .select('is_admin, role')
       .eq('discord_tag', discordId)
       .single();
     
     if (data?.is_admin) {
       setIsAdmin(true);
+      setCurrentUserRole(data.role || "");
       fetchEmployees(); // Only fetch roster if they are authorized
     } else {
       setIsAdmin(false);
@@ -102,8 +109,8 @@ export default function AdminPanel() {
         ...newEmployee, 
         discord_tag: finalDiscordTag,
         is_admin: false, 
-        role: 'Officer', 
-        department: 'Law Enforcement',
+        role: 'Patrol Officer', 
+        department: 'SASP',
         status: 'ACTIVE'
       }])
       .select();
@@ -115,22 +122,35 @@ export default function AdminPanel() {
     }
   };
 
-  const handleToggleAdmin = async (id: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('employees')
-      .update({ is_admin: !currentStatus })
-      .eq('id', id);
-
-    if (error) alert("Failed to update clearance: " + error.message);
-    else {
-      setEmployees(employees.map(emp => emp.id === id ? { ...emp, is_admin: !currentStatus } : emp));
-    }
-  };
+  // Removed handleToggleAdmin since clearance is now derived from role
 
   const handleDeleteEmployee = async (id: string) => {
     if (!window.confirm("Are you sure you want to completely remove this officer from the database?")) return;
     const { error } = await supabase.from('employees').delete().eq('id', id);
     if (!error) setEmployees(employees.filter(emp => emp.id !== id));
+  };
+
+  const handleEditClick = (emp: Employee) => {
+    setEditingId(emp.id);
+    setEditForm({ role: emp.role || 'Patrol Officer', department: emp.department || 'SASP' });
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    const isAdmin = ['High Command', 'Command', 'HR'].includes(editForm.role);
+    const { error } = await supabase
+      .from('employees')
+      .update({ role: editForm.role, department: editForm.department, is_admin: isAdmin })
+      .eq('id', id);
+
+    if (error) alert("Failed to update: " + error.message);
+    else {
+      setEmployees(employees.map(emp => emp.id === id ? { ...emp, ...editForm, is_admin: isAdmin } : emp));
+      setEditingId(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
   };
 
   const handleSyncCSV = async () => {
@@ -246,12 +266,14 @@ export default function AdminPanel() {
             const cert_sop = idxSop !== -1 ? parseCert(row[idxSop]) : false;
 
             const existing = currentRoster?.find(e => e.badge_number === badge_number || e.name === name);
+            const derivedIsAdmin = ['High Command', 'Command', 'HR'].includes(role);
 
             const payload = {
               name, badge_number, rank, discord_tag: final_discord_tag, status, citizen_id, phone_number,
               department_join_date, duration_in_department, last_promotion_date, days_since_last_promoted,
               sub_department, titles, notes,
-              cert_fto, cert_asd, cert_heat, cert_swat, cert_cid, cert_meu, cert_k9, cert_sop
+              cert_fto, cert_asd, cert_heat, cert_swat, cert_cid, cert_meu, cert_k9, cert_sop,
+              is_admin: derivedIsAdmin
             };
 
             if (existing) {
@@ -263,12 +285,11 @@ export default function AdminPanel() {
                 updated++;
               }
             } else {
-              const isSyncUser = !!(session?.user?.email && (final_discord_tag === session.user.email.split('@')[0]));
+              // Remove manual isSyncUser check because is_admin is now strictly role-based
               const { error } = await supabase.from('employees').insert([{ 
                 ...payload, 
-                is_admin: isSyncUser,
-                role: 'Officer',
-                department: 'Law Enforcement'
+                role: role,
+                department: 'SASP'
               }]);
               if (error) {
                 console.error("Insert Error:", error);
@@ -409,34 +430,77 @@ export default function AdminPanel() {
                   <tr>
                     <th className="pb-3 font-medium">Officer</th>
                     <th className="pb-3 font-medium">Rank</th>
-                    <th className="pb-3 font-medium">Discord Tag</th>
-                    <th className="pb-3 font-medium">Clearance</th>
+                    <th className="pb-3 font-medium">Role</th>
+                    <th className="pb-3 font-medium">Department</th>
                     <th className="pb-3 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {employees.map((emp) => (
+                  {employees.map((emp) => {
+                    const getRoleWeight = (r: string) => {
+                      if (r === 'High Command') return 3;
+                      if (r === 'Command') return 2;
+                      if (r === 'HR') return 1;
+                      return 0;
+                    };
+                    const canEdit = getRoleWeight(currentUserRole) >= getRoleWeight(emp.role || "");
+
+                    return (
                     <tr key={emp.id} className="hover:bg-slate-800/40">
                       <td className="py-3 font-medium text-white">{emp.name} <span className="text-slate-500 font-normal">({emp.badge_number})</span></td>
                       <td className="py-3 text-slate-300">{emp.rank}</td>
-                      <td className="py-3 text-slate-500 text-xs">{emp.discord_tag || "Not Provided"}</td>
-                      <td className="py-3">
-                        <button 
-                          onClick={() => handleToggleAdmin(emp.id, emp.is_admin)}
-                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border transition-colors ${
-                            emp.is_admin ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
-                          }`}
-                        >
-                          {emp.is_admin ? "Command" : "Standard"}
-                        </button>
-                      </td>
+                      {editingId === emp.id ? (
+                        <>
+                          <td className="py-3">
+                            <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
+                              <option value="High Command">High Command</option>
+                              <option value="Command">Command</option>
+                              <option value="HR">HR</option>
+                              <option value="Patrol Officer">Patrol Officer</option>
+                              <option value="Student">Student</option>
+                            </select>
+                          </td>
+                          <td className="py-3">
+                            <select value={editForm.department} onChange={e => setEditForm({...editForm, department: e.target.value})} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
+                              <option value="SASP">SASP</option>
+                              <option value="LSPD">LSPD</option>
+                              <option value="BCSO">BCSO</option>
+                              <option value="SAPR">SAPR</option>
+                            </select>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-3 text-slate-400 text-sm">{emp.role || "Patrol Officer"}</td>
+                          <td className="py-3 text-slate-400 text-sm">{emp.department || "SASP"}</td>
+                        </>
+                      )}
                       <td className="py-3 text-right">
-                        <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1" title="Delete Officer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {editingId === emp.id ? (
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => handleSaveEdit(emp.id)} className="text-emerald-400 hover:text-emerald-300 text-xs font-medium">Save</button>
+                            <button onClick={handleCancelEdit} className="text-slate-500 hover:text-slate-400 text-xs font-medium">Cancel</button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-3">
+                            {canEdit ? (
+                              <>
+                                <button onClick={() => handleEditClick(emp)} className="text-slate-500 hover:text-blue-400 transition-colors text-xs font-medium uppercase tracking-wider" title="Edit Role/Dept">
+                                  Edit
+                                </button>
+                                <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors" title="Delete Officer">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-xs text-slate-600 font-medium italic">Restricted</span>
+                            )}
+                          </div>
+                        )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
