@@ -239,12 +239,22 @@ export default function AdminPanel() {
             };
 
             if (existing) {
-              await supabase.from('employees').update(payload).eq('id', existing.id);
-              updated++;
+              const { error } = await supabase.from('employees').update(payload).eq('id', existing.id);
+              if (error) {
+                console.error("Update Error:", error);
+                alert(`Error updating officer ${name}: ${error.message}`);
+              } else {
+                updated++;
+              }
             } else {
-              const isSyncUser = session?.user?.email && (discord_tag === session.user.email);
-              await supabase.from('employees').insert([{ ...payload, is_admin: isSyncUser }]);
-              added++;
+              const isSyncUser = !!(session?.user?.email && (discord_tag === session.user.email));
+              const { error } = await supabase.from('employees').insert([{ ...payload, is_admin: isSyncUser }]);
+              if (error) {
+                console.error("Insert Error:", error);
+                alert(`Error inserting officer ${name}: ${error.message}`);
+              } else {
+                added++;
+              }
             }
           }
           

@@ -1,4 +1,4 @@
-import { Shield, ChevronRight, Scale, ShieldCheck, Crosshair, Users, ArrowRight } from "lucide-react";
+import { Shield, ChevronRight, Scale, ShieldCheck, Crosshair, ArrowRight } from "lucide-react";
 import LoginModal from "@/components/auth/LoginModal";
 
 export default function Landing() {
