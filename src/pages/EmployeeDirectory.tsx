@@ -59,7 +59,18 @@ export default function EmployeeDirectory() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isAdmin = ['High Command', 'Command', 'HR'].includes(newEmployee.role);
+    
+    const isDuplicate = employees.some(
+      emp => emp.name.toLowerCase() === newEmployee.name.toLowerCase() || 
+             emp.badge_number === newEmployee.badge_number
+    );
+
+    if (isDuplicate) {
+      alert(`An officer with the name "${newEmployee.name}" or callsign "${newEmployee.badge_number}" already exists!`);
+      return;
+    }
+
+    const isAdmin = ['admin', 'High Command', 'Command', 'HR'].includes(newEmployee.role);
     const { data, error } = await supabase
       .from('employees')
       .insert([{ ...newEmployee, status: 'Active', is_admin: isAdmin }])
@@ -208,7 +219,7 @@ export default function EmployeeDirectory() {
                   <tr key={employee.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 font-medium text-white">{employee.name}</td>
                     <td className="py-3 text-slate-400">{employee.badge_number}</td>
-                    <td className="py-3 text-slate-300">{employee.role}</td>
+                    <td className="py-3 text-slate-300">{employee.role === 'admin' ? 'High Command' : employee.role}</td>
                     <td className="py-3 text-slate-400">{employee.department}</td>
                     <td className="py-3 text-slate-500">{employee.email || "—"}</td>
                   </tr>

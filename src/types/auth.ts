@@ -1,4 +1,4 @@
-export type UserRole = 'High Command' | 'HR' | 'Command' | 'Patrol Officer' | 'Student';
+export type UserRole = 'admin' | 'High Command' | 'HR' | 'Command' | 'Patrol Officer' | 'Student';
 export type Department = 'SASP' | 'LSPD' | 'SAPR' | 'BCSO' | 'ALL';
 
 export interface UserSession {
