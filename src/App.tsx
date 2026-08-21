@@ -11,7 +11,7 @@ import LOAManagement from "./pages/LOAManagement";
 import StrikeManagement from "./pages/StrikeManagement";
 import RankManagement from "./pages/RankManagement";
 import HRRequestsDashboard from "./pages/HRRequestsDashboard";
-import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import AdminPanel from "./pages/AdminPanel";
 import DocumentsDashboard from "./pages/DocumentsDashboard";
 
@@ -23,7 +23,7 @@ function AppRoutes() {
   }
 
   if (!session) {
-    return <Login />;
+    return <Landing />;
   }
 
   return (
