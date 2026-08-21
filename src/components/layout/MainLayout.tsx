@@ -28,7 +28,7 @@ export default function MainLayout() {
     if (!session?.user?.email) return;
 
     // Fetch their name and role from the employees roster based on their login email
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('employees')
       .select('name, role, is_admin')
       .eq('email', session.user.email)
