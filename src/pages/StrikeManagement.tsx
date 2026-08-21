@@ -53,10 +53,13 @@ export default function StrikeManagement() {
     if (!error) setStrikes(strikes.filter(s => s.id !== id));
   };
 
-  // 🔍 FILTER LOGIC
-  const filteredStrikes = strikes.filter(strike => 
-    strike.officer_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 🔍 SAFE FILTER LOGIC
+  const filteredStrikes = strikes.filter(strike => {
+    const safeName = strike.officer_name || "";
+    const safeReason = strike.reason || "";
+    return safeName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           safeReason.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div className="space-y-6 p-6">
@@ -94,7 +97,7 @@ export default function StrikeManagement() {
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
             <input 
               type="text" 
-              placeholder="Search officer..." 
+              placeholder="Search officer or reason..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-md text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500 w-64"
@@ -114,19 +117,27 @@ export default function StrikeManagement() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {filteredStrikes.map((strike) => (
-                  <tr key={strike.id} className="hover:bg-slate-800/40">
-                    <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
-                    <td className="py-3 font-medium text-white">{strike.officer_name}</td>
-                    <td className="py-3 text-slate-400">{strike.reason}</td>
-                    <td className="py-3 text-slate-500">{strike.issued_by}</td>
-                    {isAdmin && (
-                      <td className="py-3 text-right">
-                        <button onClick={() => handleDelete(strike.id)} className="text-slate-500 hover:text-rose-400"><Trash2 className="w-4 h-4 inline" /></button>
-                      </td>
-                    )}
+                {filteredStrikes.length === 0 ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 5 : 4} className="py-8 text-center text-slate-500">
+                      No matching records found.
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredStrikes.map((strike) => (
+                    <tr key={strike.id} className="hover:bg-slate-800/40">
+                      <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 font-medium text-white">{strike.officer_name}</td>
+                      <td className="py-3 text-slate-400">{strike.reason}</td>
+                      <td className="py-3 text-slate-500">{strike.issued_by}</td>
+                      {isAdmin && (
+                        <td className="py-3 text-right">
+                          <button onClick={() => handleDelete(strike.id)} className="text-slate-500 hover:text-rose-400"><Trash2 className="w-4 h-4 inline" /></button>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
