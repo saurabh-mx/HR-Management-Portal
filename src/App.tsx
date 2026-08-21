@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
 import { Dashboard } from "./pages/Dashboard";
 import EmployeeDirectory from "./pages/EmployeeDirectory";
@@ -48,10 +49,12 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Toaster theme="dark" position="top-right" />
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <AuthProvider>
+        <Toaster theme="system" position="top-right" />
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
