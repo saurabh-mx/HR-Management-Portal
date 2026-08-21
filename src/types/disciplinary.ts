@@ -2,7 +2,7 @@ export interface StrikeRecord {
   id: string;
   employeeId: string;
   employeeName: string;
-  badgeNumber: string;
+  badge_number: string;
   issuedBy: string; 
   strikeLevel: 1 | 2 | 3 | 4 | 5;
   reason: string;

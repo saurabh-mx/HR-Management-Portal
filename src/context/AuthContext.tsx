@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data } = await supabase
       .from("employees")
       .select("name, role, is_admin")
-      .eq("email", email)
+      .eq('discord_tag', email)
       .single();
 
     if (data) {

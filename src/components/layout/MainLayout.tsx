@@ -5,7 +5,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { LogOut, User, ChevronDown, Key, ShieldCheck, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { ModeToggle } from "@/components/mode-toggle";
 
 export default function MainLayout() {
   const [newPassword, setNewPassword] = useState("");
@@ -65,22 +64,21 @@ export default function MainLayout() {
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         
         {/* Top Header */}
-        <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6 z-10 shadow-sm">
-          <span className="text-muted-foreground font-medium tracking-wide">High Command Portal</span>
+        <header className="h-16 border-b border-yellow-900/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+          <span className="text-yellow-500 font-bold tracking-widest uppercase text-sm drop-shadow-md">High Command Portal</span>
           
           <div className="flex items-center gap-4">
-            <ModeToggle />
             <div className="relative" ref={dropdownRef}>
               {/* Profile Button */}
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-3 hover:bg-muted p-2 rounded-md transition-colors border border-transparent hover:border-border"
+                className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded-md transition-colors border border-transparent hover:border-yellow-600/30 group"
               >
-                <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center border border-border">
-                  <User className="w-5 h-5 text-muted-foreground" />
+                <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center border border-yellow-600/30 group-hover:border-yellow-500 shadow-[0_0_10px_rgba(202,138,4,0.1)] transition-colors">
+                  <User className="w-5 h-5 text-yellow-500" />
                 </div>
                 <div className="text-left hidden md:block">
-                  <div className="text-sm font-semibold text-foreground leading-tight">
+                  <div className="text-sm font-bold tracking-wide text-slate-200 uppercase leading-tight">
                     {profile ? profile.name : "Loading..."}
                   </div>
                   <div className="text-xs text-muted-foreground font-medium">
@@ -92,11 +90,11 @@ export default function MainLayout() {
   
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-popover border border-border rounded-lg shadow-2xl overflow-hidden py-1">
+                <div className="absolute right-0 mt-2 w-64 bg-slate-950 border border-yellow-900/50 rounded-lg shadow-[0_5px_20px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50">
                   
                   {/* User Info Section */}
-                  <div className="px-4 py-3 border-b border-border bg-muted/50">
-                    <p className="text-sm font-medium text-popover-foreground">{profile?.name}</p>
+                  <div className="px-4 py-3 border-b border-yellow-900/30 bg-slate-900/50">
+                    <p className="text-sm font-bold tracking-wider uppercase text-slate-200">{profile?.name}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                       {profile?.is_admin ? (
                         <span className="inline-flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive uppercase tracking-wider border border-destructive/20">
@@ -111,8 +109,8 @@ export default function MainLayout() {
                   </div>
   
                   {/* Password Update Section */}
-                  <div className="px-4 py-3 border-b border-border">
-                    <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-2">
+                  <div className="px-4 py-3 border-b border-yellow-900/30">
+                    <label className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-yellow-500/80 mb-2">
                       <Key className="w-3 h-3" /> Update Portal Password
                     </label>
                     <form onSubmit={handlePasswordUpdate} className="flex flex-col gap-2">
@@ -129,10 +127,10 @@ export default function MainLayout() {
                         placeholder="Confirm Password" 
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
                         required
                       />
-                      <button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 text-sm rounded-md transition-colors border border-transparent font-medium">
+                      <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 px-3 py-2 text-sm rounded-md transition-all border border-transparent font-bold tracking-wider uppercase mt-1">
                         Confirm Update
                       </button>
                   </form>
@@ -142,7 +140,7 @@ export default function MainLayout() {
                   <div className="p-2">
                     <button 
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-2 text-sm rounded-md transition-colors font-medium"
+                      className="w-full flex items-center justify-center gap-2 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/30 hover:border-red-500/50 px-3 py-2 text-sm rounded-md transition-all font-bold tracking-wider uppercase"
                     >
                       <LogOut className="w-4 h-4" />
                       Secure Logout

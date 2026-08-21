@@ -49,12 +49,12 @@ export default function HRRequestsDashboard() {
 
     const { data: empData } = await supabase
       .from('employees')
-      .select('name, callsign, is_admin')
-      .eq('email', session.user.email)
+      .select('name, badge_number, is_admin')
+      .eq('discord_tag', session.user.email)
       .single();
     
     const profile = {
-      name: empData ? `${empData.name} (${empData.callsign})` : session.user.email,
+      name: empData ? `${empData.name} (${empData.badge_number})` : session.user.email,
       email: session.user.email,
       isAdmin: empData?.is_admin || false
     };

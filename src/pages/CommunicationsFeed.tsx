@@ -40,12 +40,12 @@ export default function CommunicationsFeed() {
     // Grab their real officer name and admin status from the employees table
     const { data } = await supabase
       .from('employees')
-      .select('name, callsign, is_admin')
-      .eq('email', session.user.email)
+      .select('name, badge_number, is_admin')
+      .eq('discord_tag', session.user.email)
       .single();
     
     if (data) {
-      setAuthorName(`${data.name} (${data.callsign})`);
+      setAuthorName(`${data.name} (${data.badge_number})`);
       if (data.is_admin) setIsAdmin(true); // Set admin status here
     } else {
       setAuthorName(session.user.email);

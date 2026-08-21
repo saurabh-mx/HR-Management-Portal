@@ -4,7 +4,7 @@ export interface EmployeeProfile {
   id: string; // Matches Supabase auth UUID
   employeeId: string;
   fullName: string;
-  badgeNumber: string;
+  badge_number: string;
   rank: string;
   department: Department;
   role: UserRole;
@@ -17,7 +17,7 @@ export interface RankChangeRecord {
   id: string;
   employeeId: string;
   employeeName: string;
-  badgeNumber: string;
+  badge_number: string;
   department: Department;
   previousRank: string;
   newRank: string;

@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 interface Employee {
   id: string;
   name: string;
-  callsign: string;
+  badge_number: string;
   role: string;
   department: string;
   email: string;
@@ -20,7 +20,7 @@ export default function EmployeeDirectory() {
   const [isAdding, setIsAdding] = useState(false);
   const [newEmployee, setNewEmployee] = useState({ 
     name: "", 
-    callsign: "", 
+    badge_number: "", 
     role: "Officer", 
     department: "Law Enforcement",
     email: ""
@@ -39,7 +39,7 @@ export default function EmployeeDirectory() {
     const { data, error } = await supabase
       .from('employees')
       .select('is_admin')
-      .eq('email', session.user.email)
+      .eq('discord_tag', session.user.email)
       .single();
     
     if (!error && data?.is_admin) {
@@ -70,14 +70,14 @@ export default function EmployeeDirectory() {
     } else if (data) {
       setEmployees([...employees, data[0]]);
       setIsAdding(false);
-      setNewEmployee({ name: "", callsign: "", role: "Officer", department: "Law Enforcement", email: "" });
+      setNewEmployee({ name: "", badge_number: "", role: "Officer", department: "Law Enforcement", email: "" });
     }
   };
 
   const filteredEmployees = employees.filter(
     (emp) =>
       emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.callsign.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.badge_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (emp.email && emp.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
@@ -115,7 +115,7 @@ export default function EmployeeDirectory() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Callsign</label>
-                <input required type="text" value={newEmployee.callsign} onChange={e => setNewEmployee({...newEmployee, callsign: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. 710" />
+                <input required type="text" value={newEmployee.badge_number} onChange={e => setNewEmployee({...newEmployee, badge_number: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. 710" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Linked Email</label>
@@ -184,7 +184,7 @@ export default function EmployeeDirectory() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
-              placeholder="Search by name, callsign, or email..."
+              placeholder="Search by name, badge_number, or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex h-9 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1 text-sm text-white shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400"
@@ -207,7 +207,7 @@ export default function EmployeeDirectory() {
                 {filteredEmployees.map((employee) => (
                   <tr key={employee.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 font-medium text-white">{employee.name}</td>
-                    <td className="py-3 text-slate-400">{employee.callsign}</td>
+                    <td className="py-3 text-slate-400">{employee.badge_number}</td>
                     <td className="py-3 text-slate-300">{employee.role}</td>
                     <td className="py-3 text-slate-400">{employee.department}</td>
                     <td className="py-3 text-slate-500">{employee.email || "—"}</td>

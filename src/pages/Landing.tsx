@@ -1,55 +1,179 @@
-import { Shield } from "lucide-react";
+import { Shield, ChevronRight, Scale, ShieldCheck, Crosshair, Users, ArrowRight } from "lucide-react";
 import LoginModal from "@/components/auth/LoginModal";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
+    <div
+      className="min-h-screen flex flex-col font-sans text-slate-300 relative overflow-hidden bg-slate-900"
+      style={{
+        backgroundImage: "url('/sasp-tall-bg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "top center",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
+      {/* Global Background Overlay for better readability (Grey) */}
+      <div className="fixed inset-0 z-0 bg-slate-950/60 pointer-events-none"></div>
+
       {/* Navigation Header */}
-      <header className="absolute top-0 w-full flex items-center justify-between px-6 py-4 z-50">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-12 h-12 bg-transparent rounded-full border-2 border-white/80">
-            <Shield className="w-6 h-6 text-white" />
+      <header className="absolute top-0 w-full flex items-center justify-between px-6 py-6 z-50">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-center w-12 h-12 bg-slate-900/80 rounded-sm border border-yellow-600 shadow-[0_0_10px_rgba(202,138,4,0.4)] backdrop-blur-md rotate-45">
+            <Shield className="w-5 h-5 text-yellow-500 -rotate-45" />
           </div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-md">SAN ANDREAS STATE POLICE</h1>
+          <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md">
+            SASP <span className="font-light text-yellow-500">PORTAL</span>
+          </h1>
         </div>
-        <nav className="hidden md:flex items-center space-x-8 font-medium text-sm text-slate-200 drop-shadow-md">
-          <a href="#" className="text-white font-semibold hover:text-blue-400 transition-colors">HOME</a>
-          <a href="#" className="hover:text-blue-400 transition-colors">DIVISIONS</a>
-          <a href="#" className="hover:text-blue-400 transition-colors">RECRUITMENT</a>
-          <a href="#" className="hover:text-blue-400 transition-colors">COMMUNITY</a>
+        <nav className="hidden md:flex items-center space-x-10 font-medium text-sm tracking-widest text-slate-400">
+          <a href="#" className="text-yellow-500 hover:text-yellow-300 transition-colors hover:shadow-[0_0_10px_rgba(202,138,4,0.5)]">HOME</a>
+          <a href="#about" className="hover:text-blue-400 transition-colors">ABOUT</a>
+          <a href="#community" className="hover:text-emerald-400 transition-colors">COMMUNITY</a>
+          <a href="#recruitment" className="hover:text-yellow-400 transition-colors">RECRUITMENT</a>
           <LoginModal>
-            <button className="px-4 py-2 bg-blue-600/80 text-white rounded-md hover:bg-blue-600 transition-colors backdrop-blur-sm border border-blue-500/50">
-              STAFF LOGIN
+            <button className="px-6 py-2 bg-slate-900/80 text-emerald-500 border border-emerald-600/50 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] backdrop-blur-sm tracking-widest uppercase text-xs">
+              PORTAL LOGIN
             </button>
           </LoginModal>
         </nav>
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 relative flex items-center">
-        {/* Background Overlay & Image */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-slate-900/60 z-10" />
-          <img 
-            src="/sasp-bg.png" 
-            alt="Police Background" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-
+      <section className="relative min-h-screen flex items-center justify-center pt-20">
         {/* Hero Content */}
-        <div className="relative z-20 px-6 md:px-16 w-full max-w-6xl mx-auto text-white">
-          <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 uppercase drop-shadow-lg leading-tight">
-            SASP: SPECIALIZED OPERATIONS &<br />COMMUNITY SERVICE
+        <div className="relative z-20 px-6 w-full max-w-5xl mx-auto text-center mt-12">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-widest mb-4 uppercase drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)] text-slate-200">
+            San Andreas <br /><span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600">State Police</span>
           </h2>
-          <p className="text-xl md:text-2xl text-slate-100 mb-8 max-w-2xl font-medium drop-shadow-md">
-            Dedicated to the safety of San Andreas. Explore our units and join the team.
+          <div className="w-24 h-px bg-yellow-500 mx-auto my-8 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
+          <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto font-light tracking-wide drop-shadow-md bg-slate-950/40 p-2 rounded-lg backdrop-blur-sm border border-slate-800">
+            Upholding Law. <span className="text-emerald-500 font-medium">Preserving Order.</span> Protecting the Community.
           </p>
-          <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-md transition-all shadow-lg hover:shadow-blue-600/25">
-            LEARN MORE ABOUT SASP
-          </button>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <a href="#recruitment" className="w-full sm:w-auto px-8 py-3 bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-500 border border-yellow-500/50 font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_rgba(202,138,4,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] flex items-center justify-center group backdrop-blur-md">
+              Join the Force
+              <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </a>
+            <a href="#community" className="w-full sm:w-auto px-8 py-3 bg-blue-900/30 hover:bg-blue-800/40 text-blue-400 border border-blue-500/50 font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] flex items-center justify-center backdrop-blur-md">
+              Community Resources
+            </a>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Introduction Section */}
+      <section className="relative z-10 py-20 px-6 border-b border-slate-800/50">
+        <div className="max-w-4xl mx-auto text-center relative z-20">
+          <div className="inline-block p-4 border border-blue-900/50 bg-slate-950/60 backdrop-blur-md rotate-45 mb-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+            <Shield className="w-8 h-8 text-blue-500 -rotate-45 opacity-80" />
+          </div>
+          <p className="text-lg md:text-xl leading-loose font-light text-slate-300 bg-slate-950/60 p-8 rounded-xl backdrop-blur-sm border border-slate-800/50 shadow-xl">
+            Welcome to the official portal of the San Andreas State Police (SASP). We give the utmost importance to law and order, standing as the frontline of defense across the state. Our commitment is unwavering, and our mission is clear: <br /><br /><span className="text-emerald-500 font-medium text-2xl tracking-widest uppercase">“To protect and to serve!”</span>
+          </p>
+        </div>
+      </section>
+
+      {/* About Us / Mission Section */}
+      <section id="about" className="relative z-10 py-24 px-6 border-b border-slate-800/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20 bg-slate-950/60 p-8 rounded-xl backdrop-blur-sm border border-slate-800/50 inline-block w-full">
+            <h3 className="text-sm font-bold tracking-[0.2em] text-blue-500 uppercase mb-4">Our Mission</h3>
+            <h2 className="text-3xl md:text-5xl font-light tracking-wide text-slate-100 drop-shadow-lg">Our <span className="font-bold text-yellow-500">Prime Objective</span></h2>
+            <p className="mt-8 text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
+              Every individual in the SASP department works towards one unified goal: to provide elite, professional Law Enforcement to the entire community within our jurisdiction. We believe that justice, integrity, and rapid response are the cornerstones of a safe society.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 (Blue) */}
+            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-blue-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
+              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-blue-500 transition-colors"></div>
+              <Scale className="w-10 h-10 text-slate-500 group-hover:text-blue-500 transition-colors mb-6" />
+              <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Statewide Jurisdiction</h4>
+              <p className="text-sm text-slate-400 leading-relaxed font-light">
+                From city streets to county highways, our troopers are equipped to handle complex emergencies and maintain peace across all of San Andreas.
+              </p>
+            </div>
+
+            {/* Feature 2 (Green) */}
+            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-emerald-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
+              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-emerald-500 transition-colors"></div>
+              <ShieldCheck className="w-10 h-10 text-slate-500 group-hover:text-emerald-500 transition-colors mb-6" />
+              <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Unwavering Integrity</h4>
+              <p className="text-sm text-slate-400 leading-relaxed font-light">
+                We hold our officers to the highest ethical standards, ensuring transparent and fair treatment for all citizens we are sworn to protect.
+              </p>
+            </div>
+
+            {/* Feature 3 (Gold) */}
+            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-yellow-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
+              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-yellow-500 transition-colors"></div>
+              <Crosshair className="w-10 h-10 text-slate-500 group-hover:text-yellow-500 transition-colors mb-6" />
+              <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Tactical Excellence</h4>
+              <p className="text-sm text-slate-400 leading-relaxed font-light">
+                Highly trained units stand ready to intercept and investigate criminal activity to keep our streets safe from advanced threats.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Community Outreach Section */}
+      <section id="community" className="relative z-10 py-24 px-6 border-b border-slate-800/50">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
+          <div className="md:w-1/2 relative">
+            <div className="w-full h-[300px] border-2 border-emerald-600/30 bg-emerald-900/10 backdrop-blur-sm rounded-lg flex items-center justify-center p-8 text-center text-emerald-500/50 border-dashed">
+              <span className="tracking-widest uppercase text-xs">Community Engagement</span>
+            </div>
+          </div>
+
+          <div className="md:w-1/2 bg-slate-950/70 p-8 rounded-xl backdrop-blur-md border border-slate-800/50 shadow-2xl">
+            <h3 className="text-sm font-bold tracking-[0.2em] text-emerald-500 uppercase mb-2 drop-shadow-md">Community Outreach</h3>
+            <h2 className="text-3xl md:text-5xl font-light mb-8 text-slate-200 drop-shadow-lg">Beyond the Badge: <br /><span className="font-bold text-blue-500">Community First</span></h2>
+            <div className="space-y-6 text-slate-300 font-light leading-relaxed">
+              <p>
+                Law enforcement is only one side of the coin; prevention is the other. Alternatively, we don't just react to crime—we actively work to stop it before it starts.
+              </p>
+              <p>
+                The SASP regularly organizes awareness programs and law/order campaigns designed to keep the city out of future crimes. By engaging directly with the citizens we protect, we build the mutual trust and education necessary for a thriving, secure community.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recruitment / Call to Action */}
+      <section id="recruitment" className="relative z-10 py-40 px-6">
+        <div className="max-w-4xl mx-auto text-center relative z-20 bg-slate-950/80 p-12 rounded-2xl backdrop-blur-md border border-yellow-600/20 shadow-2xl">
+          <h2 className="text-3xl md:text-5xl font-light mb-6 tracking-wide text-slate-200 uppercase drop-shadow-lg">
+            Step Up. Stand Out. <span className="font-bold text-yellow-500 block mt-2">Join SASP.</span>
+          </h2>
+          <p className="text-lg text-slate-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+            Are you ready to make a difference? We are looking for dedicated individuals with a strong moral compass and a drive for public service. As a State Police Trooper, you will receive rigorous training, dynamic career advancement opportunities, and the chance to serve on the frontlines of justice.
+          </p>
+          <a href="https://saspftd.web.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-10 py-5 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-extrabold tracking-widest uppercase text-sm transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:shadow-[0_0_40px_rgba(234,179,8,0.6)] group rounded-sm">
+            Apply to the Academy
+            <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
+          </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 bg-slate-950/90 py-12 px-6 border-t border-slate-900 text-slate-500 text-xs tracking-widest uppercase backdrop-blur-md">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center space-x-3">
+            <Shield className="w-4 h-4 text-blue-500/50" />
+            <span className="font-semibold text-slate-400">SASP</span>
+          </div>
+          <p>© {new Date().getFullYear()} SASP. All rights reserved. "To protect and to serve"</p>
+          <div className="flex space-x-6">
+            <a href="#" className="hover:text-yellow-500 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-emerald-500 transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Contact</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
