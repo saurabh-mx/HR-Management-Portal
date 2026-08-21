@@ -12,6 +12,7 @@ import RankManagement from "./pages/RankManagement";
 import HRRequestsDashboard from "./pages/HRRequestsDashboard";
 import Login from "./pages/Login";
 import AdminPanel from "./pages/AdminPanel";
+import DocumentsDashboard from "./pages/DocumentsDashboard";
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -56,6 +57,7 @@ function App() {
           <Route path="/promotions" element={<RankManagement />} />
           <Route path="/hr-requests" element={<HRRequestsDashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/documents" element={<DocumentsDashboard />} />
         </Route>
       </Routes>
     </BrowserRouter>

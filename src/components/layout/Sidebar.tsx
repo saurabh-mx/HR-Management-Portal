@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { BookOpen } from "lucide-react";
 import { 
   LayoutDashboard, 
   Users, 
@@ -29,6 +30,7 @@ export const Sidebar = () => {
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },
     { name: 'Rank Management', path: '/promotions', icon: Award },
     { name: 'HR Requests', path: '/hr-requests', icon: FileText },
+    { name: 'Documents', path: '/documents', icon: BookOpen }
   ];
 
   return (
@@ -43,13 +45,13 @@ export const Sidebar = () => {
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {navItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.path);
+          const isActive = location.pathname.startsWith(item.path as string);
           const Icon = item.icon;
 
           return (
             <Link
               key={item.path}
-              to={item.path}
+              to={item.path as string}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
                 isActive 
