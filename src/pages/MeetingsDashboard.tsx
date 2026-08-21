@@ -38,7 +38,7 @@ export default function MeetingsDashboard() {
     const { data } = await supabase
       .from('employees')
       .select('name, badge_number, is_admin')
-      .eq('discord_tag', session.user.email)
+      .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
     if (data) {

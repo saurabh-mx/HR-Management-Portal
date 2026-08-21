@@ -22,16 +22,19 @@ export default function LoginModal({ children }: LoginModalProps) {
     setLoading(true);
     
     let authError = null;
+    
+    // Automatically append @soulcity.com if they just typed their ID (e.g. james.bond)
+    const formattedEmail = email.includes('@') ? email : `${email}@soulcity.com`;
 
     if (isSignUp) {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: formattedEmail,
         password,
       });
       authError = error;
     } else {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: formattedEmail,
         password,
       });
       authError = error;
@@ -73,8 +76,8 @@ export default function LoginModal({ children }: LoginModalProps) {
                 </div>
               )}
               <div className="space-y-2 text-left">
-                <label className="text-sm font-medium text-slate-400">Portal ID</label>
-                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. james.bond@soulcity.com" />
+                <label className="text-sm font-medium text-slate-400">Discord ID</label>
+                <input required type="text" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. venomplazzyt" />
               </div>
               <div className="space-y-2 text-left">
                 <label className="text-sm font-medium text-slate-400">Password</label>

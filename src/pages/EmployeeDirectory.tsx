@@ -39,7 +39,7 @@ export default function EmployeeDirectory() {
     const { data, error } = await supabase
       .from('employees')
       .select('is_admin')
-      .eq('discord_tag', session.user.email)
+      .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
     if (!error && data?.is_admin) {

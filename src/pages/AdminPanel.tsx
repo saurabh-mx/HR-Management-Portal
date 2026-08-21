@@ -65,10 +65,11 @@ export default function AdminPanel() {
       return;
     }
 
+    const discordId = session.user.email.split('@')[0];
     const { data } = await supabase
       .from('employees')
       .select('is_admin')
-      .eq('discord_tag', session.user.email)
+      .eq('discord_tag', discordId)
       .single();
     
     if (data?.is_admin) {
@@ -92,13 +93,14 @@ export default function AdminPanel() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
-    const defaultDiscordTag = newEmployee.name.toLowerCase().replace(/\s+/g, '.') + '@soulcity.com';
+    const defaultDiscordTag = newEmployee.name.toLowerCase().replace(/\s+/g, '.');
+    const finalDiscordTag = newEmployee.discord_tag || defaultDiscordTag;
     
     const { data, error } = await supabase
       .from('employees')
       .insert([{ 
         ...newEmployee, 
-        discord_tag: newEmployee.discord_tag || defaultDiscordTag,
+        discord_tag: finalDiscordTag,
         is_admin: false, 
         role: 'Officer', 
         department: 'Law Enforcement',
@@ -219,8 +221,8 @@ export default function AdminPanel() {
             const discord_tag = idxDiscord !== -1 ? row[idxDiscord]?.trim() || null : null;
             const status = (idxStatus !== -1 && row[idxStatus]?.trim()) ? row[idxStatus].trim() : 'ACTIVE';
             
-            // Default Portal ID: name@soulcity.com (e.g. kevin.johnson@soulcity.com)
-            const generatedDiscordTag = name.toLowerCase().replace(/\s+/g, '.') + '@soulcity.com';
+            // Default Portal ID: name.lastname (e.g. kevin.johnson)
+            const generatedDiscordTag = name.toLowerCase().replace(/\s+/g, '.');
             const final_discord_tag = discord_tag || generatedDiscordTag;
 
             const citizen_id = idxCitizenId !== -1 ? row[idxCitizenId]?.trim() || null : null;
@@ -261,7 +263,7 @@ export default function AdminPanel() {
                 updated++;
               }
             } else {
-              const isSyncUser = !!(session?.user?.email && (final_discord_tag === session.user.email));
+              const isSyncUser = !!(session?.user?.email && (final_discord_tag === session.user.email.split('@')[0]));
               const { error } = await supabase.from('employees').insert([{ 
                 ...payload, 
                 is_admin: isSyncUser,

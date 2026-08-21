@@ -48,10 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       return;
     }
+    const discordId = email.split('@')[0];
     const { data } = await supabase
       .from("employees")
       .select("name, role, is_admin")
-      .eq('discord_tag', email)
+      .eq('discord_tag', discordId)
       .single();
 
     if (data) {

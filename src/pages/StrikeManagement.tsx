@@ -26,7 +26,7 @@ export default function StrikeManagement() {
   async function checkAdminStatus() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.email) return;
-    const { data } = await supabase.from('employees').select('name, badge_number, is_admin').eq('discord_tag', session.user.email).single();
+    const { data } = await supabase.from('employees').select('name, badge_number, is_admin').eq('discord_tag', session.user.email.split('@')[0]).single();
     if (data) {
       setAuthorName(`${data.name} (${data.badge_number})`);
       if (data.is_admin) setIsAdmin(true);

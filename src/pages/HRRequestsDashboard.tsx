@@ -50,7 +50,7 @@ export default function HRRequestsDashboard() {
     const { data: empData } = await supabase
       .from('employees')
       .select('name, badge_number, is_admin')
-      .eq('discord_tag', session.user.email)
+      .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
     const profile = {
