@@ -92,9 +92,18 @@ export default function AdminPanel() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
+    const defaultDiscordTag = newEmployee.name.toLowerCase().replace(/\s+/g, '.') + '@soulcity.com';
+    
     const { data, error } = await supabase
       .from('employees')
-      .insert([{ ...newEmployee, is_admin: false }])
+      .insert([{ 
+        ...newEmployee, 
+        discord_tag: newEmployee.discord_tag || defaultDiscordTag,
+        is_admin: false, 
+        role: 'Officer', 
+        department: 'Law Enforcement',
+        status: 'ACTIVE'
+      }])
       .select();
 
     if (error) alert("Failed to add officer: " + error.message);
@@ -208,7 +217,12 @@ export default function AdminPanel() {
 
             const rank = idxRank !== -1 ? row[idxRank]?.trim() || "Cadet" : "Cadet";
             const discord_tag = idxDiscord !== -1 ? row[idxDiscord]?.trim() || null : null;
-            const status = idxStatus !== -1 ? row[idxStatus]?.trim() || null : null;
+            const status = (idxStatus !== -1 && row[idxStatus]?.trim()) ? row[idxStatus].trim() : 'ACTIVE';
+            
+            // Default Portal ID: name@soulcity.com (e.g. kevin.johnson@soulcity.com)
+            const generatedDiscordTag = name.toLowerCase().replace(/\s+/g, '.') + '@soulcity.com';
+            const final_discord_tag = discord_tag || generatedDiscordTag;
+
             const citizen_id = idxCitizenId !== -1 ? row[idxCitizenId]?.trim() || null : null;
             const phone_number = idxPhone !== -1 ? row[idxPhone]?.trim() || null : null;
             const department_join_date = idxJoinDate !== -1 ? row[idxJoinDate]?.trim() || null : null;
@@ -232,7 +246,7 @@ export default function AdminPanel() {
             const existing = currentRoster?.find(e => e.badge_number === badge_number || e.name === name);
 
             const payload = {
-              name, badge_number, rank, discord_tag, status, citizen_id, phone_number,
+              name, badge_number, rank, discord_tag: final_discord_tag, status, citizen_id, phone_number,
               department_join_date, duration_in_department, last_promotion_date, days_since_last_promoted,
               sub_department, titles, notes,
               cert_fto, cert_asd, cert_heat, cert_swat, cert_cid, cert_meu, cert_k9, cert_sop
@@ -247,8 +261,13 @@ export default function AdminPanel() {
                 updated++;
               }
             } else {
-              const isSyncUser = !!(session?.user?.email && (discord_tag === session.user.email));
-              const { error } = await supabase.from('employees').insert([{ ...payload, is_admin: isSyncUser }]);
+              const isSyncUser = !!(session?.user?.email && (final_discord_tag === session.user.email));
+              const { error } = await supabase.from('employees').insert([{ 
+                ...payload, 
+                is_admin: isSyncUser,
+                role: 'Officer',
+                department: 'Law Enforcement'
+              }]);
               if (error) {
                 console.error("Insert Error:", error);
                 alert(`Error inserting officer ${name}: ${error.message}`);
