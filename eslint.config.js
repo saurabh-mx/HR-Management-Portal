@@ -18,5 +18,10 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      '@typescript-eslint/no-use-before-define': 'off',
+      'no-use-before-define': 'off',
+      'react-hooks/immutability': 'off'
+    }
   },
 ])

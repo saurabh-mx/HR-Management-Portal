@@ -1,18 +1,20 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { supabase } from "@/lib/supabaseClient";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LogOut, User, ChevronDown, Key, ShieldCheck, Shield } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 export default function MainLayout() {
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [profile, setProfile] = useState<{ name: string; role: string; is_admin: boolean } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const { profile, logout } = useAuth();
 
   useEffect(() => {
-    fetchUserProfile();
-
     // Close dropdown if user clicks outside of it
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -23,42 +25,35 @@ export default function MainLayout() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  async function fetchUserProfile() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
-
-    // Fetch their name and role from the employees roster based on their login email
-    const { data } = await supabase
-      .from('employees')
-      .select('name, role, is_admin')
-      .eq('email', session.user.email)
-      .single();
-
-    if (data) {
-      setProfile(data);
-    } else {
-      // Fallback if they aren't in the directory yet
-      setProfile({ name: session.user.email, role: "Unassigned", is_admin: false });
-    }
-  }
-
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     });
     
     if (error) {
-      alert("Error updating password: " + error.message);
+      toast.error("Error updating password: " + error.message);
     } else {
-      alert("Dispatch: Password successfully updated.");
+      toast.success("Dispatch: Password successfully updated.");
       setNewPassword("");
+      setConfirmPassword("");
       setIsDropdownOpen(false);
     }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
   };
 
   return (
@@ -123,6 +118,14 @@ export default function MainLayout() {
                       placeholder="New Password" 
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      required
+                    />
+                    <input 
+                      type="password" 
+                      placeholder="Confirm Password" 
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       required
                     />
