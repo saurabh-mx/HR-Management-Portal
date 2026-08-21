@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, ShieldAlert, ShieldCheck, UserCog } from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, UserCog, AlertOctagon } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { Link } from "react-router-dom";
 
 interface EmployeeAccess {
   id: string;
@@ -13,10 +14,33 @@ interface EmployeeAccess {
 
 export default function AdminPanel() {
   const [personnel, setPersonnel] = useState<EmployeeAccess[]>([]);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetchAccessList();
+    verifyCommandAccess();
   }, []);
+
+  // SECURITY CHECK: Verify they are High Command before loading the page
+  async function verifyCommandAccess() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.email) {
+      setIsAuthorized(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from('employees')
+      .select('is_admin')
+      .eq('email', session.user.email)
+      .single();
+    
+    if (data?.is_admin) {
+      setIsAuthorized(true);
+      fetchAccessList(); // Only fetch data if they are authorized
+    } else {
+      setIsAuthorized(false);
+    }
+  }
 
   async function fetchAccessList() {
     const { data, error } = await supabase
@@ -48,6 +72,32 @@ export default function AdminPanel() {
     }
   };
 
+  // SHOW LOADING SCREEN WHILE CHECKING
+  if (isAuthorized === null) {
+    return (
+      <div className="flex items-center justify-center h-full text-slate-400">
+        Verifying security clearance...
+      </div>
+    );
+  }
+
+  // SHOW RESTRICTED ACCESS SCREEN TO STANDARD OFFICERS
+  if (isAuthorized === false) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
+        <AlertOctagon className="w-20 h-20 text-rose-500 animate-pulse" />
+        <h1 className="text-4xl font-bold text-white tracking-tight">RESTRICTED AREA</h1>
+        <p className="text-slate-400 max-w-md">
+          Your current clearance level does not permit access to the High Command Admin Panel. This incident has been logged.
+        </p>
+        <Link to="/dashboard" className="mt-4 bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-md transition-colors border border-slate-700">
+          Return to Dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  // RENDER ACTUAL ADMIN PANEL FOR AUTHORIZED USERS
   return (
     <div className="space-y-6 p-6">
       <div>

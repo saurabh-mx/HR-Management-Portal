@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, ShieldAlert, UserX, Plus, X, Search, Trash2 } from "lucide-react";
+import { AlertOctagon, AlertTriangle, Shield, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface Strike {
   id: string;
-  name: string;
+  officer_name: string;
   reason: string;
   severity: string;
   issued_by: string;
@@ -14,13 +14,34 @@ interface Strike {
 
 export default function StrikeManagement() {
   const [strikes, setStrikes] = useState<Strike[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-  const [newStrike, setNewStrike] = useState({ name: "", reason: "", severity: "Verbal Warning", issued_by: "" });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [newStrike, setNewStrike] = useState({
+    officer_name: "",
+    reason: "",
+    severity: "Warning",
+    issued_by: ""
+  });
 
   useEffect(() => {
     fetchStrikes();
+    checkAdminStatus();
   }, []);
+
+  // SECURITY CHECK: Verify if the logged-in user is High Command
+  async function checkAdminStatus() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.email) return;
+
+    const { data, error } = await supabase
+      .from('employees')
+      .select('is_admin')
+      .eq('email', session.user.email)
+      .single();
+    
+    if (!error && data?.is_admin) {
+      setIsAdmin(true);
+    }
+  }
 
   async function fetchStrikes() {
     const { data, error } = await supabase
@@ -40,18 +61,15 @@ export default function StrikeManagement() {
       .select();
 
     if (error) {
-      console.error("Error adding strike:", error);
-      alert("Failed to issue strike.");
+      alert("Failed to issue strike: " + error.message);
     } else if (data) {
       setStrikes([data[0], ...strikes]);
-      setIsAdding(false);
-      setNewStrike({ name: "", reason: "", severity: "Verbal Warning", issued_by: "" });
+      setNewStrike({ officer_name: "", reason: "", severity: "Warning", issued_by: "" });
     }
   };
 
-  // NEW: Function to delete a strike from the database
   const handleDeleteStrike = async (id: string) => {
-    if (!window.confirm("Are you sure you want to expunge this official record?")) return;
+    if (!window.confirm("Are you sure you want to permanently delete this record?")) return;
 
     const { error } = await supabase
       .from('strikes')
@@ -59,66 +77,52 @@ export default function StrikeManagement() {
       .eq('id', id);
 
     if (error) {
-      console.error("Error deleting strike:", error);
-      alert("Failed to remove record.");
+      alert("Failed to delete strike: " + error.message);
     } else {
-      // Remove it from the screen instantly
-      setStrikes(strikes.filter(strike => strike.id !== id));
+      setStrikes(strikes.filter(s => s.id !== id));
     }
   };
 
-  const filteredStrikes = strikes.filter(
-    (strike) =>
-      strike.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      strike.issued_by.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Strike Management</h1>
-          <p className="text-sm text-slate-400">Track and manage disciplinary actions across all departments.</p>
-        </div>
-        <button 
-          onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
-        >
-          {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {isAdding ? "Cancel" : "Issue Strike"}
-        </button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <AlertOctagon className="w-8 h-8 text-rose-500" />
+          Disciplinary Action
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">Official tracking for departmental warnings, strikes, and suspensions.</p>
       </div>
 
-      {isAdding && (
+      {/* ONLY SHOW THIS FORM TO COMMAND / HR */}
+      {isAdmin && (
         <Card className="bg-slate-900 border-rose-900/50 text-slate-200">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-rose-400">Issue Disciplinary Action</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleIssueStrike} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <form onSubmit={handleIssueStrike} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Receiving Officer</label>
-                <input required type="text" value={newStrike.name} onChange={e => setNewStrike({...newStrike, name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="e.g. John Doe" />
+                <input required type="text" value={newStrike.officer_name} onChange={e => setNewStrike({...newStrike, officer_name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="e.g. Jai Singh" />
               </div>
               <div className="space-y-2 lg:col-span-2">
-                <label className="text-xs font-medium text-slate-400">Reason</label>
-                <input required type="text" value={newStrike.reason} onChange={e => setNewStrike({...newStrike, reason: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="Rule violation description..." />
+                <label className="text-xs font-medium text-slate-400">Reason for Action</label>
+                <input required type="text" value={newStrike.reason} onChange={e => setNewStrike({...newStrike, reason: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="e.g. Insubordination during active scene" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Severity</label>
                 <select value={newStrike.severity} onChange={e => setNewStrike({...newStrike, severity: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500">
-                  <option value="Verbal Warning">Verbal Warning</option>
+                  <option value="Warning">Official Warning</option>
                   <option value="Strike 1">Strike 1</option>
                   <option value="Strike 2">Strike 2</option>
-                  <option value="Strike 3">Strike 3</option>
-                  <option value="Suspension">Suspension</option>
+                  <option value="Strike 3">Strike 3 (Termination/Suspension)</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Issued By</label>
-                <input required type="text" value={newStrike.issued_by} onChange={e => setNewStrike({...newStrike, issued_by: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="Your Name/Callsign" />
+                <label className="text-xs font-medium text-slate-400">Issuing Command Member</label>
+                <input required type="text" value={newStrike.issued_by} onChange={e => setNewStrike({...newStrike, issued_by: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="e.g. Chief Jane Doe" />
               </div>
-              <button type="submit" className="w-full lg:col-span-5 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 px-4 py-2 rounded-md font-medium transition-colors border border-rose-500/20 mt-2">
+              <button type="submit" className="w-full lg:col-span-3 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 px-4 py-2 rounded-md font-medium transition-colors border border-rose-500/20 mb-0.5">
                 Submit Official Record
               </button>
             </form>
@@ -126,99 +130,64 @@ export default function StrikeManagement() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-slate-900 border-slate-800 text-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Total Records</CardTitle>
-            <ShieldAlert className="w-4 h-4 text-slate-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{strikes.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-900 border-slate-800 text-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Active Suspensions</CardTitle>
-            <UserX className="w-4 h-4 text-rose-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {strikes.filter((s) => s.severity === "Suspension").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-900 border-slate-800 text-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Recent Warnings</CardTitle>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {strikes.filter((s) => s.severity === "Verbal Warning").length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* STRIKES RECORD TABLE - VISIBLE TO EVERYONE */}
       <Card className="bg-slate-900 border-slate-800 text-slate-200">
         <CardHeader>
-          <CardTitle className="text-lg font-medium">Disciplinary History</CardTitle>
-          <div className="relative pt-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search by officer or issuer..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1 text-sm text-white shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400"
-            />
-          </div>
+          <CardTitle className="text-lg font-medium">Departmental Records</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-800 text-slate-400">
                 <tr>
-                  <th className="pb-3 font-medium">Date</th>
+                  <th className="pb-3 font-medium">Date Issued</th>
                   <th className="pb-3 font-medium">Officer</th>
                   <th className="pb-3 font-medium">Severity</th>
                   <th className="pb-3 font-medium">Reason</th>
                   <th className="pb-3 font-medium">Issued By</th>
-                  <th className="pb-3 font-medium text-right">Actions</th>
+                  {isAdmin && <th className="pb-3 font-medium text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {filteredStrikes.map((strike) => (
-                  <tr key={strike.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 text-slate-400">
-                      {new Date(strike.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 font-medium text-white">{strike.name}</td>
-                    <td className="py-3">
-                      <span
-                        className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ${
-                          strike.severity.includes("Strike") || strike.severity === "Suspension"
-                            ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                            : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                        }`}
-                      >
-                        {strike.severity}
-                      </span>
-                    </td>
-                    <td className="py-3 text-slate-300">{strike.reason}</td>
-                    <td className="py-3 text-slate-400">{strike.issued_by}</td>
-                    <td className="py-3 text-right">
-                      {/* NEW: Trash Button */}
-                      <button 
-                        onClick={() => handleDeleteStrike(strike.id)}
-                        className="text-slate-500 hover:text-rose-400 transition-colors p-1"
-                        title="Expunge Record"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                {strikes.length === 0 ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 6 : 5} className="py-6 text-center text-slate-500">
+                      No disciplinary records found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  strikes.map((strike) => (
+                    <tr key={strike.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 font-medium text-white">{strike.officer_name}</td>
+                      <td className="py-3">
+                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${
+                          strike.severity.includes('Warning') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                          strike.severity.includes('Strike 3') ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                          'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                        }`}>
+                          {strike.severity.includes('Warning') ? <AlertTriangle className="w-3 h-3" /> : <AlertOctagon className="w-3 h-3" />}
+                          {strike.severity}
+                        </span>
+                      </td>
+                      <td className="py-3 text-slate-300">{strike.reason}</td>
+                      <td className="py-3 text-slate-500">{strike.issued_by}</td>
+                      
+                      {/* ONLY SHOW DELETE BUTTON TO ADMINS */}
+                      {isAdmin && (
+                        <td className="py-3 text-right">
+                          <button 
+                            onClick={() => handleDeleteStrike(strike.id)}
+                            className="text-slate-500 hover:text-rose-400 transition-colors p-1"
+                            title="Delete Record"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
