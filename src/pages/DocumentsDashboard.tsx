@@ -33,7 +33,7 @@ export default function DocumentsDashboard() {
   const [activeDoc, setActiveDoc] = useState(documents[0]);
 
   return (
-    <div className="space-y-6 p-6 h-[calc(100vh-4rem)] flex flex-col">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
           <BookOpen className="w-8 h-8 text-indigo-500" />
@@ -42,9 +42,9 @@ export default function DocumentsDashboard() {
         <p className="text-sm text-slate-400 mt-1">Official San Andreas State Police literature, rosters, and operational guidelines.</p>
       </div>
 
-      <Card className="bg-slate-900 border-slate-800 text-slate-200 flex-1 flex flex-col overflow-hidden">
-        <CardHeader className="border-b border-slate-800 pb-3 bg-slate-950">
-          <div className="flex flex-wrap gap-2">
+      <Card className="bg-slate-900 border-slate-800 text-slate-200 overflow-hidden shadow-xl shadow-black/50">
+        <CardHeader className="border-b border-slate-800 pb-3 bg-slate-950 overflow-x-auto">
+          <div className="flex flex-wrap gap-2 min-w-max">
             {documents.map((doc) => (
               <button
                 key={doc.id}
@@ -61,7 +61,9 @@ export default function DocumentsDashboard() {
             ))}
           </div>
         </CardHeader>
-        <CardContent className="p-0 flex-1">
+        
+        {/* THIS IS THE MAGIC FIX: We force the height to 75vh (75% of the viewport height) */}
+        <CardContent className="p-0 h-[75vh] w-full">
           <iframe
             src={activeDoc.url}
             className="w-full h-full border-0"
