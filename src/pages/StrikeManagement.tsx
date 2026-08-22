@@ -9,6 +9,8 @@ interface Strike {
   reason: string;
   issued_by: string;
   created_at: string;
+  action_type?: string;
+  strike_level?: string;
 }
 
 export default function StrikeManagement() {
@@ -17,6 +19,8 @@ export default function StrikeManagement() {
   const [authorName, setAuthorName] = useState("Command");
   const [searchTerm, setSearchTerm] = useState("");
   const [newStrike, setNewStrike] = useState({ officer_name: "", reason: "" });
+  const [actionType, setActionType] = useState("Warning");
+  const [strikeLevel, setStrikeLevel] = useState("1/5");
 
   useEffect(() => {
     fetchStrikes();
@@ -40,10 +44,26 @@ export default function StrikeManagement() {
 
   const handleIssueStrike = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data } = await supabase.from('strikes').insert([{ ...newStrike, issued_by: authorName }]).select();
+    
+    const { data, error } = await supabase.from('strikes').insert([{ 
+      officer_name: newStrike.officer_name, 
+      reason: newStrike.reason, 
+      issued_by: authorName,
+      action_type: actionType,
+      strike_level: actionType === 'Strike' ? strikeLevel : null
+    }]).select();
+    
+    if (error) {
+      console.error("Supabase error:", error);
+      alert("Failed to submit: " + error.message);
+      return;
+    }
+
     if (data) {
       setStrikes([data[0], ...strikes]);
       setNewStrike({ officer_name: "", reason: "" });
+      setActionType("Warning");
+      setStrikeLevel("1/5");
     }
   };
 
@@ -80,6 +100,28 @@ export default function StrikeManagement() {
                 <input required type="text" value={newStrike.officer_name} onChange={e => setNewStrike({...newStrike, officer_name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
               </div>
               <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Action Type</label>
+                <select value={actionType} onChange={e => setActionType(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white">
+                  <option value="Verbal Warning">Verbal Warning</option>
+                  <option value="Warning">Warning</option>
+                  <option value="Strike">Strike</option>
+                </select>
+              </div>
+
+              {actionType === "Strike" && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-400">Strike Level</label>
+                  <select value={strikeLevel} onChange={e => setStrikeLevel(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white">
+                    <option value="1/5">1/5</option>
+                    <option value="2/5">2/5</option>
+                    <option value="3/5">3/5</option>
+                    <option value="4/5">4/5</option>
+                    <option value="5/5">5/5</option>
+                  </select>
+                </div>
+              )}
+
+              <div className={`space-y-2 ${actionType === 'Strike' ? 'md:col-span-2' : ''}`}>
                 <label className="text-xs font-medium text-slate-400">Reason / Infraction</label>
                 <input required type="text" value={newStrike.reason} onChange={e => setNewStrike({...newStrike, reason: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
               </div>
@@ -111,6 +153,7 @@ export default function StrikeManagement() {
                 <tr>
                   <th className="pb-3 font-medium">Date</th>
                   <th className="pb-3 font-medium">Officer</th>
+                  <th className="pb-3 font-medium">Action Type</th>
                   <th className="pb-3 font-medium">Infraction</th>
                   <th className="pb-3 font-medium">Issued By</th>
                   {isAdmin && <th className="pb-3 font-medium text-right">Actions</th>}
@@ -128,6 +171,15 @@ export default function StrikeManagement() {
                     <tr key={strike.id} className="hover:bg-slate-800/40">
                       <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
                       <td className="py-3 font-medium text-white">{strike.officer_name}</td>
+                      <td className="py-3">
+                        <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
+                          strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
+                          strike.action_type === 'Verbal Warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                          'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                        }`}>
+                          {strike.action_type || 'Warning'} {strike.action_type === 'Strike' && strike.strike_level ? `(${strike.strike_level})` : ''}
+                        </span>
+                      </td>
                       <td className="py-3 text-slate-400">{strike.reason}</td>
                       <td className="py-3 text-slate-500">{strike.issued_by}</td>
                       {isAdmin && (
