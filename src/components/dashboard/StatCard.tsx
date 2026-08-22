@@ -20,14 +20,14 @@ export const StatCard = ({ title, value, description, icon: Icon, trend, hoverCo
       )}>
         
         {/* FRONT FACE */}
-        <Card className="relative w-full h-full [backface-visibility:hidden] bg-slate-950/80 backdrop-blur-md border-yellow-900/30 text-slate-200 flex flex-col overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-tr from-yellow-500/0 via-yellow-500/0 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+        <Card className="relative w-full h-full [backface-visibility:hidden] bg-slate-950/80 backdrop-blur-md border-brand/30 text-slate-200 flex flex-col overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/0 via-brand-500/0 to-brand-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
           
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
-            <CardTitle className="text-xs font-bold tracking-widest uppercase text-slate-400 group-hover:text-yellow-500/90 transition-colors duration-300">
+            <CardTitle className="text-xs font-bold tracking-widest uppercase text-slate-400 group-hover:text-brand/90 transition-colors duration-300">
               {title}
             </CardTitle>
-            <Icon className="w-5 h-5 text-yellow-600/50 group-hover:text-yellow-400 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300" />
+            <Icon className="w-5 h-5 text-brand/50 group-hover:text-brand group-hover:scale-110 group-hover:rotate-3 transition-all duration-300" />
           </CardHeader>
           <CardContent className="relative z-10 flex-1">
             <div className="text-3xl font-light text-slate-100 tracking-wider group-hover:text-white transition-colors duration-300">{value}</div>
@@ -45,7 +45,7 @@ export const StatCard = ({ title, value, description, icon: Icon, trend, hoverCo
         
         {/* BACK FACE */}
         {hoverContent && (
-          <Card className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900/70 backdrop-blur-xl border border-yellow-500/40 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] text-slate-200 overflow-hidden flex flex-col p-4 rounded-xl">
+          <Card className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900/70 backdrop-blur-xl border border-brand/40 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] text-slate-200 overflow-hidden flex flex-col p-4 rounded-xl">
             {/* Glossy top highlight */}
             <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-t-xl"></div>
             

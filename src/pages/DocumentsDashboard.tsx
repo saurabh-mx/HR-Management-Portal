@@ -92,7 +92,7 @@ export default function DocumentsDashboard() {
 
   return (
     // Outer wrapper with the tech-grid background pattern
-    <div className="relative min-h-[90vh] w-full p-6 text-slate-200 bg-[#0a0f18] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
+    <div className="relative min-h-[90vh] w-full p-6 text-slate-200 bg-transparent bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
       
       {/* Main container, stretches wide and sets the height */}
       <div className="mx-auto flex h-[85vh] w-full max-w-[1400px] gap-6" style={{ maxWidth: 'none', width: '100%' }}>
@@ -115,7 +115,7 @@ export default function DocumentsDashboard() {
                   className={`flex w-full items-center justify-between rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? "bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
-                      : "border border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+                      : "border border-transparent text-slate-400 hover:bg-brand/10 group hover:text-slate-200"
                   }`}
                 >
                   <div className="flex items-center gap-3">

@@ -75,9 +75,12 @@
 
 @layer utilities {
   /* Completely hide scrollbar for clean UI but keep scroll functionality */
+  *::-webkit-scrollbar,
   .animated-scrollbar::-webkit-scrollbar {
     display: none;
   }
+  
+  *,
   .animated-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */

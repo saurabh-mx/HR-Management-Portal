@@ -18,18 +18,18 @@ export default function Landing() {
       {/* Navigation Header */}
       <header className="absolute top-0 w-full flex items-center justify-between px-6 py-6 z-50">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-12 h-12 bg-slate-900/80 rounded-sm border border-yellow-600 shadow-[0_0_10px_rgba(202,138,4,0.4)] backdrop-blur-md rotate-45">
-            <Shield className="w-5 h-5 text-yellow-500 -rotate-45" />
+          <div className="flex items-center justify-center w-12 h-12 bg-slate-900/80 rounded-sm border border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.4)] backdrop-blur-md rotate-45">
+            <Shield className="w-5 h-5 text-brand -rotate-45" />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md">
-            SASP <span className="font-light text-yellow-500">PORTAL</span>
+            SASP <span className="font-light text-brand">PORTAL</span>
           </h1>
         </div>
         <nav className="hidden md:flex items-center space-x-10 font-medium text-sm tracking-widest text-slate-400">
-          <a href="#" className="text-yellow-500 hover:text-yellow-300 transition-colors hover:shadow-[0_0_10px_rgba(202,138,4,0.5)]">HOME</a>
+          <a href="#" className="text-brand hover:text-brand/70 transition-colors hover:shadow-[0_0_10px_hsl(var(--brand-main)/0.5)]">HOME</a>
           <a href="#about" className="hover:text-blue-400 transition-colors">ABOUT</a>
           <a href="#community" className="hover:text-emerald-400 transition-colors">COMMUNITY</a>
-          <a href="#recruitment" className="hover:text-yellow-400 transition-colors">RECRUITMENT</a>
+          <a href="#recruitment" className="hover:text-brand transition-colors">RECRUITMENT</a>
           <LoginModal>
             <button className="px-6 py-2 bg-slate-900/80 text-emerald-500 border border-emerald-600/50 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] backdrop-blur-sm tracking-widest uppercase text-xs">
               PORTAL LOGIN
@@ -43,15 +43,15 @@ export default function Landing() {
         {/* Hero Content */}
         <div className="relative z-20 px-6 w-full max-w-5xl mx-auto text-center mt-12">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-widest mb-4 uppercase drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)] text-slate-200">
-            San Andreas <br /><span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600">State Police</span>
+            San Andreas <br /><span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand/70 via-brand to-brand">State Police</span>
           </h2>
-          <div className="w-24 h-px bg-yellow-500 mx-auto my-8 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
+          <div className="w-24 h-px bg-brand mx-auto my-8 shadow-[0_0_10px_hsl(var(--brand-main)/0.8)]"></div>
           <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto font-light tracking-wide drop-shadow-md bg-slate-950/40 p-2 rounded-lg backdrop-blur-sm border border-slate-800">
             Upholding Law. <span className="text-emerald-500 font-medium">Preserving Order.</span> Protecting the Community.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <a href="#recruitment" className="w-full sm:w-auto px-8 py-3 bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-500 border border-yellow-500/50 font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_rgba(202,138,4,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] flex items-center justify-center group backdrop-blur-md">
+            <a href="#recruitment" className="w-full sm:w-auto px-8 py-3 bg-brand/20 hover:bg-brand/40 text-brand border border-brand/50 font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_hsl(var(--brand-main)/0.2)] hover:shadow-[0_0_30px_hsl(var(--brand-main)/0.4)] flex items-center justify-center group backdrop-blur-md">
               Join the Force
               <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
@@ -79,7 +79,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20 bg-slate-950/60 p-8 rounded-xl backdrop-blur-sm border border-slate-800/50 inline-block w-full">
             <h3 className="text-sm font-bold tracking-[0.2em] text-blue-500 uppercase mb-4">Our Mission</h3>
-            <h2 className="text-3xl md:text-5xl font-light tracking-wide text-slate-100 drop-shadow-lg">Our <span className="font-bold text-yellow-500">Prime Objective</span></h2>
+            <h2 className="text-3xl md:text-5xl font-light tracking-wide text-slate-100 drop-shadow-lg">Our <span className="font-bold text-brand">Prime Objective</span></h2>
             <p className="mt-8 text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
               Every individual in the SASP department works towards one unified goal: to provide elite, professional Law Enforcement to the entire community within our jurisdiction. We believe that justice, integrity, and rapid response are the cornerstones of a safe society.
             </p>
@@ -107,9 +107,9 @@ export default function Landing() {
             </div>
 
             {/* Feature 3 (Gold) */}
-            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-yellow-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
-              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-yellow-500 transition-colors"></div>
-              <Crosshair className="w-10 h-10 text-slate-500 group-hover:text-yellow-500 transition-colors mb-6" />
+            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-brand/50 transition-colors shadow-xl overflow-hidden rounded-lg">
+              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-brand transition-colors"></div>
+              <Crosshair className="w-10 h-10 text-slate-500 group-hover:text-brand transition-colors mb-6" />
               <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Tactical Excellence</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-light">
                 Highly trained units stand ready to intercept and investigate criminal activity to keep our streets safe from advanced threats.
@@ -145,14 +145,14 @@ export default function Landing() {
 
       {/* Recruitment / Call to Action */}
       <section id="recruitment" className="relative z-10 py-40 px-6">
-        <div className="max-w-4xl mx-auto text-center relative z-20 bg-slate-950/80 p-12 rounded-2xl backdrop-blur-md border border-yellow-600/20 shadow-2xl">
+        <div className="max-w-4xl mx-auto text-center relative z-20 bg-slate-950/80 p-12 rounded-2xl backdrop-blur-md border border-brand/20 shadow-2xl">
           <h2 className="text-3xl md:text-5xl font-light mb-6 tracking-wide text-slate-200 uppercase drop-shadow-lg">
-            Step Up. Stand Out. <span className="font-bold text-yellow-500 block mt-2">Join SASP.</span>
+            Step Up. Stand Out. <span className="font-bold text-brand block mt-2">Join SASP.</span>
           </h2>
           <p className="text-lg text-slate-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
             Are you ready to make a difference? We are looking for dedicated individuals with a strong moral compass and a drive for public service. As a State Police Trooper, you will receive rigorous training, dynamic career advancement opportunities, and the chance to serve on the frontlines of justice.
           </p>
-          <a href="https://saspftd.web.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-10 py-5 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-extrabold tracking-widest uppercase text-sm transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:shadow-[0_0_40px_rgba(234,179,8,0.6)] group rounded-sm">
+          <a href="https://saspftd.web.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-10 py-5 bg-brand hover:bg-brand text-slate-950 font-extrabold tracking-widest uppercase text-sm transition-all shadow-[0_0_20px_hsl(var(--brand-main)/0.4)] hover:shadow-[0_0_40px_hsl(var(--brand-main)/0.6)] group rounded-sm">
             Apply to the Academy
             <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
           </a>
@@ -168,7 +168,7 @@ export default function Landing() {
           </div>
           <p>© {new Date().getFullYear()} SASP. All rights reserved. "To protect and to serve"</p>
           <div className="flex space-x-6">
-            <a href="#" className="hover:text-yellow-500 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-brand transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-emerald-500 transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-blue-500 transition-colors">Contact</a>
           </div>

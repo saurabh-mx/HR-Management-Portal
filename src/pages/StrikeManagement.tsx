@@ -91,16 +91,27 @@ export default function StrikeManagement() {
   });
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-          <ShieldAlert className="w-8 h-8 text-rose-500" /> Disciplinary Actions
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">Official database for departmental strikes and reprimands.</p>
+    <div className="p-8 space-y-8 bg-transparent min-h-full">
+      {/* Sleek Glassmorphic Header */}
+      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
+        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <ShieldAlert className="w-10 h-10 text-rose-500" />
+              DISCIPLINARY <span className="font-bold text-rose-500">ACTIONS</span>
+            </h1>
+            <div className="w-24 h-1 bg-rose-500 mt-4 mb-3 shadow-[0_0_15px_rgba(244,63,94,0.8)] rounded-full"></div>
+            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+              Official database for departmental strikes and reprimands.
+            </p>
+          </div>
+        </div>
       </div>
 
       {isAdmin && (
-        <Card className="bg-slate-900 border-rose-900/50 text-slate-200">
+        <Card className="bg-slate-900/40 backdrop-blur-md border border-rose-900/50 text-slate-200 shadow-xl">
           <CardHeader><CardTitle className="text-lg font-medium text-rose-400">Issue New Strike</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleIssueStrike} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -180,7 +191,7 @@ export default function StrikeManagement() {
         </Card>
       )}
 
-      <Card className="bg-slate-900 border-slate-800 text-slate-200">
+      <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-lg font-medium">Department Strike Database</CardTitle>
           {/* SEARCH BAR */}
@@ -217,13 +228,13 @@ export default function StrikeManagement() {
                   </tr>
                 ) : (
                   filteredStrikes.map((strike) => (
-                    <tr key={strike.id} className="hover:bg-slate-800/40">
+                    <tr key={strike.id} className="hover:bg-brand/10 group">
                       <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
                       <td className="py-3 font-medium text-white">{strike.name}</td>
                       <td className="py-3">
                         <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                           strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
-                          strike.action_type === 'Verbal Warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                          strike.action_type === 'Verbal Warning' ? 'bg-brand/20 text-brand border border-brand/30' :
                           'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                         }`}>
                           {strike.action_type || 'Warning'} {strike.action_type === 'Strike' && strike.strike_level ? `(${strike.strike_level})` : ''}

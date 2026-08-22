@@ -148,12 +148,12 @@ export default function HRRequestsDashboard() {
   // ==========================================
   if (activeTicket) {
     return (
-      <div className="space-y-6 p-6 max-w-4xl mx-auto">
+      <div className="p-8 space-y-8 bg-transparent min-h-full">
         <button onClick={() => setActiveTicket(null)} className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </button>
 
-        <Card className="bg-slate-900 border-slate-800 text-slate-200">
+        <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
           <CardHeader className="border-b border-slate-800 pb-4">
             <div className="flex justify-between items-start">
               <div>
@@ -237,15 +237,23 @@ export default function HRRequestsDashboard() {
   // UI VIEW 2: THE MAIN DASHBOARD
   // ==========================================
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-          <Ticket className="w-8 h-8 text-emerald-500" />
-          HR Requests & Support
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          {userProfile?.isAdmin ? "Command View: Review and respond to departmental inquiries." : "Submit an official, confidential request directly to High Command."}
-        </p>
+    <div className="p-8 space-y-8 bg-transparent min-h-full">
+      {/* Sleek Glassmorphic Header */}
+      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
+        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <Ticket className="w-10 h-10 text-brand" />
+              HR REQUESTS & <span className="font-bold text-brand">SUPPORT</span>
+            </h1>
+            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+              {userProfile?.isAdmin ? "Command View: Review and respond to departmental inquiries." : "Submit an official, confidential request directly to High Command."}
+            </p>
+          </div>
+        </div>
       </div>
 
       <Card className="bg-slate-900 border-emerald-900/50 text-slate-200">
@@ -282,7 +290,7 @@ export default function HRRequestsDashboard() {
       </Card>
 
       {/* TICKETS BOARD WITH TABS */}
-      <Card className="bg-slate-900 border-slate-800 text-slate-200">
+      <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-2">
             <CardTitle className="text-lg font-medium">{userProfile?.isAdmin ? "Department Tickets" : "Your Tickets"}</CardTitle>
@@ -292,7 +300,7 @@ export default function HRRequestsDashboard() {
               <button 
                 onClick={() => setActiveTab('Active')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/50'
+                  activeTab === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
                 }`}
               >
                 <Clock className="w-4 h-4 inline mr-1.5" /> Active
@@ -300,7 +308,7 @@ export default function HRRequestsDashboard() {
               <button 
                 onClick={() => setActiveTab('Resolved')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'Resolved' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/50'
+                  activeTab === 'Resolved' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
                 }`}
               >
                 <History className="w-4 h-4 inline mr-1.5" /> Resolved History
@@ -329,7 +337,7 @@ export default function HRRequestsDashboard() {
                   </tr>
                 ) : (
                   displayedRequests.map((request) => (
-                    <tr key={request.id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={request.id} className="hover:bg-brand/10 group transition-colors">
                       <td className="py-3 text-slate-400">{new Date(request.created_at).toLocaleDateString()}</td>
                       <td className="py-3 font-medium text-white">{request.officer_name}</td>
                       <td className="py-3 text-slate-300 font-medium">{request.subject}</td>

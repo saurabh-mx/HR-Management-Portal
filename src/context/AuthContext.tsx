@@ -51,16 +51,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const discordId = email.split('@')[0];
     const { data } = await supabase
       .from("employees")
-      .select("name, role, is_admin")
+      .select("*")
       .eq('discord_tag', discordId)
       .single();
 
     if (data) {
       setProfile(data as Employee);
+      applyDepartmentTheme((data as Employee).department);
     } else {
       setProfile({ name: email, role: "Unassigned", is_admin: false });
+      applyDepartmentTheme();
     }
     setLoading(false);
+  };
+
+  const applyDepartmentTheme = (department?: string) => {
+    let hslColor = '45 93% 47%'; // default yellow-500
+    
+    switch (department) {
+      case 'SAPR': hslColor = '146 100% 25%'; break; // Green #008239
+      case 'LSPD': hslColor = '217 66% 32%'; break; // Blue #1c4587
+      case 'BCSO': hslColor = '45 61% 56%'; break; // Gold #d2b14b
+      case 'SASP': hslColor = '0 0% 60%'; break; // Silver #999999
+      case 'SASP Academy': hslColor = '0 6% 55%'; break; // Rose Grey #938383
+    }
+
+    document.documentElement.style.setProperty('--brand-main', hslColor);
   };
 
   const logout = async () => {

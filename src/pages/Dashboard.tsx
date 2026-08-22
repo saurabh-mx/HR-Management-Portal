@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { Users, ShieldAlert, CalendarOff, TrendingUp, Megaphone, Presentation } from "lucide-react";
+import { Users, ShieldAlert, CalendarOff, TrendingUp, Megaphone, Presentation, Download, Shield } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from '@/context/AuthContext';
 
 export const Dashboard = () => {
+  const { profile } = useAuth();
   const [stats, setStats] = useState({
     totalPersonnel: 0,
     activeStrikes: 0,
@@ -103,22 +105,66 @@ export const Dashboard = () => {
     fetchStats();
   }, []);
 
+  const handleGenerateReport = () => {
+    const reportContent = `SASP COMMAND REPORT
+Generated: ${new Date().toLocaleString()}
+Requested By: ${profile?.name || "Unknown"} (${profile?.role || "Staff"})
+
+--- DEPARTMENT OVERVIEW ---
+Total Active Personnel: ${stats.totalPersonnel}
+Active Disciplinary Actions (Strikes): ${stats.activeStrikes}
+Personnel on Leave of Absence: ${stats.personnelOnLoa}
+Pending Rank Promotions: ${stats.pendingRankChanges}
+
+--- DEPARTMENTS ---
+SASP: ${stats.deptCounts.SASP}
+LSPD: ${stats.deptCounts.LSPD}
+BCSO: ${stats.deptCounts.BCSO}
+SAPR: ${stats.deptCounts.SAPR}
+Academy: ${stats.deptCounts['SASP Academy']}
+
+--- RECENT CRITICAL EVENTS ---
+${stats.recentAnnouncements.filter(a => a.category === 'BOLO / Alert' || a.category === 'Critical').length} Active BOLOs/Critical Alerts
+
+End of Report.
+`;
+    const blob = new Blob([reportContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SASP_Report_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="p-8 space-y-8 bg-slate-950 min-h-full">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-light tracking-widest text-slate-200 uppercase drop-shadow-md">
-            Command <span className="font-bold text-yellow-500">Dashboard</span>
-          </h1>
-          <div className="w-16 h-px bg-yellow-500 my-4 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
-          <p className="text-slate-400 mt-2 font-light tracking-wide">Welcome back. Here is the current department overview.</p>
-        </div>
-        
-        {/* Lumio Style Button extracted from Stitch */}
-        <div className="pt-2">
-          <button className="bg-black text-white px-5 py-2.5 rounded-[7px] font-medium text-[15px] font-sans hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2 border border-slate-700/50">
-            Generate Report
-          </button>
+    <div className="p-8 space-y-8 bg-transparent min-h-full">
+      
+      {/* Sleek Glassmorphic Header */}
+      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
+        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
+              WELCOME, <span className="font-bold text-brand">{profile?.name || "OFFICER"}</span>
+            </h1>
+            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+              <Shield className="w-5 h-5 text-brand/70" /> 
+              {profile?.rank || "Patrol"} <span className="text-slate-600">|</span> <span className="text-brand/80">{profile?.badge_number || "000"}</span>
+            </p>
+          </div>
+          
+          <div className="pb-1">
+            <button 
+              onClick={handleGenerateReport} 
+              className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-brand/50 group"
+            >
+              <Download className="w-4 h-4 text-brand group-hover:scale-110 transition-transform" />
+              Generate Report
+            </button>
+          </div>
         </div>
       </div>
 
@@ -204,7 +250,7 @@ export const Dashboard = () => {
                           {strike.action_type && (
                             <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold tracking-wider whitespace-nowrap shrink-0 ${
                               strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
-                              strike.action_type === 'Verbal Warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                              strike.action_type === 'Verbal Warning' ? 'bg-brand/20 text-brand border border-brand/30' :
                               'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                             }`}>
                               {strike.action_type} {strike.action_type === 'Strike' && strike.strike_level ? `(${strike.strike_level})` : ''}
@@ -280,8 +326,8 @@ export const Dashboard = () => {
       {/* Important Bulletins */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Activity Feed and Bulletins */}
-        <div className="col-span-4 h-96 rounded-xl border border-yellow-900/30 bg-slate-950/80 p-6 flex flex-col shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-          <h3 className="text-xs font-bold tracking-widest uppercase text-yellow-500/80 mb-4 border-b border-yellow-900/30 pb-2">Recent Activity Feed</h3>
+        <div className="col-span-4 h-96 rounded-xl border border-brand/30 bg-slate-950/80 p-6 flex flex-col shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+          <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-4 border-b border-brand/30 pb-2">Recent Activity Feed</h3>
           
           <div className="flex-1 overflow-y-auto animated-scrollbar pr-2 space-y-4">
             {/* Build activity feed dynamically */}
@@ -341,7 +387,7 @@ export const Dashboard = () => {
                   const titleClass = isBolo ? 'text-rose-100' : isBriefing ? 'text-blue-100' : 'text-slate-200';
                   const textClass = isBolo ? 'text-rose-200/70' : isBriefing ? 'text-blue-200/70' : 'text-slate-400';
                   const metaClass = isBolo ? 'text-rose-500/70' : isBriefing ? 'text-blue-500/70' : 'text-slate-500';
-                  const badgeClass = isBolo ? 'text-rose-400 bg-rose-500/20 border-rose-500/30' : isBriefing ? 'text-blue-400 bg-blue-500/20 border-blue-500/30' : 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
+                  const badgeClass = isBolo ? 'text-rose-400 bg-rose-500/20 border-rose-500/30' : isBriefing ? 'text-blue-400 bg-blue-500/20 border-blue-500/30' : 'text-brand bg-brand/20 border-brand/30';
                   
                   return (
                     <div 
@@ -399,7 +445,7 @@ export const Dashboard = () => {
                 {selectedStrike.action_type && (
                    <span className={`absolute top-3 right-3 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                           selectedStrike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
-                          selectedStrike.action_type === 'Verbal Warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                          selectedStrike.action_type === 'Verbal Warning' ? 'bg-brand/20 text-brand border border-brand/30' :
                           'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                         }`}>
                           {selectedStrike.action_type} {selectedStrike.action_type === 'Strike' && selectedStrike.strike_level ? `(${selectedStrike.strike_level})` : ''}
@@ -420,9 +466,9 @@ export const Dashboard = () => {
 
       {/* Announcement Preview Modal */}
       <Dialog open={!!selectedAnnouncement} onOpenChange={(open) => !open && setSelectedAnnouncement(null)}>
-        <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-yellow-900/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold tracking-widest uppercase text-yellow-500 border-b border-yellow-900/30 pb-3 flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold tracking-widest uppercase text-brand border-b border-brand/30 pb-3 flex items-center gap-2">
               <Megaphone className="w-5 h-5" /> Official Announcement
             </DialogTitle>
           </DialogHeader>
@@ -444,11 +490,11 @@ export const Dashboard = () => {
                  <span className={`absolute top-3 right-3 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                         selectedAnnouncement.category === 'Announcement' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 
                         selectedAnnouncement.category === 'BOLO / Alert' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                        'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                        'bg-brand/20 text-brand border border-brand/30'
                       }`}>
                         {selectedAnnouncement.category}
                  </span>
-                <h4 className="text-[10px] font-bold text-yellow-500/70 uppercase tracking-widest mb-2">Subject / Title</h4>
+                <h4 className="text-[10px] font-bold text-brand/70 uppercase tracking-widest mb-2">Subject / Title</h4>
                 <p className="text-base text-slate-200 font-medium md:pr-24">{selectedAnnouncement.title}</p>
               </div>
               

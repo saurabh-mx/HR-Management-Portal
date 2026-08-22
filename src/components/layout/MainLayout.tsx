@@ -57,25 +57,30 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex h-screen bg-black text-foreground overflow-hidden relative">
+      {/* Premium Dark Gradient Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-[#050505] to-black z-0 pointer-events-none"></div>
+      
       <Sidebar />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
         
         {/* Top Header */}
-        <header className="h-16 border-b border-yellow-900/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-          <span className="text-yellow-500 font-bold tracking-widest uppercase text-sm drop-shadow-md">High Command Portal</span>
+        <header className="h-16 border-b border-brand/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+          <span className="text-brand font-bold tracking-widest uppercase text-sm drop-shadow-md">
+            {profile?.role ? `${profile.role} Portal` : 'Portal'}
+          </span>
           
           <div className="flex items-center gap-4">
             <div className="relative" ref={dropdownRef}>
               {/* Profile Button */}
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded-md transition-colors border border-transparent hover:border-yellow-600/30 group"
+                className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded-md transition-colors border border-transparent hover:border-brand/30 group"
               >
-                <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center border border-yellow-600/30 group-hover:border-yellow-500 shadow-[0_0_10px_rgba(202,138,4,0.1)] transition-colors">
-                  <User className="w-5 h-5 text-yellow-500" />
+                <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center border border-brand/30 group-hover:border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.1)] transition-colors">
+                  <User className="w-5 h-5 text-brand" />
                 </div>
                 <div className="text-left hidden md:block">
                   <div className="text-sm font-bold tracking-wide text-slate-200 uppercase leading-tight">
@@ -90,10 +95,10 @@ export default function MainLayout() {
   
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-slate-950 border border-yellow-900/50 rounded-lg shadow-[0_5px_20px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50">
+                <div className="absolute right-0 mt-2 w-64 bg-slate-950 border border-brand/50 rounded-lg shadow-[0_5px_20px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50">
                   
                   {/* User Info Section */}
-                  <div className="px-4 py-3 border-b border-yellow-900/30 bg-slate-900/50">
+                  <div className="px-4 py-3 border-b border-brand/30 bg-slate-900/50">
                     <p className="text-sm font-bold tracking-wider uppercase text-slate-200">{profile?.name}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                       {profile?.is_admin ? (
@@ -109,8 +114,8 @@ export default function MainLayout() {
                   </div>
   
                   {/* Password Update Section */}
-                  <div className="px-4 py-3 border-b border-yellow-900/30">
-                    <label className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-yellow-500/80 mb-2">
+                  <div className="px-4 py-3 border-b border-brand/30">
+                    <label className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-brand/80 mb-2">
                       <Key className="w-3 h-3" /> Update Portal Password
                     </label>
                     <form onSubmit={handlePasswordUpdate} className="flex flex-col gap-2">
@@ -127,10 +132,10 @@ export default function MainLayout() {
                         placeholder="Confirm Password" 
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+                        className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand"
                         required
                       />
-                      <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 px-3 py-2 text-sm rounded-md transition-all border border-transparent font-bold tracking-wider uppercase mt-1">
+                      <button type="submit" className="w-full bg-brand hover:bg-brand text-slate-950 px-3 py-2 text-sm rounded-md transition-all border border-transparent font-bold tracking-wider uppercase mt-1">
                         Confirm Update
                       </button>
                   </form>

@@ -95,18 +95,28 @@ export default function RankManagement() {
   });
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-          <Award className="w-8 h-8 text-amber-500" />
-          Rank & Commendations
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">Manage departmental promotions, commendations, and rank updates.</p>
+    <div className="p-8 space-y-8 bg-transparent min-h-full">
+      {/* Sleek Glassmorphic Header */}
+      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
+        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <Award className="w-10 h-10 text-brand" />
+              RANK & <span className="font-bold text-brand">COMMENDATIONS</span>
+            </h1>
+            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+              Manage departmental promotions, commendations, and rank updates.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* SUBMISSION FORM (ADMIN ONLY) */}
       {isAdmin && (
-        <Card className="bg-slate-900 border-amber-900/50 text-slate-200">
+        <Card className="bg-slate-900/40 backdrop-blur-md border border-amber-900/50 text-slate-200 shadow-xl">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-amber-400 flex items-center gap-2">
               <Shield className="w-5 h-5" /> Submit Rank / Commendation Request
@@ -141,7 +151,7 @@ export default function RankManagement() {
       )}
 
       {/* RECORDS BOARD WITH SEARCH & FILTER */}
-      <Card className="bg-slate-900 border-slate-800 text-slate-200">
+      <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="border-b border-slate-800 pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle className="text-lg font-medium">Departmental Records</CardTitle>
@@ -196,7 +206,7 @@ export default function RankManagement() {
                   </tr>
                 ) : (
                   filteredRecords.map((record) => (
-                    <tr key={record.id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={record.id} className="hover:bg-brand/10 group transition-colors">
                       <td className="py-3 text-slate-400">{new Date(record.created_at).toLocaleDateString()}</td>
                       <td className="py-3 font-medium text-white">{record.officer_name}</td>
                       <td className="py-3 text-amber-400 font-medium">{record.requested_rank}</td>
