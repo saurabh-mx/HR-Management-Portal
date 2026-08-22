@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Link as LinkIcon, Edit2, Plus, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import Papa from "papaparse";
 
@@ -52,10 +53,52 @@ export default function AdminPanel() {
 
   const [csvUrl, setCsvUrl] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isCommitting, setIsCommitting] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const [savedSyncs, setSavedSyncs] = useState<{id: string, name: string, url: string}[]>([]);
+  const [newSyncName, setNewSyncName] = useState("");
+  const [newSyncUrl, setNewSyncUrl] = useState("");
+  const [editingSyncId, setEditingSyncId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
+    try {
+      const saved = localStorage.getItem("saved_sync_links");
+      if (saved) setSavedSyncs(JSON.parse(saved));
+    } catch(e) {}
   }, []);
+
+  const handleSaveSyncLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSyncName || !newSyncUrl) return;
+    
+    let updatedSyncs;
+    if (editingSyncId) {
+      updatedSyncs = savedSyncs.map(s => s.id === editingSyncId ? { ...s, name: newSyncName, url: newSyncUrl } : s);
+    } else {
+      updatedSyncs = [...savedSyncs, { id: Math.random().toString(36).substring(7), name: newSyncName, url: newSyncUrl }];
+    }
+    
+    setSavedSyncs(updatedSyncs);
+    localStorage.setItem("saved_sync_links", JSON.stringify(updatedSyncs));
+    setNewSyncName("");
+    setNewSyncUrl("");
+    setEditingSyncId(null);
+  };
+
+  const handleDeleteSyncLink = (id: string) => {
+    if (!window.confirm("Delete this saved sync link?")) return;
+    const updatedSyncs = savedSyncs.filter(s => s.id !== id);
+    setSavedSyncs(updatedSyncs);
+    localStorage.setItem("saved_sync_links", JSON.stringify(updatedSyncs));
+  };
+
+  const handleEditSyncLink = (sync: {id: string, name: string, url: string}) => {
+    setEditingSyncId(sync.id);
+    setNewSyncName(sync.name);
+    setNewSyncUrl(sync.url);
+  };
 
   // SECURITY CHECK: Verify High Command clearance
   async function checkAdminAccess() {
@@ -93,12 +136,53 @@ export default function AdminPanel() {
   async function fetchEmployees() {
     const { data, error } = await supabase
       .from('employees')
-      .select('*')
-      .order('rank', { ascending: true })
-      .order('name', { ascending: true });
+      .select('*');
     
     if (error) console.error("Error fetching roster:", error);
-    else if (data) setEmployees(data);
+    else if (data) {
+      const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
+      const rankOrder = [
+        ["Chief", "Sheriff", "Game Warden"],
+        ["Asst. Chief", "Colonel", "Asst. Game Warden"],
+        ["Captain", "major", "Lead Ranger"],
+        ["Lieutenant"],
+        ["Head-Sergeant"],
+        ["Sergeant First Class"],
+        ["Sergeant"],
+        ["Corporal"],
+        ["Senior-Officer", "Senior-deputy", "Senior-ranger"],
+        ["Officer First Class", "deputy First Class", "ranger First Class"],
+        ["Officer", "deputy", "ranger"]
+      ];
+      
+      const getDeptIndex = (dept?: string) => {
+        if (!dept) return 999;
+        const i = departmentOrder.indexOf(dept);
+        return i === -1 ? 999 : i;
+      };
+      
+      const getRankIndex = (rank?: string) => {
+        if (!rank) return 999;
+        const lowerRank = rank.toLowerCase();
+        for (let i = 0; i < rankOrder.length; i++) {
+          if (rankOrder[i].some(r => r.toLowerCase() === lowerRank)) {
+            return i;
+          }
+        }
+        return 999;
+      };
+
+      const sorted = [...data].sort((a, b) => {
+        const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
+        if (deptDiff !== 0) return deptDiff;
+        
+        const rankDiff = getRankIndex(a.rank) - getRankIndex(b.rank);
+        if (rankDiff !== 0) return rankDiff;
+        
+        return (a.badge_number || "").localeCompare(b.badge_number || "");
+      });
+      setEmployees(sorted);
+    }
   }
 
   const handleAddEmployee = async (e: React.FormEvent) => {
@@ -175,12 +259,13 @@ export default function AdminPanel() {
     return 0;
   };
 
-  const handleSyncCSV = async () => {
-    if (!csvUrl) return alert("Please enter a valid Google Sheets CSV URL.");
+  const handleSyncCSV = async (eOrUrl?: any) => {
+    const urlToUse = typeof eOrUrl === 'string' ? eOrUrl : csvUrl;
+    if (!urlToUse) return alert("Please enter a valid Google Sheets CSV URL.");
     setIsSyncing(true);
 
     try {
-      const response = await fetch(csvUrl);
+      const response = await fetch(urlToUse);
       const csvText = await response.text();
       
       Papa.parse(csvText, {
@@ -342,8 +427,13 @@ export default function AdminPanel() {
   };
 
   const handleCommitStaged = async () => {
+    if (isCommitting) return;
+    setIsCommitting(true);
     const selected = stagedEmployees.filter(emp => selectedStagedIds.has(emp._staged_id));
-    if (selected.length === 0) return alert("Select at least one record to import.");
+    if (selected.length === 0) {
+      setIsCommitting(false);
+      return alert("Select at least one record to import.");
+    }
     
     let added = 0;
     let updated = 0;
@@ -366,6 +456,8 @@ export default function AdminPanel() {
     setStagedEmployees([]);
     setSelectedStagedIds(new Set());
     fetchEmployees();
+    setIsCommitting(false);
+    setShowConfirmModal(false);
   };
 
   const handleToggleSelectAll = (checked: boolean) => {
@@ -483,6 +575,60 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
 
+        {/* SAVED DATA SYNCS */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-200 lg:col-span-1 h-fit">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium flex items-center gap-2 text-blue-400">
+              <LinkIcon className="w-5 h-5" /> Saved Data Syncs
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {savedSyncs.length === 0 ? (
+                <p className="text-xs text-slate-500 italic text-center py-2">No saved sync links yet.</p>
+              ) : (
+                <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  {savedSyncs.map(sync => (
+                    <li key={sync.id} className="flex flex-col gap-2 p-3 border border-slate-800 bg-slate-950 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-slate-200 truncate">{sync.name}</span>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleSyncCSV(sync.url)} disabled={isSyncing} className="text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50" title="Run Sync">
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleEditSyncLink(sync)} className="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDeleteSyncLink(sync.id)} className="text-rose-400 hover:text-rose-300 transition-colors" title="Delete">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <span className="text-xs text-slate-500 truncate" title={sync.url}>{sync.url}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              
+              <form onSubmit={handleSaveSyncLink} className="space-y-2 pt-2 border-t border-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-400">{editingSyncId ? "Edit Link" : "Add New Link"}</span>
+                  {editingSyncId && (
+                    <button type="button" onClick={() => { setEditingSyncId(null); setNewSyncName(""); setNewSyncUrl(""); }} className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1">
+                      <X className="w-3 h-3" /> Cancel
+                    </button>
+                  )}
+                </div>
+                <input required type="text" value={newSyncName} onChange={e => setNewSyncName(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-white focus:ring-1 focus:ring-blue-500" placeholder="Display Name (e.g. Main Roster)" />
+                <input required type="text" value={newSyncUrl} onChange={e => setNewSyncUrl(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-white focus:ring-1 focus:ring-blue-500" placeholder="Google Sheets CSV URL" />
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1 mt-1">
+                  {editingSyncId ? "Update Link" : <><Plus className="w-3 h-3" /> Save Link</>}
+                </button>
+              </form>
+            </div>
+          </CardContent>
+        </Card>
+
         {stagedEmployees.length > 0 && (
           <Card className="bg-slate-900 border-amber-500/50 text-slate-200 lg:col-span-3">
              <CardHeader>
@@ -497,6 +643,7 @@ export default function AdminPanel() {
                        <button onClick={() => handleBulkUpdate('department', 'LSPD')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">LSPD</button>
                        <button onClick={() => handleBulkUpdate('department', 'BCSO')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">BCSO</button>
                        <button onClick={() => handleBulkUpdate('department', 'SAPR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SAPR</button>
+                       <button onClick={() => handleBulkUpdate('department', 'SASP Academy')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP Academy</button>
                     </div>
                   </div>
                   
@@ -513,8 +660,8 @@ export default function AdminPanel() {
                   </div>
                   
                   <div className="ml-auto flex items-end gap-2">
-                     <button onClick={() => setStagedEmployees([])} className="px-4 py-2 border border-rose-900/50 hover:bg-rose-900/20 text-rose-400 text-sm font-medium rounded transition-colors">Cancel Preview</button>
-                     <button onClick={handleCommitStaged} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50" disabled={selectedStagedIds.size === 0}>Commit {selectedStagedIds.size} Selected</button>
+                     <button onClick={() => setStagedEmployees([])} className="px-4 py-2 border border-rose-900/50 hover:bg-rose-900/20 text-rose-400 text-sm font-medium rounded transition-colors" disabled={isCommitting}>Cancel Preview</button>
+                     <button onClick={() => setShowConfirmModal(true)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50" disabled={selectedStagedIds.size === 0}>Commit {selectedStagedIds.size} Selected</button>
                   </div>
                </div>
                
@@ -595,6 +742,7 @@ export default function AdminPanel() {
                               <option value="LSPD">LSPD</option>
                               <option value="BCSO">BCSO</option>
                               <option value="SAPR">SAPR</option>
+                              <option value="SASP Academy">SASP Academy</option>
                             </select>
                           </td>
                         </>
@@ -636,6 +784,37 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-slate-200">
+          <DialogHeader>
+            <DialogTitle className="text-white">Confirm Database Sync</DialogTitle>
+            <DialogDescription className="text-slate-400 mt-2">
+              You are about to commit {selectedStagedIds.size} records to the database. This action will add new officers and update existing ones. Are you sure you want to proceed?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 sm:space-x-2 space-y-2 sm:space-y-0 flex-col sm:flex-row">
+            <button 
+              onClick={() => setShowConfirmModal(false)} 
+              className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded transition-colors w-full sm:w-auto"
+              disabled={isCommitting}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleCommitStaged} 
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2 w-full sm:w-auto"
+              disabled={isCommitting}
+            >
+              {isCommitting ? (
+                <><RefreshCw className="w-4 h-4 animate-spin" /> Committing...</>
+              ) : (
+                "Confirm Import"
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

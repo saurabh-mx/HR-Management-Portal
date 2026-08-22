@@ -11,7 +11,19 @@ interface Employee {
   department: string;
   email: string;
   status: string;
+  rank?: string;
 }
+
+const getDepartmentColor = (dept: string) => {
+  switch (dept) {
+    case "SASP": return "#999999";
+    case "SAPR": return "#008239";
+    case "LSPD": return "#1c4587";
+    case "BCSO": return "#d2b14b";
+    case "SASP Academy": return "#938383";
+    default: return "#94a3b8";
+  }
+};
 
 export default function EmployeeDirectory() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -50,11 +62,53 @@ export default function EmployeeDirectory() {
   async function fetchEmployees() {
     const { data, error } = await supabase
       .from('employees')
-      .select('*')
-      .order('name', { ascending: true });
+      .select('*');
     
     if (error) console.error("Error fetching employees:", error);
-    else if (data) setEmployees(data);
+    else if (data) {
+      const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
+      const rankOrder = [
+        ["Chief", "Sheriff", "Game Warden"],
+        ["Asst. Chief", "Colonel", "Asst. Game Warden"],
+        ["Captain", "major", "Lead Ranger"],
+        ["Lieutenant"],
+        ["Head-Sergeant"],
+        ["Sergeant First Class"],
+        ["Sergeant"],
+        ["Corporal"],
+        ["Senior-Officer", "Senior-deputy", "Senior-ranger"],
+        ["Officer First Class", "deputy First Class", "ranger First Class"],
+        ["Officer", "deputy", "ranger"]
+      ];
+      
+      const getDeptIndex = (dept?: string) => {
+        if (!dept) return 999;
+        const i = departmentOrder.indexOf(dept);
+        return i === -1 ? 999 : i;
+      };
+      
+      const getRankIndex = (rank?: string) => {
+        if (!rank) return 999;
+        const lowerRank = rank.toLowerCase();
+        for (let i = 0; i < rankOrder.length; i++) {
+          if (rankOrder[i].some(r => r.toLowerCase() === lowerRank)) {
+            return i;
+          }
+        }
+        return 999;
+      };
+
+      const sorted = [...data].sort((a, b) => {
+        const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
+        if (deptDiff !== 0) return deptDiff;
+        
+        const rankDiff = getRankIndex(a.rank) - getRankIndex(b.rank);
+        if (rankDiff !== 0) return rankDiff;
+        
+        return (a.badge_number || "").localeCompare(b.badge_number || "");
+      });
+      setEmployees(sorted);
+    }
   }
 
   const handleAddEmployee = async (e: React.FormEvent) => {
@@ -220,7 +274,7 @@ export default function EmployeeDirectory() {
                     <td className="py-3 font-medium text-white">{employee.name}</td>
                     <td className="py-3 text-slate-400">{employee.badge_number}</td>
                     <td className="py-3 text-slate-300">{employee.role === 'admin' ? 'High Command' : employee.role}</td>
-                    <td className="py-3 text-slate-400">{employee.department}</td>
+                    <td className="py-3 font-semibold" style={{ color: getDepartmentColor(employee.department) }}>{employee.department}</td>
                     <td className="py-3 text-slate-500">{employee.email || "—"}</td>
                   </tr>
                 ))}
