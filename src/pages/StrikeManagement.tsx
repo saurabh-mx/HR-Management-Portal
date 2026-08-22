@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert, Trash2, Search } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface Strike {
   id: string;
@@ -17,6 +18,7 @@ interface Strike {
 }
 
 export default function StrikeManagement() {
+  const { adminSafeMode } = useAuth();
   const [strikes, setStrikes] = useState<Strike[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isTrueAdmin, setIsTrueAdmin] = useState(false);
@@ -173,7 +175,7 @@ export default function StrikeManagement() {
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
                   className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
                   placeholder="Start typing name or callsign..."
                 />
@@ -191,7 +193,8 @@ export default function StrikeManagement() {
                         <div
                           key={idx}
                           className="px-3 py-2 hover:bg-slate-800 cursor-pointer text-sm flex justify-between items-center"
-                          onClick={() => {
+                          onMouseDown={(e) => {
+                            e.preventDefault();
                             setNewStrike({ ...newStrike, name: `${emp.name} (${emp.badge_number})` });
                             setShowSuggestions(false);
                           }}
@@ -323,7 +326,7 @@ export default function StrikeManagement() {
                           {isAdmin && strike.status === 'approved' && (
                             <button onClick={() => setStrikeToRevoke(strike.id)} className="text-slate-500 hover:text-rose-400 font-medium text-xs border border-slate-700/50 px-2 py-1 rounded transition-colors">Revoke</button>
                           )}
-                          {isTrueAdmin && (strike.status === 'pending' || strike.status === 'revoked') && (
+                          {isTrueAdmin && adminSafeMode && (strike.status === 'pending' || strike.status === 'revoked') && (
                             <button onClick={() => handleDelete(strike.id)} className="text-slate-500 hover:text-rose-400 p-1"><Trash2 className="w-4 h-4 inline" /></button>
                           )}
                           {!isAdmin && isCommand && strike.status === 'pending' && (

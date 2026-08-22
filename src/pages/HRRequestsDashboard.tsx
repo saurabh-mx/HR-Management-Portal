@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket, CheckCircle, Clock, Trash2, Send, MessageSquare, ArrowLeft, History } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, History, MessageSquare, Send, Ticket, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface HRRequest {
   id: string;
@@ -22,6 +23,7 @@ interface Comment {
 }
 
 export default function HRRequestsDashboard() {
+  const { adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<HRRequest[]>([]);
   const [userProfile, setUserProfile] = useState<{name: string, email: string, isAdmin: boolean} | null>(null);
   
@@ -252,7 +254,7 @@ export default function HRRequestsDashboard() {
           </CardContent>
         </Card>
 
-        {userProfile?.isAdmin && (
+        {userProfile?.isAdmin && adminSafeMode && (
           <div className="flex justify-end gap-3 pt-4">
             {activeTicket.status !== 'Resolved' && (
               <button onClick={() => setShowResolveConfirm(true)} className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-md font-medium text-sm transition-colors">
@@ -445,7 +447,7 @@ export default function HRRequestsDashboard() {
                           <button onClick={() => handleOpenTicket(request)} className="text-sky-400 hover:text-sky-300 text-xs font-medium border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5">
                             <MessageSquare className="w-3 h-3" /> {activeTab === 'Resolved' ? 'View Log' : 'Open Thread'}
                           </button>
-                          {userProfile?.isAdmin && (
+                          {userProfile?.isAdmin && adminSafeMode && (
                             <button onClick={() => setTicketToDelete(request.id)} className="text-slate-500 hover:text-rose-400 p-1.5 rounded hover:bg-rose-500/10 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>

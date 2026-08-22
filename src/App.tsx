@@ -14,6 +14,7 @@ import HRRequestsDashboard from "./pages/HRRequestsDashboard";
 import Landing from "./pages/Landing";
 import AdminPanel from "./pages/AdminPanel";
 import DocumentsDashboard from "./pages/DocumentsDashboard";
+import Profile from "./pages/Profile";
 
 function AppRoutes() {
   const { session, loading } = useAuth();
@@ -41,6 +42,7 @@ function AppRoutes() {
           <Route path="/hr-requests" element={<HRRequestsDashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/documents" element={<DocumentsDashboard />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>

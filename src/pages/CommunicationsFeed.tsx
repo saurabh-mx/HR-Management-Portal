@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Send, Megaphone, AlertCircle, ShieldAlert, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface Post {
   id: string;
@@ -13,6 +14,7 @@ interface Post {
 }
 
 export default function CommunicationsFeed() {
+  const { adminSafeMode } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", message: "", category: "Announcement" });
@@ -199,7 +201,7 @@ export default function CommunicationsFeed() {
                     {post.category}
                   </span>
                   {/* ONLY ADMINS CAN DELETE BROADCASTS */}
-                  {isAdmin && (
+                  {isAdmin && adminSafeMode && (
                     <button 
                       onClick={() => setPostToDelete(post.id)}
                       className="text-slate-500 hover:text-rose-400 transition-colors p-1"

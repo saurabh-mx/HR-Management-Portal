@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
 import type { Employee } from "@/types";
+import { runBackgroundAutoSync } from "@/lib/syncService";
 
 interface AuthContextType {
   session: Session | null;
@@ -10,6 +11,8 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  adminSafeMode: boolean;
+  toggleAdminSafeMode: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminSafeMode, setAdminSafeMode] = useState(false);
 
   useEffect(() => {
     // Initial fetch
@@ -57,8 +61,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (data) {
-      setProfile(data as Employee);
-      applyDepartmentTheme((data as Employee).department);
+      const emp = data as Employee;
+      setProfile(emp);
+      applyDepartmentTheme(emp.department);
+
+      // Trigger Auto-Sync if this user is an admin
+      if (emp.is_admin || ['admin', 'High Command', 'Command'].includes(emp.role || '')) {
+        const savedSyncsRaw = localStorage.getItem('hr_portal_saved_syncs');
+        if (savedSyncsRaw) {
+          try {
+            const syncs = JSON.parse(savedSyncsRaw);
+            const autoSyncProfiles = syncs.filter((s: any) => s.isAutoSync && s.url);
+            if (autoSyncProfiles.length > 0) {
+              console.log(`Triggering background auto-sync for ${autoSyncProfiles.length} roster(s)...`);
+              for (const profile of autoSyncProfiles) {
+                runBackgroundAutoSync(profile.url, profile.defaultDept).then((success) => {
+                  if (success) {
+                    console.log(`Background roster sync completed successfully for: ${profile.name || 'Unknown'}`);
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse saved syncs for auto-sync.");
+          }
+        }
+      }
+
     } else {
       setProfile({ name: email, role: "Unassigned", is_admin: false });
       applyDepartmentTheme();
@@ -84,8 +113,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const toggleAdminSafeMode = () => setAdminSafeMode(prev => !prev);
+
   return (
-    <AuthContext.Provider value={{ session, profile, loading, logout, refreshProfile: async () => { if (session) await fetchProfile(session.user.email); } }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      profile, 
+      loading, 
+      logout, 
+      refreshProfile: async () => { if (session) await fetchProfile(session.user.email); },
+      adminSafeMode,
+      toggleAdminSafeMode
+    }}>
       {children}
     </AuthContext.Provider>
   );

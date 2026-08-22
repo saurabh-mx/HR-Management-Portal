@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarOff, CheckCircle, Clock, Trash2, Search } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface LOARequest {
   id: string;
@@ -15,6 +16,7 @@ interface LOARequest {
 }
 
 export default function LOAManagement() {
+  const { adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<LOARequest[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isTrueAdmin, setIsTrueAdmin] = useState(false);
@@ -203,7 +205,7 @@ export default function LOAManagement() {
                           {(req.status === 'Approved' || req.status === 'End Requested') && (
                             <button onClick={() => setStatusAction({ id: req.id, newStatus: 'Ended', title: 'End LOA', message: 'Are you sure you want to officially end this Leave of Absence?' })} className="text-slate-400 hover:text-white text-xs px-2 py-1 bg-slate-500/10 hover:bg-slate-500/20 rounded transition-colors">End LOA</button>
                           )}
-                          {isTrueAdmin && (
+                          {isTrueAdmin && adminSafeMode && (
                             <button onClick={() => setRequestToDelete(req.id)} className="text-slate-500 hover:text-rose-400"><Trash2 className="w-4 h-4 inline" /></button>
                           )}
                         </>

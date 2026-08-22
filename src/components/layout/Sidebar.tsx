@@ -68,13 +68,13 @@ export const Sidebar = () => {
       </nav>
 
       {/* User Profile Snippet (Bottom) */}
-      <div className="p-4 border-t border-brand/30 bg-slate-900/50">
+      <Link to="/profile" className="block p-4 border-t border-brand/30 bg-slate-900/50 hover:bg-brand/10 transition-colors group cursor-pointer">
         <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-sm bg-slate-950 flex items-center justify-center text-brand font-bold text-xs border border-brand/30 shadow-md rotate-45">
+          <div className="w-10 h-10 rounded-sm bg-slate-950 flex items-center justify-center text-brand font-bold text-xs border border-brand/30 shadow-md rotate-45 group-hover:shadow-[0_0_10px_rgba(var(--brand-main),0.3)] transition-shadow">
             <span className="-rotate-45">{profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'HR'}</span>
           </div>
           <div className="flex flex-col overflow-hidden ml-2">
-            <span className="text-sm font-bold tracking-wider text-slate-200 uppercase truncate">
+            <span className="text-sm font-bold tracking-wider text-slate-200 uppercase truncate group-hover:text-white transition-colors">
               {profile ? profile.name : "Loading..."}
             </span>
             <span className="text-xs text-brand/80 tracking-widest uppercase truncate">
@@ -82,7 +82,7 @@ export const Sidebar = () => {
             </span>
           </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };

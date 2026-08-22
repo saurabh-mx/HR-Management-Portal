@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, CheckCircle, XCircle, Clock, Trash2, Shield, Search, Filter } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface PromotionRecord {
   id: string;
@@ -19,6 +20,7 @@ interface PromotionRecord {
 }
 
 export default function RankManagement() {
+  const { adminSafeMode } = useAuth();
   const [records, setRecords] = useState<PromotionRecord[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -558,9 +560,11 @@ export default function RankManagement() {
                                 <button onClick={() => openModal(record.id, 'Deny')} className="text-rose-500 hover:text-rose-400 text-xs font-medium border border-rose-500/30 bg-rose-500/10 px-2 py-1 rounded transition-colors">Deny</button>
                               </>
                             )}
-                            <button onClick={() => openModal(record.id, 'Delete')} className="text-slate-500 hover:text-rose-400 transition-colors p-1 ml-2">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {adminSafeMode && (
+                              <button onClick={() => openModal(record.id, 'Delete')} className="text-slate-500 hover:text-rose-400 transition-colors p-1 ml-2">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       )}

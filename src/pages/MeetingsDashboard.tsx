@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Clock, Users, Trash2, PlusCircle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface Meeting {
   id: string;
@@ -15,6 +16,7 @@ interface Meeting {
 }
 
 export default function MeetingsDashboard() {
+  const { adminSafeMode } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authorName, setAuthorName] = useState("Command");
@@ -191,7 +193,7 @@ export default function MeetingsDashboard() {
                   <CardTitle className="text-lg font-semibold text-white leading-tight mt-1">{meeting.title}</CardTitle>
                 </div>
                 {/* ADMIN ONLY DELETE BUTTON */}
-                {isAdmin && (
+                {isAdmin && adminSafeMode && (
                   <button onClick={() => setMeetingToDelete(meeting.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 -mt-1 -mr-1" title="Cancel Meeting">
                     <Trash2 className="w-4 h-4" />
                   </button>

@@ -1,14 +1,12 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-import { supabase } from "@/lib/supabaseClient";
-import React, { useState, useEffect, useRef } from "react";
-import { LogOut, User, ChevronDown, Key, ShieldCheck, Shield } from "lucide-react";
+
+import { useState, useEffect, useRef } from "react";
+import { LogOut, User, ChevronDown, ShieldCheck, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+
 
 export default function MainLayout() {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -25,32 +23,7 @@ export default function MainLayout() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handlePasswordUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
 
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    });
-    
-    if (error) {
-      toast.error("Error updating password: " + error.message);
-    } else {
-      toast.success("Dispatch: Password successfully updated.");
-      setNewPassword("");
-      setConfirmPassword("");
-      setIsDropdownOpen(false);
-    }
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -58,8 +31,13 @@ export default function MainLayout() {
 
   return (
     <div className="flex h-screen bg-black text-foreground overflow-hidden relative">
-      {/* Premium Dark Gradient Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-[#050505] to-black z-0 pointer-events-none"></div>
+      {/* Group Photo Background Watermark */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.35]"
+        style={{ backgroundImage: `url('/group-photo.jpg')`, backgroundPosition: 'center 20%' }}
+      />
+      {/* Premium Dark Gradient Overlay */}
+      <div className="absolute inset-0 bg-black/60 bg-[radial-gradient(ellipse_at_top,_transparent,_rgba(0,0,0,0.85))] z-0 pointer-events-none"></div>
       
       <Sidebar />
       
@@ -113,34 +91,7 @@ export default function MainLayout() {
                     </div>
                   </div>
   
-                  {/* Password Update Section */}
-                  <div className="px-4 py-3 border-b border-brand/30">
-                    <label className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-brand/80 mb-2">
-                      <Key className="w-3 h-3" /> Update Portal Password
-                    </label>
-                    <form onSubmit={handlePasswordUpdate} className="flex flex-col gap-2">
-                      <input 
-                        type="password" 
-                        placeholder="New Password" 
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                        required
-                      />
-                      <input 
-                        type="password" 
-                        placeholder="Confirm Password" 
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand"
-                        required
-                      />
-                      <button type="submit" className="w-full bg-brand hover:bg-brand text-slate-950 px-3 py-2 text-sm rounded-md transition-all border border-transparent font-bold tracking-wider uppercase mt-1">
-                        Confirm Update
-                      </button>
-                  </form>
-                  </div>
-  
+
                   {/* Logout Action */}
                   <div className="p-2">
                     <button 

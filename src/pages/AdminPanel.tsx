@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Link as LinkIcon, Edit2, Plus, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import Papa from "papaparse";
+import { useAuth } from "@/context/AuthContext";
 
 interface Employee {
   id: string;
@@ -35,6 +36,7 @@ interface Employee {
 }
 
 export default function AdminPanel() {
+  const { adminSafeMode } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -606,9 +608,11 @@ export default function AdminPanel() {
                           <button onClick={() => handleEditSyncLink(sync)} className="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button onClick={() => handleDeleteSyncLink(sync.id)} className="text-rose-400 hover:text-rose-300 transition-colors" title="Delete">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {adminSafeMode && (
+                            <button onClick={() => handleDeleteSyncLink(sync.id)} className="text-rose-400 hover:text-rose-300 transition-colors" title="Delete">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                       <span className="text-xs text-slate-500 truncate" title={sync.url}>{sync.url}</span>
@@ -774,9 +778,11 @@ export default function AdminPanel() {
                                 <button onClick={() => handleEditClick(emp)} className="text-slate-500 hover:text-blue-400 transition-colors text-xs font-medium uppercase tracking-wider" title="Edit Role/Dept">
                                   Edit
                                 </button>
-                                <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors" title="Delete Officer">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {adminSafeMode && (
+                                  <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors" title="Delete Officer">
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
                               </>
                             ) : (
                               <span className="text-xs text-slate-600 font-medium italic">Restricted</span>
