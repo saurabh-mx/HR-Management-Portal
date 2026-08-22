@@ -103,7 +103,6 @@ export default function EmployeeDirectory() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [allStrikes, setAllStrikes] = useState<any[]>([]);
   const [activeDepartment, setActiveDepartment] = useState("All");
   const departmentsList = ["All", "SASP", "LSPD", "BCSO", "SAPR", "SASP Academy"];
   const [isAdding, setIsAdding] = useState(false);
@@ -465,12 +464,7 @@ export default function EmployeeDirectory() {
                   }}
                 />
                 
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setSelectedEmployee(null); }} 
-                  className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors z-20"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+
 
                 <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-6 flex-1 transform group-hover:scale-105 transition-transform duration-700 ease-out">
                   <div 
@@ -553,12 +547,6 @@ export default function EmployeeDirectory() {
                     </h3>
                     <p className="text-[10px] font-mono tracking-widest mt-1" style={{ color: getDepartmentColor(selectedEmployee.department) }}>DOSSIER DETAILS</p>
                   </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setSelectedEmployee(null); }} 
-                    className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 space-y-4 animated-scrollbar relative z-10 transform group-hover:scale-105 transition-transform duration-700 ease-out">

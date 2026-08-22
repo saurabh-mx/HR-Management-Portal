@@ -63,8 +63,26 @@ export default function StrikeManagement() {
     if (data) setStrikes(data);
   }
 
+  // Calculate cumulative strike points for an officer from active (approved) strikes
+  const getOfficerStrikeTotal = (officerName: string) => {
+    return strikes
+      .filter(s => 
+        s.name === officerName && 
+        s.action_type === 'Strike' && 
+        s.status !== 'revoked'
+      )
+      .reduce((total, s) => {
+        const level = parseInt(s.strike_level?.split('/')[0] || '0');
+        return total + level;
+      }, 0);
+  };
+
   const handleIssueStrike = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Command users: Verbal Warning & Warning go through directly, Strike needs HC/HR approval
+    const isCommandOnly = isCommand && !isAdmin;
+    const needsApproval = isCommandOnly && actionType === 'Strike';
 
     const { data, error } = await supabase.from('strikes').insert([{
       name: newStrike.name,
@@ -73,7 +91,7 @@ export default function StrikeManagement() {
       action_type: actionType,
       strike_level: actionType === 'Strike' ? strikeLevel : null,
       severity: actionType === 'Strike' ? 'High' : actionType === 'Warning' ? 'Medium' : 'Low',
-      status: isCommand && !isAdmin ? 'pending' : 'approved'
+      status: needsApproval ? 'pending' : 'approved'
     }]).select();
 
     if (error) {
@@ -159,8 +177,11 @@ export default function StrikeManagement() {
         <Card className="bg-slate-900/40 backdrop-blur-md border border-rose-900/50 text-slate-200 shadow-xl">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-rose-400">
-              {isCommand && !isAdmin ? "Request Disciplinary Action" : "Issue Disciplinary Action"}
+              {isCommand && !isAdmin ? "Issue Disciplinary Action" : "Issue Disciplinary Action"}
             </CardTitle>
+            {isCommand && !isAdmin && (
+              <p className="text-xs text-amber-400/80 mt-1">⚠ You can issue Verbal Warnings & Warnings directly. Strike requests require High Command / HR approval.</p>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleIssueStrike} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,8 +216,13 @@ export default function StrikeManagement() {
                           className="px-3 py-2 hover:bg-slate-800 cursor-pointer text-sm flex justify-between items-center"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            setNewStrike({ ...newStrike, name: `${emp.name} (${emp.badge_number})` });
+                            const fullName = `${emp.name} (${emp.badge_number})`;
+                            setNewStrike({ ...newStrike, name: fullName });
                             setShowSuggestions(false);
+                            // Auto-calculate cumulative strike level
+                            const existingTotal = getOfficerStrikeTotal(fullName);
+                            const nextLevel = Math.min(existingTotal + 1, 5);
+                            setStrikeLevel(`${nextLevel}/5`);
                           }}
                         >
                           <span className="font-medium text-slate-200">{emp.name} <span className="text-slate-500 font-normal">({emp.badge_number})</span></span>
@@ -214,20 +240,41 @@ export default function StrikeManagement() {
                 <select value={actionType} onChange={e => setActionType(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white">
                   <option value="Verbal Warning">Verbal Warning</option>
                   <option value="Warning">Warning</option>
-                  <option value="Strike">Strike</option>
+                  <option value="Strike">{isCommand && !isAdmin ? 'Strike (Requires Approval)' : 'Strike'}</option>
                 </select>
               </div>
 
               {actionType === "Strike" && (
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-slate-400">Strike Level</label>
-                  <select value={strikeLevel} onChange={e => setStrikeLevel(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white">
-                    <option value="1/5">1/5</option>
-                    <option value="2/5">2/5</option>
-                    <option value="3/5">3/5</option>
-                    <option value="4/5">4/5</option>
-                    <option value="5/5">5/5</option>
-                  </select>
+                  {(() => {
+                    const existingTotal = newStrike.name ? getOfficerStrikeTotal(newStrike.name) : 0;
+                    const currentLevel = parseInt(strikeLevel.split('/')[0] || '1');
+                    const cumulativeTotal = existingTotal + currentLevel;
+                    return (
+                      <>
+                        <select value={strikeLevel} onChange={e => setStrikeLevel(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white">
+                          <option value="1/5">1/5</option>
+                          <option value="2/5">2/5</option>
+                          <option value="3/5">3/5</option>
+                          <option value="4/5">4/5</option>
+                          <option value="5/5">5/5</option>
+                        </select>
+                        {newStrike.name && (
+                          <div className={`text-xs px-2 py-1.5 rounded mt-1 ${
+                            cumulativeTotal >= 5 
+                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' 
+                              : cumulativeTotal >= 3
+                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                : 'bg-slate-800/50 text-slate-400 border border-slate-700/30'
+                          }`}>
+                            Existing: <span className="font-bold">{existingTotal}/5</span> + This: <span className="font-bold">{currentLevel}/5</span> = Cumulative: <span className="font-bold">{cumulativeTotal}/5</span>
+                            {cumulativeTotal >= 5 && <span className="ml-2 font-bold uppercase text-rose-500">⚠ TERMINATION THRESHOLD</span>}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
@@ -236,8 +283,12 @@ export default function StrikeManagement() {
                 <input required type="text" value={newStrike.reason} onChange={e => setNewStrike({ ...newStrike, reason: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
               </div>
               <div className="md:col-span-2 flex justify-end">
-                <button type="submit" className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-md font-medium text-sm">
-                  {isCommand && !isAdmin ? "Submit Request" : "Submit Record"}
+                <button type="submit" className={`px-5 py-2 rounded-md font-medium text-sm transition-colors ${
+                  isCommand && !isAdmin && actionType === 'Strike'
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+                    : 'bg-rose-600 hover:bg-rose-700 text-white'
+                }`}>
+                  {isCommand && !isAdmin && actionType === 'Strike' ? "Submit Strike Request for Approval" : "Submit Record"}
                 </button>
               </div>
             </form>
@@ -321,7 +372,10 @@ export default function StrikeManagement() {
                       {(isAdmin || isCommand) && (
                         <td className="py-3 text-right flex justify-end gap-2">
                           {isAdmin && strike.status === 'pending' && (
-                            <button onClick={() => handleApprove(strike.id)} className="text-emerald-500 hover:text-emerald-400 font-medium text-xs border border-emerald-500/30 px-2 py-1 rounded">Approve</button>
+                            <div className="flex gap-1">
+                              <button onClick={() => handleApprove(strike.id)} className="text-emerald-500 hover:text-emerald-400 font-medium text-xs border border-emerald-500/30 px-2 py-1 rounded">Approve</button>
+                              <button onClick={() => handleDelete(strike.id)} className="text-rose-500 hover:text-rose-400 font-medium text-xs border border-rose-500/30 px-2 py-1 rounded">Deny</button>
+                            </div>
                           )}
                           {isAdmin && strike.status === 'approved' && (
                             <button onClick={() => setStrikeToRevoke(strike.id)} className="text-slate-500 hover:text-rose-400 font-medium text-xs border border-slate-700/50 px-2 py-1 rounded transition-colors">Revoke</button>
