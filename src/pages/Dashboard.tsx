@@ -62,13 +62,18 @@ export const Dashboard = () => {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      // 3. Personnel on LOA (Only Approved leaves)
-      const { data: loaData, count: loaCount } = await supabase
+      // 3. Personnel on LOA (Count only Approved leaves)
+      const { count: loaCount } = await supabase
         .from('loa_requests')
-        .select('*', { count: 'exact' })
-        .eq('status', 'Approved')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'Approved');
+
+      // Recent LOAs for Activity Feed
+      const { data: loaData } = await supabase
+        .from('loa_requests')
+        .select('*')
         .order('start_date', { ascending: false })
-        .limit(5);
+        .limit(10);
 
       // 4. Pending Rank Changes
       const { data: promoData, count: rankCount } = await supabase
@@ -291,7 +296,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
                   <div className="text-xs text-slate-500 italic">No approved LOAs.</div>
                 ) : (
                   <div className="space-y-1.5 max-h-48 overflow-y-auto animated-scrollbar pr-1">
-                    {stats.recentLoas.map(loa => (
+                    {stats.recentLoas.filter(loa => loa.status === 'Approved').map(loa => (
                       <div key={loa.id} className="text-xs border border-fuchsia-900/30 bg-fuchsia-950/20 p-2 rounded flex flex-col gap-1">
                         <div className="font-semibold text-slate-200">{loa.officer_name}</div>
                         <div className="text-slate-400 text-[11px] leading-tight break-words">{loa.reason}</div>
@@ -344,30 +349,42 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
           
           <div className="flex-1 overflow-y-auto animated-scrollbar pr-2 space-y-4">
             {/* Build activity feed dynamically */}
-            {[
-              ...stats.recentStrikes.map(s => ({ id: `strike-${s.id}`, type: 'strike', title: `${s.action_type} Issued`, desc: `To ${s.name} by ${s.issued_by}`, date: s.created_at, icon: ShieldAlert, color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-900/30' })),
-              ...stats.recentLoas.map(l => ({ id: `loa-${l.id}`, type: 'loa', title: `LOA Request (${l.status})`, desc: `By ${l.officer_name}`, date: l.created_at || l.start_date, icon: CalendarOff, color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', border: 'border-fuchsia-900/30' })),
-              ...stats.recentAnnouncements.map(a => ({ id: `ann-${a.id}`, type: 'announcement', title: `Broadcast: ${a.title}`, desc: `By ${a.author}`, date: a.created_at || a.date, icon: Megaphone, color: 'text-sky-500', bg: 'bg-sky-500/10', border: 'border-sky-900/30' })),
-              ...stats.recentPromotions.map(p => ({ id: `promo-${p.id}`, type: 'promotion', title: `Rank Update (${p.status})`, desc: `${p.officer_name} to ${p.new_rank}`, date: p.created_at, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-900/30' }))
-            ]
-            .filter(item => item.date) // Ensure date exists
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .map(activity => (
-              <div key={activity.id} className={`flex items-start gap-4 p-3 rounded-lg border ${activity.border} ${activity.bg} backdrop-blur-sm transition-all hover:bg-slate-900/50`}>
-                <div className={`p-2 rounded-full bg-slate-950/50 shadow-inner ${activity.border} border`}>
-                  <activity.icon className={`w-4 h-4 ${activity.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h4 className="text-sm font-semibold text-slate-200 truncate">{activity.title}</h4>
-                    <span className="text-[10px] font-medium text-slate-500 whitespace-nowrap">
-                      {new Date(activity.date).toLocaleDateString()}
-                    </span>
+            {(() => {
+              const isPrivileged = profile?.is_admin || ['High Command', 'HR'].includes(profile?.role || '');
+              
+              const filteredLoas = isPrivileged 
+                ? stats.recentLoas 
+                : stats.recentLoas.filter(l => l.status !== 'Pending Review' && l.status !== 'Pending');
+                
+              const filteredPromotions = isPrivileged 
+                ? stats.recentPromotions 
+                : stats.recentPromotions.filter(p => p.status !== 'Pending Review' && p.status !== 'Pending');
+
+              return [
+                ...stats.recentStrikes.map(s => ({ id: `strike-${s.id}`, type: 'strike', title: `${s.action_type} Issued`, desc: `To ${s.name} by ${s.issued_by}`, date: s.created_at, icon: ShieldAlert, color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-900/30' })),
+                ...filteredLoas.map(l => ({ id: `loa-${l.id}`, type: 'loa', title: `LOA Request (${l.status})`, desc: `By ${l.officer_name}`, date: l.created_at || l.start_date, icon: CalendarOff, color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10', border: 'border-fuchsia-900/30' })),
+                ...stats.recentAnnouncements.map(a => ({ id: `ann-${a.id}`, type: 'announcement', title: `Broadcast: ${a.title}`, desc: `By ${a.author}`, date: a.created_at || a.date, icon: Megaphone, color: 'text-sky-500', bg: 'bg-sky-500/10', border: 'border-sky-900/30' })),
+                ...filteredPromotions.map(p => ({ id: `promo-${p.id}`, type: 'promotion', title: `Rank Update (${p.status})`, desc: `${p.officer_name} to ${p.new_rank}`, date: p.created_at, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-900/30' }))
+              ]
+              .filter(item => item.date) // Ensure date exists
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .map(activity => (
+                <div key={activity.id} className={`flex items-start gap-4 p-3 rounded-lg border ${activity.border} ${activity.bg} backdrop-blur-sm transition-all hover:bg-slate-900/50`}>
+                  <div className={`p-2 rounded-full bg-slate-950/50 shadow-inner ${activity.border} border`}>
+                    <activity.icon className={`w-4 h-4 ${activity.color}`} />
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5 truncate">{activity.desc}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h4 className="text-sm font-semibold text-slate-200 truncate">{activity.title}</h4>
+                      <span className="text-[10px] font-medium text-slate-500 whitespace-nowrap">
+                        {new Date(activity.date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">{activity.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ));
+            })()}
             
             {(stats.recentStrikes.length + stats.recentLoas.length + stats.recentAnnouncements.length + stats.recentPromotions.length) === 0 && (
               <div className="h-full flex items-center justify-center text-slate-500 font-light italic">

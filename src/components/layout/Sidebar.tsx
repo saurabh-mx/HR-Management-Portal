@@ -17,6 +17,8 @@ export const Sidebar = () => {
   const location = useLocation();
   const { profile } = useAuth();
 
+  const isAdminOrCommand = profile?.is_admin || ['High Command', 'HR'].includes(profile?.role || '');
+
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Directory', path: '/directory', icon: Users },
@@ -24,7 +26,7 @@ export const Sidebar = () => {
     { name: 'Meetings', path: '/meetings', icon: MapPin },
     { name: 'LOA Requests', path: '/loa', icon: CalendarOff },
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },
-    { name: 'Rank Management', path: '/promotions', icon: Award },
+    ...(isAdminOrCommand ? [{ name: 'Rank Management', path: '/promotions', icon: Award }] : []),
     { name: 'HR Requests', path: '/hr-requests', icon: FileText },
     { name: 'Documents', path: '/documents', icon: BookOpen }
   ];
