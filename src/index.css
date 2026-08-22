@@ -72,3 +72,14 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+@layer utilities {
+  /* Completely hide scrollbar for clean UI but keep scroll functionality */
+  .animated-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .animated-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}

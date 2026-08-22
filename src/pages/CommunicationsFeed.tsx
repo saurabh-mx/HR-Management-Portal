@@ -25,7 +25,7 @@ export default function CommunicationsFeed() {
 
   async function fetchPosts() {
     const { data, error } = await supabase
-      .from('communications')
+      .from('Announcements')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -55,7 +55,7 @@ export default function CommunicationsFeed() {
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     const { data, error } = await supabase
-      .from('communications')
+      .from('Announcements')
       .insert([{ ...newPost, author: authorName }])
       .select();
 
@@ -72,7 +72,7 @@ export default function CommunicationsFeed() {
     if (!window.confirm("Are you sure you want to delete this broadcast?")) return;
 
     const { error } = await supabase
-      .from('communications')
+      .from('Announcements')
       .delete()
       .eq('id', id);
 

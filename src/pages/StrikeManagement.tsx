@@ -122,7 +122,7 @@ export default function StrikeManagement() {
                 
                 {/* Autocomplete Dropdown */}
                 {showSuggestions && newStrike.name.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
+                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto animated-scrollbar bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
                     {employees
                       .filter(emp => 
                         (emp.name && emp.name.toLowerCase().includes(newStrike.name.toLowerCase())) || 
