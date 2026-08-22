@@ -30,7 +30,7 @@ export default function LoginModal({ children }: LoginModalProps) {
       if (isSignUp) {
         // Security Pre-check: Ensure their Discord ID actually exists in the database
         const discordId = email.includes('@') ? email.split('@')[0] : email;
-        const { data: rosterData, error: dbError } = await supabase
+        const { data: rosterData } = await supabase
           .from('employees')
           .select('discord_tag')
           .eq('discord_tag', discordId)

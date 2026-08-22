@@ -248,7 +248,7 @@ export default function AdminPanel() {
           const { data: currentRoster } = await supabase.from('employees').select('*');
           
           // 3. Process data rows (start after subHeaderRow)
-          const stagedData = [];
+          const stagedData: any[] = [];
           for (let i = headerIdx + 2; i < rows.length; i++) {
             const row = rows[i];
             
