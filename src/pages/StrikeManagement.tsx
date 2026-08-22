@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface Strike {
   id: string;
-  officer_name: string;
+  name: string;
   reason: string;
   issued_by: string;
   created_at: string;
@@ -18,14 +18,22 @@ export default function StrikeManagement() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authorName, setAuthorName] = useState("Command");
   const [searchTerm, setSearchTerm] = useState("");
-  const [newStrike, setNewStrike] = useState({ officer_name: "", reason: "" });
+  const [newStrike, setNewStrike] = useState({ name: "", reason: "" });
   const [actionType, setActionType] = useState("Warning");
   const [strikeLevel, setStrikeLevel] = useState("1/5");
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     fetchStrikes();
     checkAdminStatus();
+    fetchEmployees();
   }, []);
+
+  async function fetchEmployees() {
+    const { data } = await supabase.from('employees').select('name, badge_number, department');
+    if (data) setEmployees(data);
+  }
 
   async function checkAdminStatus() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -46,11 +54,12 @@ export default function StrikeManagement() {
     e.preventDefault();
     
     const { data, error } = await supabase.from('strikes').insert([{ 
-      officer_name: newStrike.officer_name, 
+      name: newStrike.name, 
       reason: newStrike.reason, 
       issued_by: authorName,
       action_type: actionType,
-      strike_level: actionType === 'Strike' ? strikeLevel : null
+      strike_level: actionType === 'Strike' ? strikeLevel : null,
+      severity: actionType === 'Strike' ? 'High' : actionType === 'Warning' ? 'Medium' : 'Low'
     }]).select();
     
     if (error) {
@@ -61,7 +70,7 @@ export default function StrikeManagement() {
 
     if (data) {
       setStrikes([data[0], ...strikes]);
-      setNewStrike({ officer_name: "", reason: "" });
+      setNewStrike({ name: "", reason: "" });
       setActionType("Warning");
       setStrikeLevel("1/5");
     }
@@ -75,7 +84,7 @@ export default function StrikeManagement() {
 
   // 🔍 SAFE FILTER LOGIC
   const filteredStrikes = strikes.filter(strike => {
-    const safeName = strike.officer_name || "";
+    const safeName = strike.name || "";
     const safeReason = strike.reason || "";
     return safeName.toLowerCase().includes(searchTerm.toLowerCase()) || 
            safeReason.toLowerCase().includes(searchTerm.toLowerCase());
@@ -95,9 +104,49 @@ export default function StrikeManagement() {
           <CardHeader><CardTitle className="text-lg font-medium text-rose-400">Issue New Strike</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleIssueStrike} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label className="text-xs font-medium text-slate-400">Officer Name / Callsign</label>
-                <input required type="text" value={newStrike.officer_name} onChange={e => setNewStrike({...newStrike, officer_name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
+                <input 
+                  required 
+                  type="text" 
+                  value={newStrike.name} 
+                  onChange={e => {
+                    setNewStrike({...newStrike, name: e.target.value});
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" 
+                  placeholder="Start typing name or callsign..."
+                />
+                
+                {/* Autocomplete Dropdown */}
+                {showSuggestions && newStrike.name.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
+                    {employees
+                      .filter(emp => 
+                        (emp.name && emp.name.toLowerCase().includes(newStrike.name.toLowerCase())) || 
+                        (emp.badge_number && emp.badge_number.toLowerCase().includes(newStrike.name.toLowerCase()))
+                      )
+                      .slice(0, 8)
+                      .map((emp, idx) => (
+                        <div 
+                          key={idx}
+                          className="px-3 py-2 hover:bg-slate-800 cursor-pointer text-sm flex justify-between items-center"
+                          onClick={() => {
+                            setNewStrike({...newStrike, name: `${emp.name} (${emp.badge_number})`});
+                            setShowSuggestions(false);
+                          }}
+                        >
+                          <span className="font-medium text-slate-200">{emp.name} <span className="text-slate-500 font-normal">({emp.badge_number})</span></span>
+                          <span className="text-[10px] uppercase font-bold text-slate-500">{emp.department}</span>
+                        </div>
+                      ))}
+                      {employees.filter(emp => (emp.name && emp.name.toLowerCase().includes(newStrike.name.toLowerCase())) || (emp.badge_number && emp.badge_number.toLowerCase().includes(newStrike.name.toLowerCase()))).length === 0 && (
+                        <div className="px-3 py-2 text-sm text-slate-500 italic">No matches found.</div>
+                      )}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Action Type</label>
@@ -170,7 +219,7 @@ export default function StrikeManagement() {
                   filteredStrikes.map((strike) => (
                     <tr key={strike.id} className="hover:bg-slate-800/40">
                       <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
-                      <td className="py-3 font-medium text-white">{strike.officer_name}</td>
+                      <td className="py-3 font-medium text-white">{strike.name}</td>
                       <td className="py-3">
                         <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                           strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 

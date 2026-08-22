@@ -206,7 +206,7 @@ export const Dashboard = () => {
                             className="font-semibold text-slate-200 cursor-pointer hover:text-rose-400 hover:underline transition-colors w-fit shrink-0"
                             onClick={() => setSelectedStrike(strike)}
                           >
-                            {strike.officer_name}
+                            {strike.name}
                           </div>
                           {strike.action_type && (
                             <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold tracking-wider whitespace-nowrap shrink-0 ${
@@ -299,7 +299,7 @@ export const Dashboard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800">
                   <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Subject Officer</h4>
-                  <p className="text-base font-medium text-slate-200">{selectedStrike.officer_name}</p>
+                  <p className="text-base font-medium text-slate-200">{selectedStrike.name}</p>
                 </div>
                 <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800">
                   <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Date Issued</h4>
