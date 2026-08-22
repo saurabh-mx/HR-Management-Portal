@@ -435,16 +435,32 @@ export default function EmployeeDirectory() {
                   boxShadow: `0 25px 50px -12px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.25)}, inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1)}`
                 }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                <div className="absolute top-0 left-0 right-0 h-1 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                
+                {/* Background Logo */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-[0.08] bg-center bg-no-repeat pointer-events-none mix-blend-luminosity"
+                  style={{
+                    backgroundImage: `url(${(() => {
+                      const dept = selectedEmployee.department || '';
+                      if (dept.includes('BCSO')) return '/logos/bcso.png';
+                      if (dept.includes('LSPD')) return '/logos/lspd.png';
+                      if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                      if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                      return '/logos/sasp.png';
+                    })()})`,
+                    backgroundSize: '80%'
+                  }}
+                />
                 
                 <button 
                   onClick={(e) => { e.stopPropagation(); setSelectedEmployee(null); }} 
-                  className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors z-10"
+                  className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors z-20"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <div className="flex flex-col items-center text-center space-y-4 flex-1 justify-center relative -top-4">
+                <div className="flex flex-col items-center text-center space-y-4 flex-1 justify-center relative z-10 -top-4">
                   <div 
                     className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold border-2"
                     style={{
@@ -609,9 +625,25 @@ export default function EmployeeDirectory() {
                   boxShadow: `0 25px 50px -12px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.25)}, inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1)}`
                 }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                <div className="absolute top-0 left-0 right-0 h-1 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
                 
-                <div className="flex justify-between items-center mb-6">
+                {/* Background Logo */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-[0.08] bg-center bg-no-repeat pointer-events-none mix-blend-luminosity"
+                  style={{
+                    backgroundImage: `url(${(() => {
+                      const dept = selectedEmployee.department || '';
+                      if (dept.includes('BCSO')) return '/logos/bcso.png';
+                      if (dept.includes('LSPD')) return '/logos/lspd.png';
+                      if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                      if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                      return '/logos/sasp.png';
+                    })()})`,
+                    backgroundSize: '80%'
+                  }}
+                />
+                
+                <div className="flex justify-between items-center mb-6 relative z-10">
                   <div>
                     <h3 className="text-xl font-bold tracking-wide" style={{ color: getDepartmentColor(selectedEmployee.department), textShadow: `0 0 10px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.5)}` }}>
                       {selectedEmployee.name}

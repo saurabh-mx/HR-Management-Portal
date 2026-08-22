@@ -67,7 +67,7 @@ export default function MainLayout() {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Top Header */}
-        <header className="h-16 border-b border-brand/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+        <header className="relative h-16 border-b border-brand/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-40 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
           <span className="text-brand font-bold tracking-widest uppercase text-sm drop-shadow-md">
             {profile?.role ? `${profile.role} Portal` : 'Portal'}
           </span>

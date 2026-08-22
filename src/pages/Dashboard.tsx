@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Users, ShieldAlert, CalendarOff, TrendingUp, Megaphone, Presentation, Download, Shield } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -109,19 +109,24 @@ export const Dashboard = () => {
   }, []);
 
   const downloadIdImage = async () => {
-    if (!idCardRef.current) return;
+    if (!idCardRef.current) {
+      alert("Error: Could not find the ID card element.");
+      return;
+    }
     try {
-      const canvas = await html2canvas(idCardRef.current, {
+      const dataUrl = await toPng(idCardRef.current, {
         backgroundColor: '#020617', // slate-950 equivalent for stable background
-        scale: 2,
+        pixelRatio: 2,
       });
-      const url = canvas.toDataURL('image/png');
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `${profile?.name?.replace(/ /g, '_')}_ID_Card.png`;
+      a.href = dataUrl;
+      a.download = `${profile?.name?.replace(/ /g, '_') || 'Personnel'}_ID_Card.png`;
+      document.body.appendChild(a);
       a.click();
-    } catch (error) {
+      document.body.removeChild(a);
+    } catch (error: any) {
       console.error("Failed to generate image", error);
+      alert("Failed to generate image. Please check the console for details. Error: " + (error?.message || "Unknown error"));
     }
   };
 
@@ -531,10 +536,26 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
                 className="w-full max-w-sm p-8 rounded-xl shadow-xl bg-slate-950 border border-slate-800 flex flex-col relative overflow-hidden"
               >
                 {/* Visuals */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-brand" />
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-brand z-10" />
                 
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-brand/10 border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]">
+                {/* Background Logo */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-10 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity"
+                  style={{
+                    backgroundImage: `url(${(() => {
+                      const dept = profile?.department || '';
+                      if (dept.includes('BCSO')) return '/logos/bcso.png';
+                      if (dept.includes('LSPD')) return '/logos/lspd.png';
+                      if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                      if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                      return '/logos/sasp.png';
+                    })()})`,
+                    backgroundSize: '80%'
+                  }}
+                />
+                
+                <div className="flex flex-col items-center text-center space-y-4 z-10 relative">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]">
                     {profile?.name?.charAt(0) || "U"}
                   </div>
                   
