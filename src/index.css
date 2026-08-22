@@ -71,6 +71,25 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  
+  /* Optimize date/time inputs for dark mode UI */
+  input[type="date"], 
+  input[type="time"], 
+  input[type="datetime-local"], 
+  input[type="month"] {
+    color-scheme: dark;
+  }
+  
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  
+  ::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
 }
 
 @layer utilities {
@@ -84,5 +103,37 @@
   .animated-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+  }
+
+  @keyframes toss {
+    0% {
+      opacity: 0;
+      transform: scale(0.6) translateY(100px) rotate(-15deg);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.05) translateY(-10px) rotate(3deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0) rotate(0deg);
+    }
+  }
+
+  .animate-toss {
+    animation: toss 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
   }
 }

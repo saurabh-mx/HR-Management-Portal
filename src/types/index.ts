@@ -9,6 +9,25 @@ export interface Employee {
   rank?: string;
   badge_number?: string;
   discord_tag?: string;
+  status?: string;
+  citizen_id?: string;
+  phone_number?: string;
+  department_join_date?: string;
+  duration_in_department?: string;
+  last_promotion_date?: string;
+  days_since_last_promoted?: number;
+  sub_department?: string;
+  titles?: string;
+  notes?: string;
+  cert_fto?: boolean;
+  cert_asd?: boolean;
+  cert_heat?: boolean;
+  cert_swat?: boolean;
+  cert_cid?: boolean;
+  cert_meu?: boolean;
+  cert_k9?: boolean;
+  cert_sop?: boolean;
+  callsign?: string;
 }
 
 export type { Session };

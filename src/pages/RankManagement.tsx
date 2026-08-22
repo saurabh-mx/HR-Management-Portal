@@ -41,13 +41,13 @@ export default function RankManagement() {
 
     const { data } = await supabase
       .from('employees')
-      .select('name, badge_number, is_admin')
+      .select('name, badge_number, is_admin, role')
       .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
     if (data) {
       setAuthorName(`${data.name} (${data.badge_number})`);
-      if (data.is_admin) setIsAdmin(true);
+      if (data.is_admin || ['High Command', 'HR'].includes(data.role)) setIsAdmin(true);
     }
   }
 

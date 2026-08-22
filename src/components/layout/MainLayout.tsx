@@ -64,7 +64,7 @@ export default function MainLayout() {
       <Sidebar />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Top Header */}
         <header className="h-16 border-b border-brand/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">

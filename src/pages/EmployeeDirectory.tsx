@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff } from "lucide-react";
+import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, CheckCircle2, Circle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface Employee {
@@ -12,6 +12,24 @@ interface Employee {
   discord_tag?: string;
   status: string;
   rank?: string;
+  citizen_id?: string;
+  phone_number?: string;
+  department_join_date?: string;
+  duration_in_department?: string;
+  last_promotion_date?: string;
+  days_since_last_promoted?: number;
+  sub_department?: string;
+  titles?: string;
+  notes?: string;
+  cert_fto?: boolean;
+  cert_asd?: boolean;
+  cert_heat?: boolean;
+  cert_swat?: boolean;
+  cert_cid?: boolean;
+  cert_meu?: boolean;
+  cert_k9?: boolean;
+  cert_sop?: boolean;
+  callsign?: string;
 }
 
 const getDepartmentColor = (dept: string) => {
@@ -33,12 +51,13 @@ const hexToRgba = (hex: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const EmployeeRow = ({ employee }: { employee: Employee }) => {
+const EmployeeRow = ({ employee, onClick }: { employee: Employee, onClick: () => void }) => {
   const deptColor = getDepartmentColor(employee.department);
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <tr
+      onClick={onClick}
       className="border-b border-transparent transition-all duration-300 relative cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -69,7 +88,7 @@ const EmployeeRow = ({ employee }: { employee: Employee }) => {
         </span>
       </td>
       <td className="py-4 px-3 tracking-wider font-mono transition-colors duration-300" style={{ color: isHovered ? deptColor : hexToRgba(deptColor, 0.85) }}>{employee.badge_number}</td>
-      <td className="py-4 px-3 font-medium transition-colors duration-300" style={{ color: isHovered ? deptColor : hexToRgba(deptColor, 0.85) }}>{employee.role === 'admin' ? 'High Command' : employee.role}</td>
+      <td className="py-4 px-3 font-medium transition-colors duration-300" style={{ color: isHovered ? deptColor : hexToRgba(deptColor, 0.85) }}>{employee.rank || "—"}</td>
       <td className="py-4 px-3 font-bold tracking-wider transition-all duration-300" style={{ color: deptColor, textShadow: isHovered ? `0 0 10px ${hexToRgba(deptColor, 0.5)}` : 'none' }}>{employee.department}</td>
       <td className="py-4 px-3 text-sm transition-colors duration-300" style={{ color: isHovered ? deptColor : hexToRgba(deptColor, 0.7) }}>{employee.discord_tag || "—"}</td>
     </tr>
@@ -78,8 +97,11 @@ const EmployeeRow = ({ employee }: { employee: Employee }) => {
 
 export default function EmployeeDirectory() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [allStrikes, setAllStrikes] = useState<any[]>([]);
   const [activeDepartment, setActiveDepartment] = useState("All");
   const departmentsList = ["All", "SASP", "LSPD", "BCSO", "SAPR", "SASP Academy"];
   const [isAdding, setIsAdding] = useState(false);
@@ -93,8 +115,14 @@ export default function EmployeeDirectory() {
 
   useEffect(() => {
     fetchEmployees();
+    fetchStrikes();
     checkAdminStatus();
   }, []);
+
+  async function fetchStrikes() {
+    const { data } = await supabase.from('strikes').select('name, status, action_type, strike_level');
+    if (data) setAllStrikes(data);
+  }
 
   // SECURITY CHECK: Verify if the logged-in user is High Command
   async function checkAdminStatus() {
@@ -177,7 +205,7 @@ export default function EmployeeDirectory() {
       return;
     }
 
-    const isAdmin = ['admin', 'High Command', 'Command', 'HR'].includes(newEmployee.role);
+    const isAdmin = newEmployee.role === 'admin';
     const { data, error } = await supabase
       .from('employees')
       .insert([{ ...newEmployee, status: 'Active', is_admin: isAdmin }])
@@ -194,10 +222,10 @@ export default function EmployeeDirectory() {
   };
 
   const filteredEmployees = employees.filter((emp) => {
-    const matchesSearch = 
-      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.badge_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (emp.discord_tag && emp.discord_tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (emp.badge_number && emp.badge_number.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (emp.discord_tag && emp.discord_tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (emp.status && emp.status.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesDept = activeDepartment === "All" || emp.department === activeDepartment;
     
@@ -349,14 +377,14 @@ export default function EmployeeDirectory() {
       <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 shadow-xl overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-medium text-white">{activeDepartment === "All" ? "Global" : activeDepartment} Active Roster</CardTitle>
-          <div className="relative pt-2">
+          <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
-              placeholder="Search by name, callsign, or Discord ID..."
+              placeholder="Search by name, callsign, status, or Discord ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1 text-sm text-white shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400"
+              className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 pl-10 pr-4 py-2 text-sm text-white shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500"
             />
           </div>
         </CardHeader>
@@ -368,20 +396,324 @@ export default function EmployeeDirectory() {
                   <th className="pb-3 pl-4 font-medium">Officer</th>
                   <th className="pb-3 px-3 font-medium">Status</th>
                   <th className="pb-3 px-3 font-medium">Callsign</th>
-                  <th className="pb-3 px-3 font-medium">Role</th>
+                  <th className="pb-3 px-3 font-medium">Rank</th>
                   <th className="pb-3 px-3 font-medium">Department</th>
                   <th className="pb-3 px-3 font-medium">Discord ID</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-transparent border-t border-slate-800/60">
                 {filteredEmployees.map((employee) => (
-                  <EmployeeRow key={employee.id} employee={employee} />
+                  <EmployeeRow 
+                    key={employee.id} 
+                    employee={employee} 
+                    onClick={() => {
+                      setSelectedEmployee(employee);
+                      setIsFlipped(false);
+                    }} 
+                  />
                 ))}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
+      {/* Flash Card Modal */}
+      {selectedEmployee && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity perspective-1000"
+          onClick={() => setSelectedEmployee(null)}
+        >
+          <div 
+            className="animate-toss relative w-full max-w-lg h-[600px] cursor-pointer group"
+            onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}
+          >
+            <div className={`w-full h-full relative transition-transform duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+              {/* FRONT OF CARD */}
+              <div 
+                className="absolute inset-0 w-full h-full p-8 rounded-xl shadow-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-700 overflow-hidden backface-hidden flex flex-col"
+                style={{
+                  boxShadow: `0 25px 50px -12px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.25)}, inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1)}`
+                }}
+              >
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setSelectedEmployee(null); }} 
+                  className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors z-10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="flex flex-col items-center text-center space-y-4 flex-1 justify-center relative -top-4">
+                  <div 
+                    className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold border-2"
+                    style={{
+                      backgroundColor: hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1),
+                      borderColor: getDepartmentColor(selectedEmployee.department),
+                      color: getDepartmentColor(selectedEmployee.department),
+                      textShadow: `0 0 10px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.5)}`
+                    }}
+                  >
+                    {selectedEmployee.name.charAt(0)}
+                  </div>
+                  
+                  <div>
+                    <h2 className="text-3xl font-bold text-white tracking-wide" style={{ textShadow: `0 0 15px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.5)}` }}>
+                      {selectedEmployee.name}
+                    </h2>
+                    <p className="text-slate-400 font-mono mt-1 text-sm tracking-widest">{selectedEmployee.badge_number}</p>
+                  </div>
+
+                  <div className="w-full h-px bg-slate-800/60 my-2" />
+
+                  <div className="grid grid-cols-2 gap-6 w-full text-left">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Department</p>
+                      <p className="text-sm font-bold tracking-wide" style={{ color: getDepartmentColor(selectedEmployee.department) }}>{selectedEmployee.department}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Rank</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.rank || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Status</p>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                        selectedEmployee.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        selectedEmployee.status === 'Inactive' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                        selectedEmployee.status === 'LOA' ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20' :
+                        'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                      }`}>
+                        {selectedEmployee.status || "Active"}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Discord ID</p>
+                      <p className="text-sm font-medium text-slate-300">{selectedEmployee.discord_tag || "—"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Strike Stats display */}
+                {(() => {
+                  const empIdentifier = `${selectedEmployee.name} (${selectedEmployee.badge_number})`;
+                  const empStrikes = allStrikes.filter(s => s.name === empIdentifier);
+                  const activeStrikes = empStrikes.filter(s => s.status === 'approved' || !s.status);
+                  const revokedStrikes = empStrikes.filter(s => s.status === 'revoked');
+                  
+                  let actualStrikesCount = 0;
+                  activeStrikes.forEach(s => {
+                    if (s.action_type === 'Strike') {
+                      if (s.strike_level && s.strike_level.includes('/')) {
+                        const num = parseInt(s.strike_level.split('/')[0]);
+                        if (!isNaN(num)) actualStrikesCount += num;
+                        else actualStrikesCount += 1;
+                      } else {
+                        actualStrikesCount += 1;
+                      }
+                    }
+                  });
+                  const warningsCount = activeStrikes.filter(s => s.action_type === 'Warning').length;
+                  const verbalWarningsCount = activeStrikes.filter(s => s.action_type === 'Verbal Warning').length;
+                  
+                  let revokedActualStrikesCount = 0;
+                  revokedStrikes.forEach(s => {
+                    if (s.action_type === 'Strike') {
+                      if (s.strike_level && s.strike_level.includes('/')) {
+                        const num = parseInt(s.strike_level.split('/')[0]);
+                        if (!isNaN(num)) revokedActualStrikesCount += num;
+                        else revokedActualStrikesCount += 1;
+                      } else {
+                        revokedActualStrikesCount += 1;
+                      }
+                    }
+                  });
+                  const revokedWarningsCount = revokedStrikes.filter(s => s.action_type === 'Warning').length;
+                  const revokedVerbalWarningsCount = revokedStrikes.filter(s => s.action_type === 'Verbal Warning').length;
+                  
+                  if (empStrikes.length > 0) {
+                    return (
+                      <div className="absolute bottom-16 left-0 right-0 flex justify-center z-10">
+                        <div className="flex gap-3 items-center bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-lg flex-wrap justify-center">
+                          {actualStrikesCount > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse"></span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
+                                Strikes: {actualStrikesCount}
+                              </span>
+                            </div>
+                          )}
+                          {warningsCount > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400">
+                                Warnings: {warningsCount}
+                              </span>
+                            </div>
+                          )}
+                          {verbalWarningsCount > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-brand shadow-[0_0_8px_rgba(var(--brand),0.8)]"></span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-brand">
+                                Verbal: {verbalWarningsCount}
+                              </span>
+                            </div>
+                          )}
+                          {activeStrikes.length > 0 && revokedStrikes.length > 0 && (
+                            <div className="w-px h-3 bg-slate-700 ml-1 mr-1"></div>
+                          )}
+                          {revokedActualStrikesCount > 0 && (
+                            <div className="flex items-center gap-1.5 opacity-60" title="Revoked Strikes">
+                              <span className="w-2 h-2 rounded-full bg-slate-500 shadow-[0_0_8px_rgba(100,116,139,0.8)]"></span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 line-through decoration-rose-500/50">
+                                Strikes: {revokedActualStrikesCount}
+                              </span>
+                            </div>
+                          )}
+                          {revokedWarningsCount > 0 && (
+                            <div className="flex items-center gap-1.5 opacity-60" title="Revoked Warnings">
+                              <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 line-through decoration-orange-500/50">
+                                Warnings: {revokedWarningsCount}
+                              </span>
+                            </div>
+                          )}
+                          {revokedVerbalWarningsCount > 0 && (
+                            <div className="flex items-center gap-1.5 opacity-60" title="Revoked Verbal Warnings">
+                              <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 line-through decoration-brand/50">
+                                Verbal: {revokedVerbalWarningsCount}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                <div className="mt-auto pt-4 flex justify-center opacity-0 group-hover:opacity-60 transition-opacity duration-500">
+                  <p 
+                    className="text-[10px] tracking-widest uppercase font-bold"
+                    style={{ color: getDepartmentColor(selectedEmployee.department), textShadow: `0 0 10px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.5)}` }}
+                  >
+                    Click anywhere to flip
+                  </p>
+                </div>
+              </div>
+
+              {/* BACK OF CARD */}
+              <div 
+                className="absolute inset-0 w-full h-full p-8 rounded-xl shadow-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-700 overflow-hidden backface-hidden rotate-y-180 flex flex-col"
+                style={{
+                  boxShadow: `0 25px 50px -12px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.25)}, inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1)}`
+                }}
+              >
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold tracking-wide" style={{ color: getDepartmentColor(selectedEmployee.department), textShadow: `0 0 10px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.5)}` }}>
+                      {selectedEmployee.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-mono tracking-widest mt-1">PERSONNEL FILE</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setSelectedEmployee(null); }} 
+                      className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-2 space-y-5 animated-scrollbar">
+                  
+                  <div className="grid grid-cols-2 gap-4 bg-slate-950/50 p-4 rounded-lg border border-slate-800/50">
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Role</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.role === 'admin' ? 'High Command' : selectedEmployee.role}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Citizen ID</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.citizen_id || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Phone Number</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.phone_number || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Sub Dept.</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.sub_department || '—'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Titles</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.titles || '—'}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 bg-slate-950/50 p-4 rounded-lg border border-slate-800/50">
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Join Date</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.department_join_date || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Duration</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.duration_in_department || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Last Promoted</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.last_promotion_date || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Days Since</p>
+                      <p className="text-sm font-medium text-slate-200">{selectedEmployee.days_since_last_promoted !== null && selectedEmployee.days_since_last_promoted !== undefined ? selectedEmployee.days_since_last_promoted : '—'}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800/50">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Certifications</p>
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-2">
+                      {[
+                        { key: 'cert_fto', label: 'FTO' },
+                        { key: 'cert_asd', label: 'ASD' },
+                        { key: 'cert_heat', label: 'HEAT' },
+                        { key: 'cert_swat', label: 'SWAT' },
+                        { key: 'cert_cid', label: 'CID' },
+                        { key: 'cert_meu', label: 'MEU' },
+                        { key: 'cert_k9', label: 'K9' },
+                        { key: 'cert_sop', label: 'SOP' }
+                      ].map(cert => {
+                        const isActive = selectedEmployee[cert.key as keyof Employee];
+                        return (
+                          <div key={cert.key} className="flex items-center gap-2">
+                            {isActive ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            ) : (
+                              <Circle className="w-4 h-4 text-slate-700" />
+                            )}
+                            <span className={`text-xs font-semibold tracking-wide ${isActive ? 'text-slate-200' : 'text-slate-500'}`}>
+                              {cert.label}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {selectedEmployee.notes && (
+                    <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800/50">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Notes</p>
+                      <p className="text-sm text-slate-300 italic">"{selectedEmployee.notes}"</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import html2canvas from "html2canvas";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Users, ShieldAlert, CalendarOff, TrendingUp, Megaphone, Presentation, Download, Shield } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -28,6 +29,8 @@ export const Dashboard = () => {
 
   const [selectedStrike, setSelectedStrike] = useState<any>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
+  const [showIdModal, setShowIdModal] = useState(false);
+  const idCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchStats() {
@@ -105,34 +108,39 @@ export const Dashboard = () => {
     fetchStats();
   }, []);
 
-  const handleGenerateReport = () => {
-    const reportContent = `SASP COMMAND REPORT
-Generated: ${new Date().toLocaleString()}
-Requested By: ${profile?.name || "Unknown"} (${profile?.role || "Staff"})
+  const downloadIdImage = async () => {
+    if (!idCardRef.current) return;
+    try {
+      const canvas = await html2canvas(idCardRef.current, {
+        backgroundColor: '#020617', // slate-950 equivalent for stable background
+        scale: 2,
+      });
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${profile?.name?.replace(/ /g, '_')}_ID_Card.png`;
+      a.click();
+    } catch (error) {
+      console.error("Failed to generate image", error);
+    }
+  };
 
---- DEPARTMENT OVERVIEW ---
-Total Active Personnel: ${stats.totalPersonnel}
-Active Disciplinary Actions (Strikes): ${stats.activeStrikes}
-Personnel on Leave of Absence: ${stats.personnelOnLoa}
-Pending Rank Promotions: ${stats.pendingRankChanges}
-
---- DEPARTMENTS ---
-SASP: ${stats.deptCounts.SASP}
-LSPD: ${stats.deptCounts.LSPD}
-BCSO: ${stats.deptCounts.BCSO}
-SAPR: ${stats.deptCounts.SAPR}
-Academy: ${stats.deptCounts['SASP Academy']}
-
---- RECENT CRITICAL EVENTS ---
-${stats.recentAnnouncements.filter(a => a.category === 'BOLO / Alert' || a.category === 'Critical').length} Active BOLOs/Critical Alerts
-
-End of Report.
+  const downloadIdText = () => {
+    if (!profile) return;
+    const content = `SASP OFFICIAL PERSONNEL RECORD
+Name: ${profile.name}
+Callsign/Badge: ${profile.badge_number}
+Department: ${profile.department}
+Rank: ${profile.rank || "—"}
+Role: ${profile.role}
+Status: ${profile.status || "Active"}
+Join Date: ${profile.department_join_date ? new Date(profile.department_join_date).toLocaleDateString() : "—"}
 `;
-    const blob = new Blob([reportContent], { type: "text/plain" });
+    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `SASP_Report_${new Date().toISOString().split('T')[0]}.txt`;
+    a.download = `${profile.name?.replace(/ /g, '_')}_ID_Details.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -158,11 +166,11 @@ End of Report.
           
           <div className="pb-1">
             <button 
-              onClick={handleGenerateReport} 
+              onClick={() => setShowIdModal(true)} 
               className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-brand/50 group"
             >
               <Download className="w-4 h-4 text-brand group-hover:scale-110 transition-transform" />
-              Generate Report
+              Export ID Card
             </button>
           </div>
         </div>
@@ -503,6 +511,71 @@ End of Report.
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ID Card Export Modal */}
+      <Dialog open={showIdModal} onOpenChange={setShowIdModal}>
+        <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl max-w-lg z-[9999]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold tracking-widest uppercase text-brand border-b border-brand/30 pb-3 flex items-center gap-2">
+              <Download className="w-5 h-5" /> Official Personnel Record
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-6 pt-2">
+            {/* ID Card Wrapper for html2canvas */}
+            <div className="flex justify-center w-full">
+              <div 
+                ref={idCardRef}
+                className="w-full max-w-sm p-8 rounded-xl shadow-xl bg-slate-950 border border-slate-800 flex flex-col relative overflow-hidden"
+              >
+                {/* Visuals */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-brand" />
+                
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-brand/10 border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]">
+                    {profile?.name?.charAt(0) || "U"}
+                  </div>
+                  
+                  <div>
+                    <h2 className="text-2xl font-bold text-white tracking-wide leading-tight">{profile?.name}</h2>
+                    <p className="text-brand font-mono mt-1 text-xs tracking-widest">{profile?.badge_number}</p>
+                  </div>
+
+                  <div className="w-full h-px bg-slate-800/60 my-1" />
+
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6 w-full text-left">
+                    <div>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Department</p>
+                      <p className="text-sm font-bold text-brand tracking-wide">{profile?.department || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Rank</p>
+                      <p className="text-sm font-medium text-slate-200">{profile?.rank || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Status</p>
+                      <p className="text-sm font-medium text-emerald-400">{profile?.status || "Active"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Role</p>
+                      <p className="text-sm font-medium text-slate-300">{profile?.role || "—"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-slate-800/50 pt-4">
+              <button onClick={downloadIdText} className="px-4 py-2 rounded-md text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white transition-colors">
+                Download Text
+              </button>
+              <button onClick={downloadIdImage} className="px-4 py-2 rounded-md text-sm font-medium bg-brand hover:bg-brand/90 text-black transition-colors shadow-lg shadow-brand/20">
+                Download as Image
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

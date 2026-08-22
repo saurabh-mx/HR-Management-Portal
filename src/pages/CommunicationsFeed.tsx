@@ -17,6 +17,7 @@ export default function CommunicationsFeed() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", message: "", category: "Announcement" });
   const [authorName, setAuthorName] = useState("Patrol Officer");
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -40,13 +41,13 @@ export default function CommunicationsFeed() {
     // Grab their real officer name and admin status from the employees table
     const { data } = await supabase
       .from('employees')
-      .select('name, badge_number, is_admin')
+      .select('name, badge_number, is_admin, role')
       .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
     if (data) {
       setAuthorName(`${data.name} (${data.badge_number})`);
-      if (data.is_admin) setIsAdmin(true); // Set admin status here
+      if (data.is_admin || ['High Command', 'HR'].includes(data.role)) setIsAdmin(true); // Set admin status here
     } else {
       setAuthorName(session.user.email);
     }
@@ -68,18 +69,19 @@ export default function CommunicationsFeed() {
     }
   };
 
-  const handleDeletePost = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this broadcast?")) return;
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
 
     const { error } = await supabase
       .from('Announcements')
       .delete()
-      .eq('id', id);
+      .eq('id', postToDelete);
 
     if (error) {
       alert("Failed to delete post.");
     } else {
-      setPosts(posts.filter(p => p.id !== id));
+      setPosts(posts.filter(p => p.id !== postToDelete));
+      setPostToDelete(null);
     }
   };
 
@@ -199,7 +201,7 @@ export default function CommunicationsFeed() {
                   {/* ONLY ADMINS CAN DELETE BROADCASTS */}
                   {isAdmin && (
                     <button 
-                      onClick={() => handleDeletePost(post.id)}
+                      onClick={() => setPostToDelete(post.id)}
                       className="text-slate-500 hover:text-rose-400 transition-colors p-1"
                       title="Delete Broadcast"
                     >
@@ -215,6 +217,40 @@ export default function CommunicationsFeed() {
           ))
         )}
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {postToDelete && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                  <Trash2 className="w-5 h-5 text-rose-500" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Delete Broadcast</h3>
+              </div>
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                Are you sure you want to delete this broadcast? This action is permanent and will remove the communication from all officer feeds.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setPostToDelete(null)}
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-900/20"
+                >
+                  Delete Broadcast
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

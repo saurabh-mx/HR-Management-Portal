@@ -18,6 +18,7 @@ export default function MeetingsDashboard() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authorName, setAuthorName] = useState("Command");
+  const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
   const [newMeeting, setNewMeeting] = useState({
     title: "",
     meeting_date: "",
@@ -37,13 +38,13 @@ export default function MeetingsDashboard() {
 
     const { data } = await supabase
       .from('employees')
-      .select('name, badge_number, is_admin')
+      .select('name, badge_number, is_admin, role')
       .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
     if (data) {
       setAuthorName(`${data.name} (${data.badge_number})`);
-      if (data.is_admin) setIsAdmin(true);
+      if (data.is_admin || ['High Command', 'HR'].includes(data.role)) setIsAdmin(true);
     }
   }
 
@@ -74,10 +75,20 @@ export default function MeetingsDashboard() {
     }
   };
 
-  const handleDeleteMeeting = async (id: string) => {
-    if (!window.confirm("Are you sure you want to cancel this meeting?")) return;
-    const { error } = await supabase.from('meetings').delete().eq('id', id);
-    if (!error) setMeetings(meetings.filter(m => m.id !== id));
+  const handleConfirmDelete = async () => {
+    if (!meetingToDelete) return;
+
+    const { error } = await supabase
+      .from('meetings')
+      .delete()
+      .eq('id', meetingToDelete);
+
+    if (error) {
+      alert("Failed to delete meeting.");
+    } else {
+      setMeetings(meetings.filter(m => m.id !== meetingToDelete));
+      setMeetingToDelete(null);
+    }
   };
 
   // Helper to format dates nicely
@@ -131,11 +142,11 @@ export default function MeetingsDashboard() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Date</label>
-                <input required type="date" value={newMeeting.meeting_date} onChange={e => setNewMeeting({...newMeeting, meeting_date: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input required type="date" value={newMeeting.meeting_date} onChange={e => setNewMeeting({...newMeeting, meeting_date: e.target.value})} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Time (Local)</label>
-                <input required type="time" value={newMeeting.meeting_time} onChange={e => setNewMeeting({...newMeeting, meeting_time: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input required type="time" value={newMeeting.meeting_time} onChange={e => setNewMeeting({...newMeeting, meeting_time: e.target.value})} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer" />
               </div>
               <div className="space-y-2 lg:col-span-3">
                 <label className="text-xs font-medium text-slate-400">Agenda / Description</label>
@@ -181,7 +192,7 @@ export default function MeetingsDashboard() {
                 </div>
                 {/* ADMIN ONLY DELETE BUTTON */}
                 {isAdmin && (
-                  <button onClick={() => handleDeleteMeeting(meeting.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 -mt-1 -mr-1" title="Cancel Meeting">
+                  <button onClick={() => setMeetingToDelete(meeting.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 -mt-1 -mr-1" title="Cancel Meeting">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -210,6 +221,40 @@ export default function MeetingsDashboard() {
           ))
         )}
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {meetingToDelete && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                  <Trash2 className="w-5 h-5 text-rose-500" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Cancel Meeting</h3>
+              </div>
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                Are you sure you want to cancel this meeting? This action is permanent and will remove the event from the dashboard for all officers.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setMeetingToDelete(null)}
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  Close
+                </button>
+                <button 
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-900/20"
+                >
+                  Cancel Meeting
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

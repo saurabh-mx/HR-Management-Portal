@@ -234,7 +234,7 @@ export default function AdminPanel() {
   };
 
   const handleSaveEdit = async (id: string) => {
-    const isAdmin = ['admin', 'High Command', 'Command', 'HR'].includes(editForm.role);
+    const isAdmin = editForm.role === 'admin';
     const { error } = await supabase
       .from('employees')
       .update({ role: editForm.role, department: editForm.department, is_admin: isAdmin })
@@ -253,9 +253,6 @@ export default function AdminPanel() {
 
   const getRoleWeight = (r: string) => {
     if (r === 'admin') return 4;
-    if (r === 'High Command') return 3;
-    if (r === 'Command') return 2;
-    if (r === 'HR') return 1;
     return 0;
   };
 
@@ -419,7 +416,7 @@ export default function AdminPanel() {
   const handleBulkUpdate = (field: 'role' | 'department', value: string) => {
     setStagedEmployees(stagedEmployees.map(emp => {
       if (selectedStagedIds.has(emp._staged_id)) {
-        const isAdmin = field === 'role' ? ['admin', 'High Command', 'Command', 'HR'].includes(value) : emp.is_admin;
+        const isAdmin = field === 'role' ? value === 'admin' : emp.is_admin;
         return { ...emp, [field]: value, is_admin: isAdmin };
       }
       return emp;
@@ -664,6 +661,7 @@ export default function AdminPanel() {
                        {getRoleWeight(currentUserRole) >= 3 && <button onClick={() => handleBulkUpdate('role', 'High Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">High Command</button>}
                        {getRoleWeight(currentUserRole) >= 2 && <button onClick={() => handleBulkUpdate('role', 'Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Command</button>}
                        {getRoleWeight(currentUserRole) >= 1 && <button onClick={() => handleBulkUpdate('role', 'HR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">HR</button>}
+                       <button onClick={() => handleBulkUpdate('role', 'Supervisor')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Supervisor</button>
                        <button onClick={() => handleBulkUpdate('role', 'Patrol Officer')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Patrol Officer</button>
                        <button onClick={() => handleBulkUpdate('role', 'Student')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Student</button>
                     </div>
@@ -742,6 +740,7 @@ export default function AdminPanel() {
                               {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
                               {getRoleWeight(currentUserRole) >= 2 && <option value="Command">Command</option>}
                               {getRoleWeight(currentUserRole) >= 1 && <option value="HR">HR</option>}
+                              <option value="Supervisor">Supervisor</option>
                               <option value="Patrol Officer">Patrol Officer</option>
                               <option value="Student">Student</option>
                             </select>
