@@ -106,8 +106,12 @@ export const Sidebar = () => {
       {/* User Profile Snippet (Bottom) */}
       <Link to="/profile" className="block p-5 border-t border-slate-800/60 bg-[#0a0f18] hover:bg-slate-900 transition-all duration-300 group cursor-pointer">
         <div className="flex items-center gap-4 px-2">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center text-brand font-bold text-sm border border-slate-700/50 shadow-lg group-hover:shadow-[0_0_15px_rgba(var(--brand-main),0.4)] transition-all duration-300 group-hover:scale-105">
-            <span>{profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'HR'}</span>
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center text-brand font-bold text-sm border border-slate-700/50 shadow-lg group-hover:shadow-[0_0_15px_rgba(var(--brand-main),0.4)] transition-all duration-300 group-hover:scale-105 overflow-hidden">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span>{profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'HR'}</span>
+            )}
           </div>
           <div className="flex flex-col overflow-hidden ml-1">
             <span className="text-sm font-extrabold tracking-widest text-slate-200 uppercase truncate group-hover:text-white transition-colors">
