@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
 import type { Employee } from "@/types";
 import { runBackgroundAutoSync } from "@/lib/syncService";
+import { logAuditAction } from "@/lib/auditLogger";
 
 interface AuthContextType {
   session: Session | null;
@@ -38,7 +39,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        fetchProfile(session.user.email);
+        if (_event === 'SIGNED_IN') {
+          fetchProfile(session.user.email, true);
+        } else {
+          fetchProfile(session.user.email);
+        }
       } else {
         setProfile(null);
         setLoading(false);
@@ -48,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (email: string | undefined) => {
+  const fetchProfile = async (email: string | undefined, isLoginEvent: boolean = false) => {
     if (!email) {
       setLoading(false);
       return;
@@ -63,6 +68,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data) {
       const emp = data as Employee;
       setProfile(emp);
+      
+      if (isLoginEvent) {
+        logAuditAction("USER_LOGIN", emp.name, "User logged into the portal", email);
+      }
+      
       applyDepartmentTheme(emp.department);
 
       // Trigger Auto-Sync if this user is an admin
@@ -89,6 +99,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
     } else {
+      if (isLoginEvent) {
+        logAuditAction("USER_LOGIN", "Unknown", "Unregistered user logged in", email);
+      }
       setProfile({ name: email, role: "Unassigned", is_admin: false });
       applyDepartmentTheme();
     }

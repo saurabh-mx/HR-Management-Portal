@@ -8,7 +8,8 @@ import {
   CalendarOff, 
   ShieldAlert, 
   Award, 
-  FileText 
+  FileText,
+  ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -27,6 +28,7 @@ export const Sidebar = () => {
     { name: 'LOA Requests', path: '/loa', icon: CalendarOff },
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },
     ...(isAdminOrCommand ? [{ name: 'Rank Management', path: '/promotions', icon: Award }] : []),
+    ...(profile?.is_admin ? [{ name: 'Audit Logs', path: '/audit-logs', icon: ClipboardList }] : []),
     { name: 'HR Requests', path: '/hr-requests', icon: FileText },
     { name: 'Documents', path: '/documents', icon: BookOpen }
   ];

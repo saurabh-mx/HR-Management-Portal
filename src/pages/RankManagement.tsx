@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, CheckCircle, XCircle, Clock, Trash2, Shield, Search, Filter } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
 
 interface PromotionRecord {
@@ -175,6 +176,7 @@ export default function RankManagement() {
 
     if (error) alert("Failed to submit request: " + error.message);
     else if (data) {
+      logAuditAction("ROLE_REQUEST", newRecord.officer_name, `Requested ${formattedRank} (Reason: ${newRecord.reason})`, authorName);
       setRecords([data[0], ...records]);
       setNewRecord({ officer_name: "", current_rank: "", department: "", action_type: "Promotion", requested_rank: "", reason: "", demotion_duration: "" });
     }
@@ -192,7 +194,11 @@ export default function RankManagement() {
 
     if (type === 'Delete') {
       const { error } = await supabase.from('promotions').delete().eq('id', id);
-      if (!error) setRecords(records.filter(rec => rec.id !== id));
+      if (!error) {
+        const rec = records.find(r => r.id === id);
+        if (rec) logAuditAction("ROLE_DELETED", rec.officer_name, `Deleted rank request by Admin`, authorName);
+        setRecords(records.filter(rec => rec.id !== id));
+      }
     } else {
       const newStatus = type === 'Approve' ? 'Approved' : 'Denied';
       const { error } = await supabase.from('promotions').update({ 
@@ -201,6 +207,8 @@ export default function RankManagement() {
       }).eq('id', id);
       
       if (!error) {
+        const rec = records.find(r => r.id === id);
+        if (rec) logAuditAction("ROLE_DECISION", rec.officer_name, `${newStatus} rank request for ${rec.requested_rank}`, authorName);
         setRecords(records.map(rec => rec.id === id ? { ...rec, status: newStatus, processed_by: authorName } : rec));
       }
     }
@@ -220,6 +228,7 @@ export default function RankManagement() {
     if (error) {
       alert(`Failed to bulk ${action.toLowerCase()} records: ` + error.message);
     } else {
+      logAuditAction("ROLE_BULK_DECISION", "Multiple", `Bulk ${action} ${selectedRecords.length} rank requests`, authorName);
       setRecords(records.map(r => 
         selectedRecords.includes(r.id) ? { ...r, status: action, processed_by: authorName } : r
       ));

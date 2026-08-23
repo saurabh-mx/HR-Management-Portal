@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Clock, Users, Trash2, PlusCircle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
 
 interface Meeting {
@@ -71,6 +72,7 @@ export default function MeetingsDashboard() {
     if (error) {
       alert("Failed to schedule meeting: " + error.message);
     } else if (data) {
+      logAuditAction("MEETING_SCHEDULED", "Multiple", `Scheduled ${newMeeting.type} meeting: ${newMeeting.title} on ${newMeeting.meeting_date} at ${newMeeting.meeting_time}`, authorName);
       // Re-fetch to ensure exact correct sorting by date/time
       fetchMeetings();
       setNewMeeting({ title: "", meeting_date: "", meeting_time: "", type: "Mandatory", description: "" });
@@ -88,6 +90,8 @@ export default function MeetingsDashboard() {
     if (error) {
       alert("Failed to delete meeting.");
     } else {
+      const meeting = meetings.find(m => m.id === meetingToDelete);
+      if (meeting) logAuditAction("MEETING_DELETED", "Multiple", `Canceled meeting: ${meeting.title}`, authorName);
       setMeetings(meetings.filter(m => m.id !== meetingToDelete));
       setMeetingToDelete(null);
     }

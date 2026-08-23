@@ -5,6 +5,7 @@ import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, D
 import { supabase } from "@/lib/supabaseClient";
 import Papa from "papaparse";
 import { useAuth } from "@/context/AuthContext";
+import { logAuditAction } from "@/lib/auditLogger";
 
 interface Employee {
   id: string;
@@ -217,6 +218,7 @@ export default function AdminPanel() {
 
     if (error) alert("Failed to add officer: " + error.message);
     else if (data) {
+      logAuditAction("PERSONNEL_ADDED", newEmployee.name, `Manually added to roster (SASP - ${newEmployee.rank})`);
       setEmployees([...employees, data[0]]);
       setNewEmployee({ name: "", badge_number: "", rank: "Cadet", discord_tag: "" });
     }
@@ -227,7 +229,11 @@ export default function AdminPanel() {
   const handleDeleteEmployee = async (id: string) => {
     if (!window.confirm("Are you sure you want to completely remove this officer from the database?")) return;
     const { error } = await supabase.from('employees').delete().eq('id', id);
-    if (!error) setEmployees(employees.filter(emp => emp.id !== id));
+    if (!error) {
+      const emp = employees.find(e => e.id === id);
+      if (emp) logAuditAction("PERSONNEL_REMOVED", emp.name, "Removed from database by Admin");
+      setEmployees(employees.filter(emp => emp.id !== id));
+    }
   };
 
   const handleEditClick = (emp: Employee) => {
@@ -244,6 +250,8 @@ export default function AdminPanel() {
 
     if (error) alert("Failed to update: " + error.message);
     else {
+      const emp = employees.find(e => e.id === id);
+      if (emp) logAuditAction("PERSONNEL_UPDATED", emp.name, `Updated Role to ${editForm.role} and Dept to ${editForm.department}`);
       setEmployees(employees.map(emp => emp.id === id ? { ...emp, ...editForm, is_admin: isAdmin } : emp));
       setEditingId(null);
     }
@@ -451,6 +459,10 @@ export default function AdminPanel() {
        }
     }
     
+    if (added > 0 || updated > 0) {
+      logAuditAction("MASTER_SYNC", "Multiple", `Synced DB: ${added} added, ${updated} updated via CSV import`);
+    }
+
     alert(`Database Sync Complete!\nAdded: ${added} new officers\nUpdated: ${updated} existing records`);
     setStagedEmployees([]);
     setSelectedStagedIds(new Set());

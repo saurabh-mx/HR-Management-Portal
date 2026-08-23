@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, Clock, History, MessageSquare, Send, Ticket, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
 
 interface HRRequest {
@@ -95,6 +96,7 @@ export default function HRRequestsDashboard() {
       alert("Failed to submit ticket: " + error.message);
       setShowSubmitConfirm(false);
     } else if (data) {
+      logAuditAction("HR_REQUEST_FILED", userProfile.name, `Submitted HR Ticket: ${newRequest.subject}`, userProfile.name);
       setRequests([data[0], ...requests]);
       setNewlyCreatedTicket(data[0]);
       setNewRequest({ subject: "", description: "" });
@@ -161,6 +163,7 @@ export default function HRRequestsDashboard() {
       setComments([...comments, data[0]]);
     }
 
+    logAuditAction("HR_REQUEST_RESOLVED", activeTicket.officer_name, `Resolved HR Ticket: ${activeTicket.subject} by Admin`, userProfile.name);
     await handleUpdateStatus(activeTicket.id, 'Resolved');
     setShowResolveConfirm(false);
   };
@@ -169,6 +172,8 @@ export default function HRRequestsDashboard() {
     if (!ticketToDelete) return;
     const { error } = await supabase.from('hr_requests').delete().eq('id', ticketToDelete);
     if (!error) {
+      const ticket = requests.find(r => r.id === ticketToDelete);
+      if (ticket) logAuditAction("HR_REQUEST_DELETED", ticket.officer_name, `Deleted HR Ticket: ${ticket.subject} by Admin`, userProfile?.name);
       setRequests(requests.filter(req => req.id !== ticketToDelete));
       setActiveTicket(null);
       setTicketToDelete(null);

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Send, Megaphone, AlertCircle, ShieldAlert, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
 
 interface Post {
@@ -66,6 +67,7 @@ export default function CommunicationsFeed() {
       console.error("Error creating post:", error);
       alert("Failed to broadcast message.");
     } else if (data) {
+      logAuditAction("BROADCAST_CREATED", "Multiple", `Transmitted ${newPost.category}: ${newPost.title}`, authorName);
       setPosts([data[0], ...posts]);
       setNewPost({ title: "", message: "", category: "Announcement" });
     }
@@ -82,6 +84,8 @@ export default function CommunicationsFeed() {
     if (error) {
       alert("Failed to delete post.");
     } else {
+      const post = posts.find(p => p.id === postToDelete);
+      if (post) logAuditAction("BROADCAST_DELETED", "Multiple", `Deleted broadcast: ${post.title}`, authorName);
       setPosts(posts.filter(p => p.id !== postToDelete));
       setPostToDelete(null);
     }

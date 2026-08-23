@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Phone, Mail } from "lucide-react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ export default function Profile() {
     if (error) {
       toast.error("Error updating password: " + error.message);
     } else {
+      logAuditAction("PASSWORD_UPDATED", profile?.name || "Unknown", "User updated their password manually", profile?.name);
       toast.success("Password successfully updated.");
       setNewPassword("");
       setConfirmPassword("");
@@ -51,6 +53,7 @@ export default function Profile() {
       a.href = dataUrl;
       a.download = `${profile?.name?.replace(/ /g, '_') || 'Personnel'}_ID_Card.png`;
       a.click();
+      logAuditAction("ID_EXPORTED", profile?.name || "Unknown", "Exported Digital ID Card as PNG", profile?.name);
     } catch (error: any) {
       alert("Failed to generate image.");
     }
@@ -74,6 +77,7 @@ Join Date: ${formatDate(profile.department_join_date)}
     a.download = `${profile.name?.replace(/ /g, '_')}_ID_Details.txt`;
     a.click();
     URL.revokeObjectURL(url);
+    logAuditAction("ID_EXPORTED", profile.name || "Unknown", "Exported Digital ID Card as Text", profile.name);
   };
 
   if (!profile) return <div className="p-8 text-slate-400 animate-pulse">Loading Profile...</div>;

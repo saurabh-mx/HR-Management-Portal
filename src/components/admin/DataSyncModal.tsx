@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Database, Link as LinkIcon, RefreshCw, X, AlertTriangle, Play, Save, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import Papa from "papaparse";
 
 interface DataSyncModalProps {
@@ -12,12 +13,13 @@ interface DataSyncModalProps {
 export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncModalProps) {
   const [csvUrl, setCsvUrl] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("");
   const [stagedEmployees, setStagedEmployees] = useState<any[]>([]);
   const [selectedStagedIds, setSelectedStagedIds] = useState<Set<string>>(new Set());
   const [isCommitting, setIsCommitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [syncResult, setSyncResult] = useState<{added: number, updated: number, deleted?: number} | null>(null);
-  const [savedSyncs, setSavedSyncs] = useState<{name: string, url: string, lastSync: string, isAutoSync?: boolean, defaultDept?: string}[]>([]);
+  const [savedSyncs, setSavedSyncs] = useState<{name: string, url: string, lastSync: string, isAutoSync?: boolean, defaultDept?: string, lastSyncStatus?: 'success' | 'error'}[]>([]);
   const [isSavingLink, setIsSavingLink] = useState(false);
   const [syncProfileName, setSyncProfileName] = useState("");
 
@@ -57,15 +59,18 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
     const urlToUse = typeof eOrUrl === 'string' ? eOrUrl : csvUrl;
     if (!urlToUse) return alert("Please enter a valid Google Sheets CSV URL.");
     setIsSyncing(true);
+    setSyncStatus("Fetching CSV data...");
 
     try {
       const response = await fetch(urlToUse);
       const csvText = await response.text();
+      setSyncStatus("Parsing CSV data...");
       
       Papa.parse(csvText, {
         header: false,
         skipEmptyLines: true,
         complete: async (results) => {
+          setSyncStatus("Analyzing headers...");
           const rows = results.data as string[][];
 
           let headerIdx = -1;
@@ -117,14 +122,18 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
           if (idxName === -1 || idxBadge === -1) {
             alert("Could not find 'NAME' or 'BADGE #' columns.");
             setIsSyncing(false);
+            setSyncStatus("");
             return;
           }
 
+          setSyncStatus("Fetching current database roster...");
           const { data: currentRoster } = await supabase.from('employees').select('*');
           
           const stagedData: any[] = [];
           const processedIds = new Set<string>();
           const sheetDepartments = new Set<string>();
+
+          setSyncStatus(`Processing ${rows.length - (headerIdx + 2)} records...`);
 
           for (let i = headerIdx + 2; i < rows.length; i++) {
             const row = rows[i];
@@ -230,10 +239,11 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
           setStagedEmployees(stagedData);
           setShowConfirmModal(true);
           setIsSyncing(false);
+          setSyncStatus("");
           
           if (typeof eOrUrl === 'string') {
             const updatedSyncs = savedSyncs.map(s => {
-              if (s.url === eOrUrl) return { ...s, lastSync: new Date().toLocaleDateString() };
+              if (s.url === eOrUrl) return { ...s, lastSync: new Date().toLocaleString(), lastSyncStatus: 'success' as const };
               return s;
             });
             setSavedSyncs(updatedSyncs);
@@ -244,11 +254,29 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
         error: (error: any) => {
           alert("Error parsing CSV: " + error.message);
           setIsSyncing(false);
+          setSyncStatus("");
+          if (typeof eOrUrl === 'string') {
+            const updatedSyncs = savedSyncs.map(s => {
+              if (s.url === eOrUrl) return { ...s, lastSync: new Date().toLocaleString(), lastSyncStatus: 'error' as const };
+              return s;
+            });
+            setSavedSyncs(updatedSyncs);
+            localStorage.setItem('hr_portal_saved_syncs', JSON.stringify(updatedSyncs));
+          }
         }
       });
     } catch (err: any) {
       alert("Error fetching CSV. Ensure it is a public 'Publish to Web' CSV link.\n" + err.message);
       setIsSyncing(false);
+      setSyncStatus("");
+      if (typeof eOrUrl === 'string') {
+        const updatedSyncs = savedSyncs.map(s => {
+          if (s.url === eOrUrl) return { ...s, lastSync: new Date().toLocaleString(), lastSyncStatus: 'error' as const };
+          return s;
+        });
+        setSavedSyncs(updatedSyncs);
+        localStorage.setItem('hr_portal_saved_syncs', JSON.stringify(updatedSyncs));
+      }
     }
   };
 
@@ -293,6 +321,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
        }
     }
     
+    logAuditAction("BULK_IMPORT", "Multiple", `Master Import complete: ${added} added, ${updated} updated, ${deleted} deleted.`);
     setSyncResult({ added, updated, deleted });
     setSelectedStagedIds(new Set());
     setIsCommitting(false);
@@ -616,11 +645,22 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
               className="w-full bg-brand/10 hover:bg-brand/20 text-brand border border-brand/30 px-4 py-3 rounded-md font-bold tracking-widest text-sm uppercase transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isSyncing ? (
-                <><RefreshCw className="w-4 h-4 animate-spin" /> Fetching & Parsing...</>
+                <><RefreshCw className="w-4 h-4 animate-spin" /> {syncStatus || "Fetching & Parsing..."}</>
               ) : (
                 <><RefreshCw className="w-4 h-4" /> Start Sync Process</>
               )}
             </button>
+            
+            {isSyncing && syncStatus && (
+              <div className="flex items-center gap-3 mt-4 p-3 bg-brand/5 border border-brand/20 rounded-lg animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex-1">
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-brand rounded-full animate-pulse shadow-[0_0_10px_rgba(var(--brand),0.5)]" style={{ width: '100%' }}></div>
+                  </div>
+                  <p className="text-xs text-brand font-medium tracking-wide mt-2">{syncStatus}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -643,7 +683,17 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
               savedSyncs.map((sync, idx) => (
                 <div key={idx} className="bg-slate-900/80 border border-slate-800 rounded-lg p-3 hover:border-slate-600 transition-colors group">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-sm font-bold text-slate-200">{sync.name}</p>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className={`w-2 h-2 rounded-full ${
+                          sync.lastSyncStatus === 'error' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse' : 
+                          sync.lastSyncStatus === 'success' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 
+                          'bg-slate-600'
+                        }`} 
+                        title={sync.lastSyncStatus === 'error' ? 'Last sync failed' : sync.lastSyncStatus === 'success' ? 'Last sync successful' : 'Not synced yet'}
+                      />
+                      <p className="text-sm font-bold text-slate-200">{sync.name}</p>
+                    </div>
                     <button 
                       onClick={() => handleDeleteSavedSync(idx)}
                       className="text-slate-500 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -653,14 +703,18 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                   </div>
                   <p className="text-[9px] text-slate-500 font-mono truncate mb-3">{sync.url}</p>
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-800">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={sync.isAutoSync || false}
-                        onChange={() => handleToggleAutoSync(idx)}
-                        className="rounded bg-slate-900 border-slate-700 text-brand focus:ring-brand w-3 h-3"
-                      />
-                      <span className="text-[10px] text-slate-400 font-medium">Auto-Sync on Load</span>
+                    <label className="flex items-center gap-2 cursor-pointer group/toggle">
+                      <div className="relative">
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={sync.isAutoSync || false}
+                          onChange={() => handleToggleAutoSync(idx)}
+                        />
+                        <div className={`block w-7 h-4 rounded-full transition-colors ${sync.isAutoSync ? 'bg-emerald-500' : 'bg-slate-700 group-hover/toggle:bg-slate-600'}`}></div>
+                        <div className={`absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform ${sync.isAutoSync ? 'translate-x-3' : 'translate-x-0'}`}></div>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-medium select-none">Auto-Sync on Load</span>
                     </label>
                   </div>
                   <div className="flex justify-between items-center mt-2">

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarOff, CheckCircle, Clock, Trash2, Search } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
 
 interface LOARequest {
@@ -51,6 +52,7 @@ export default function LOAManagement() {
     e.preventDefault();
     const { data } = await supabase.from('loa_requests').insert([{ ...newRequest, officer_name: authorName, status: 'Pending Review' }]).select();
     if (data) {
+      logAuditAction("LOA_SUBMITTED", authorName, `Submitted LOA request from ${newRequest.start_date} to ${newRequest.end_date}`, authorName);
       setRequests([data[0], ...requests]);
       setNewRequest({ start_date: "", end_date: "", reason: "" });
     }
@@ -64,7 +66,11 @@ export default function LOAManagement() {
     }
     
     const { error } = await supabase.from('loa_requests').update(updates).eq('id', id);
-    if (!error) setRequests(requests.map(req => req.id === id ? { ...req, ...updates } : req));
+    if (!error) {
+      const req = requests.find(r => r.id === id);
+      if (req) logAuditAction("LOA_UPDATED", req.officer_name, `LOA status changed to: ${newStatus}`, authorName);
+      setRequests(requests.map(req => req.id === id ? { ...req, ...updates } : req));
+    }
   };
 
   const handleConfirmStatus = async () => {
@@ -77,6 +83,8 @@ export default function LOAManagement() {
     if (!requestToDelete) return;
     const { error } = await supabase.from('loa_requests').delete().eq('id', requestToDelete);
     if (!error) {
+      const req = requests.find(r => r.id === requestToDelete);
+      if (req) logAuditAction("LOA_DELETED", req.officer_name, `Deleted LOA request by Admin`, authorName);
       setRequests(requests.filter(req => req.id !== requestToDelete));
       setRequestToDelete(null);
     }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, CheckCircle2, Circle, Database } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from "@/components/admin/DataSyncModal";
 
 interface Employee {
@@ -117,14 +118,8 @@ export default function EmployeeDirectory() {
 
   useEffect(() => {
     fetchEmployees();
-    fetchStrikes();
     checkAdminStatus();
   }, []);
-
-  async function fetchStrikes() {
-    const { data } = await supabase.from('strikes').select('name, status, action_type, strike_level');
-    if (data) setAllStrikes(data);
-  }
 
   // SECURITY CHECK: Verify if the logged-in user is High Command
   async function checkAdminStatus() {
@@ -217,6 +212,7 @@ export default function EmployeeDirectory() {
       console.error("Error adding employee:", error);
       alert("Failed to onboard recruit: " + error.message);
     } else if (data) {
+      logAuditAction("ADD_PERSONNEL", newEmployee.badge_number, `Added new employee: ${newEmployee.name} (${newEmployee.department} - ${newEmployee.role})`);
       setEmployees([...employees, data[0]]);
       setIsAdding(false);
       setNewEmployee({ name: "", badge_number: "", role: "Patrol Officer", department: "SASP", discord_tag: "" });

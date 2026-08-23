@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert, Trash2, Search } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
 
 interface Strike {
@@ -101,7 +102,9 @@ export default function StrikeManagement() {
     }
 
     if (data) {
-      setStrikes([data[0], ...strikes]);
+      const addedStrike = data[0];
+      logAuditAction("STRIKE_ISSUED", addedStrike.name, `Issued ${addedStrike.action_type}${addedStrike.action_type === 'Strike' ? ` (Level ${addedStrike.strike_level})` : ''} - Reason: ${addedStrike.reason}`, authorName);
+      setStrikes([addedStrike, ...strikes]);
       setNewStrike({ name: "", reason: "" });
       setActionType("Warning");
       setStrikeLevel("1/5");
@@ -111,7 +114,11 @@ export default function StrikeManagement() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Remove this disciplinary action?")) return;
     const { error } = await supabase.from('strikes').delete().eq('id', id);
-    if (!error) setStrikes(strikes.filter(s => s.id !== id));
+    if (!error) {
+      const strike = strikes.find(s => s.id === id);
+      if (strike) logAuditAction("STRIKE_REMOVED", strike.name, `Removed disciplinary action (${strike.action_type}) by Admin`, authorName);
+      setStrikes(strikes.filter(s => s.id !== id));
+    }
   };
 
   const handleConfirmRevoke = async () => {
@@ -124,6 +131,8 @@ export default function StrikeManagement() {
     }).eq('id', strikeToRevoke);
     
     if (!error) {
+      const strike = strikes.find(s => s.id === strikeToRevoke);
+      if (strike) logAuditAction("STRIKE_REVOKED", strike.name, `Revoked strike (${strike.action_type}) by Admin`, authorName);
       setStrikes(strikes.map(s => s.id === strikeToRevoke ? { ...s, status: 'revoked', revoked_by: authorName, revoked_at: now } : s));
       setStrikeToRevoke(null);
     } else {
@@ -133,7 +142,11 @@ export default function StrikeManagement() {
 
   const handleApprove = async (id: string) => {
     const { error } = await supabase.from('strikes').update({ status: 'approved' }).eq('id', id);
-    if (!error) setStrikes(strikes.map(s => s.id === id ? { ...s, status: 'approved' } : s));
+    if (!error) {
+      const strike = strikes.find(s => s.id === id);
+      if (strike) logAuditAction("STRIKE_APPROVED", strike.name, `Approved strike (${strike.action_type}) by Admin`, authorName);
+      setStrikes(strikes.map(s => s.id === id ? { ...s, status: 'approved' } : s));
+    }
   };
 
   // 🔍 SAFE FILTER LOGIC

@@ -15,6 +15,7 @@ import Landing from "./pages/Landing";
 import AdminPanel from "./pages/AdminPanel";
 import DocumentsDashboard from "./pages/DocumentsDashboard";
 import Profile from "./pages/Profile";
+import AuditLogs from "./pages/AuditLogs";
 
 function AppRoutes() {
   const { session, loading } = useAuth();
@@ -43,6 +44,7 @@ function AppRoutes() {
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/documents" element={<DocumentsDashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/audit-logs" element={<AuditLogs />} />
         </Route>
       </Routes>
     </BrowserRouter>
