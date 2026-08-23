@@ -57,6 +57,21 @@ const hexToRgba = (hex: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+export const isStatusActive = (s?: string) => {
+  const str = (s || '').trim().toLowerCase();
+  return str === 'active' || str === 'active duty' || str === 'approved' || str === 'on duty';
+};
+
+export const isStatusInactive = (s?: string) => {
+  const str = (s || '').trim().toLowerCase();
+  return str === 'inactive' || str === 'terminated' || str === 'suspended' || str === 'fired' || str === 'resigned' || str === 'banned';
+};
+
+export const isStatusLOA = (s?: string) => {
+  const str = (s || '').trim().toLowerCase();
+  return str === 'loa' || str === 'on loa';
+};
+
 const EmployeeRow = ({ employee, onClick }: { employee: Employee, onClick: () => void }) => {
   const deptColor = getDepartmentColor(employee.department);
   const [isHovered, setIsHovered] = useState(false);
@@ -85,9 +100,9 @@ const EmployeeRow = ({ employee, onClick }: { employee: Employee, onClick: () =>
       }}>{employee.name}</td>
       <td className="py-4 px-3">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-sm ${
-          employee.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
-          employee.status === 'Inactive' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]' :
-          employee.status === 'LOA' ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20 shadow-[0_0_10px_rgba(217,70,239,0.1)]' :
+          isStatusActive(employee.status) ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
+          isStatusInactive(employee.status) ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]' :
+          isStatusLOA(employee.status) ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20 shadow-[0_0_10px_rgba(217,70,239,0.1)]' :
           'bg-slate-500/10 text-slate-400 border-slate-500/20'
         }`}>
           {employee.status}
@@ -364,21 +379,21 @@ export default function EmployeeDirectory() {
         />
         <StatCard
           title="Active Duty"
-          value={departmentEmployees.filter(e => e.status === "Active").length}
+          value={departmentEmployees.filter(e => isStatusActive(e.status)).length}
           icon={Shield}
-          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => e.status === "Active"))}
+          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => isStatusActive(e.status)))}
         />
         <StatCard
           title="On LOA"
-          value={departmentEmployees.filter(e => e.status === "LOA").length}
+          value={departmentEmployees.filter(e => isStatusLOA(e.status)).length}
           icon={CalendarOff}
-          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => e.status === "LOA"))}
+          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => isStatusLOA(e.status)))}
         />
         <StatCard
           title="Inactive"
-          value={departmentEmployees.filter(e => e.status === "Inactive").length}
+          value={departmentEmployees.filter(e => isStatusInactive(e.status)).length}
           icon={UserMinus}
-          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => e.status === "Inactive"))}
+          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => isStatusInactive(e.status)))}
         />
       </div>
 
