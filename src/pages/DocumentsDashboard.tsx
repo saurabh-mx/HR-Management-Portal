@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { BookOpen, ChevronRight, FileText } from "lucide-react";
 import { documents, hexToRgba } from "@/data/documentsData";
 import { useAuth } from "@/context/AuthContext";
@@ -53,33 +53,9 @@ const DocumentButton = ({ doc, isActive, onSelect, index, deptColor }: any) => {
   );
 };
 
-const AnimatedSection = ({ children, idx }: any) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const domRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '50px' });
-    
-    if (domRef.current) {
-      observer.observe(domRef.current);
-    }
-    
-    return () => observer.disconnect();
-  }, []);
-
+const AnimatedSection = ({ children }: any) => {
   return (
-    <div 
-      ref={domRef} 
-      className={`transition-all duration-700 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-      style={{ transitionDelay: isVisible ? `${(idx % 5) * 100}ms` : '0ms' }}
-    >
+    <div className="w-full">
       {children}
     </div>
   );
@@ -87,7 +63,6 @@ const AnimatedSection = ({ children, idx }: any) => {
 
 export default function DocumentsDashboard() {
   const { profile } = useAuth();
-  const [expandedSection, setExpandedSection] = useState<number | null>(0);
   const [activeDoc, setActiveDoc] = useState(documents[0]);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -105,7 +80,6 @@ export default function DocumentsDashboard() {
     setIsAnimating(true);
     setTimeout(() => {
       setActiveDoc(doc);
-      setExpandedSection(doc.sections ? 0 : null);
       setIsAnimating(false);
     }, 300);
   };
@@ -227,45 +201,8 @@ export default function DocumentsDashboard() {
                 <div className="max-w-4xl mx-auto space-y-3 pb-8">
                   {activeDoc.sections.map((section: any, idx: number) => (
                     <AnimatedSection key={idx} idx={idx}>
-                      <div 
-                        className={`flex flex-col rounded-2xl border transition-all duration-300 overflow-hidden ${expandedSection === idx ? 'border-slate-700 bg-slate-900/60 shadow-lg' : 'border-slate-800/80 bg-slate-900/40'}`}
-                      >
-                        <div 
-                          onClick={() => setExpandedSection(expandedSection === idx ? null : idx)}
-                          className={`flex items-center gap-5 p-4 px-5 transition-all duration-300 cursor-pointer group ${expandedSection === idx ? 'bg-slate-800/40' : 'hover:bg-slate-800/80 hover:-translate-y-1 hover:shadow-xl'}`}
-                        >
-                          <div 
-                            className="px-3 py-1.5 text-[10px] font-extrabold tracking-[0.2em] uppercase rounded-lg border shadow-sm shrink-0 w-28 text-center transition-colors"
-                            style={{
-                              color: section.color,
-                              borderColor: hexToRgba(section.color, 0.3),
-                              backgroundColor: hexToRgba(section.color, 0.1),
-                            }}
-                          >
-                            {section.badge}
-                          </div>
-                          
-                          <h3 className={`font-bold text-base transition-colors flex-1 ${expandedSection === idx ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
-                            {section.title}
-                          </h3>
-                          
-                          <div 
-                            className="w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm"
-                            style={{ 
-                              borderColor: expandedSection === idx ? section.color : 'rgba(30, 41, 59, 1)',
-                              backgroundColor: expandedSection === idx ? section.color : 'transparent',
-                              color: expandedSection === idx ? '#fff' : '#64748b'
-                            }}
-                          >
-                            <ChevronRight className={`w-4 h-4 transition-transform duration-500 ${expandedSection === idx ? 'rotate-90' : 'group-hover:translate-x-0.5'}`} />
-                          </div>
-                        </div>
-                        
-                        <div 
-                          className={`transition-all duration-500 ease-in-out origin-top ${expandedSection === idx ? 'max-h-[2000px] opacity-100 scale-y-100' : 'max-h-0 opacity-0 scale-y-95 pointer-events-none'}`}
-                        >
-                          {section.content}
-                        </div>
+                      <div className="w-full">
+                        {section.content}
                       </div>
                     </AnimatedSection>
                   ))}

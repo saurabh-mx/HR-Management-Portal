@@ -1,5 +1,6 @@
-
-import { Book, FileSpreadsheet, ShieldAlert, FileText, Zap, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { Book, ShieldAlert, FileText, Zap, AlertTriangle, Scale, CheckCircle2, XCircle, Map as MapIcon, Shield, Crosshair } from 'lucide-react';
+import { PenalCodeComponent } from '../components/documents/PenalCodeComponent';
 
 export const hexToRgba = (hex: string, alpha: number) => {
   if (!hex || hex.length !== 7) return `rgba(255, 255, 255, ${alpha})`;
@@ -7,6 +8,183 @@ export const hexToRgba = (hex: string, alpha: number) => {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const MDTTemplatesComponent = () => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const tabs = [
+    {
+      title: 'Debrief / Arrest Report Template',
+      windowTitle: 'SASP — BCSO / LSPD',
+      content: `SASP — [DEPT] - [BADGE] [Officer Name] - ARREST REPORT
+________________________________________
+
+INCIDENT INFORMATION
+📅 DATE OF INCIDENT: DD/MM/YYYY
+⌚ TIME OF INCIDENT: GMT+5:30
+🗺️ LOCATION (INITIAL): [Location]
+🔴 LOCATION (CONCLUSION): [Location]
+________________________________________
+
+SCENE COMMAND: [Commanding Officer]
+HIGHEST ON SCENE: [Highest Ranking Officer]
+NEGOTIATOR: [Negotiating Officer / N/A]
+EVIDENCE COLLECTOR: [Officer Name]
+________________________________________
+
+SUMMARY:
+[Officer Name]:
+[Detailed summary of the incident]
+________________________________________
+
+PROCESSING INFORMATION:
+👮 MIRANDA RIGHTS: Read & Acknowledged
+🏥 MEDICAL: Declined / Received @ Pillbox / Received On Scene
+🍔 SUSTENANCE: Declined / Received
+⚖️ LEGAL COUNSEL: Declined / Represented By Lawyer / Reductions approved by Supervisor
+🆔 Identified As <> By MDT Picture, ID Card, DNA Sample
+📸 Mugshot Was Already On File / Updated
+🔎 Gun Serials Were Ran, Came Back Cold / Hot [Report #]
+🩸 DNA For Suspect Was Already On File / Taken
+🔫 Suspect Tested For GSR & Was Negative / Positive
+🤝 Plead Guilty / No Contest / Not Guilty & Acknowledged Terms & Conditions
+🚓 Transported To Bolingbrook By [Guards/Callsigns]
+________________________________________
+
+VEHICLES INVOLVED:
+🚗 MAKE & MODEL: [Vehicle]
+🏷️ PLATE: [Plate Number]
+📄 DMV REGISTRATION: REGISTERED / UNREGISTERED
+________________________________________
+
+EVIDENCE LOCKER NUMBER: [#]
+EVIDENCE LOCKER LOCATION: [Location]
+CONFISCATED ITEMS (SEIZED AS EVIDENCE): [List items]
+CONFISCATED ITEMS (MARKED FOR RETURN): [List items]
+RETURNED BY: [Officer Name]
+________________________________________
+
+FINE: $[Amount]
+TIME: [Months]
+FINE & PROCESSED BY:
+NAME OF SUSPECT: [Name]     NAME OF OFFICER: [Name]`
+    },
+    {
+      title: 'MDT Incident Summary Templates',
+      windowTitle: 'Scene Report Summaries',
+      content: `VEHICLE TAMPERING (10-81):
+On dispatch, an incident of Grand Theft Auto of a [vehicle description] was reported at [Location].
+Officer [Name] was first to respond and initiated a pursuit. Suspect(s) refused to comply and began evading.
+The pursuit continued through [streets/highways] at high speeds. Suspects were neutralized using nonlethal force and apprehended. Medical assistance was requested. Suspects were identified as [Names].
+As suspects pleaded guilty, they have been fined and processed.
+Commanding Officer: [Name]
+Items Taken: [List] | Items to be Returned: [List]
+
+________________________________________
+
+BREAKING & ENTERING (10-33):
+On [date] at [time], a house robbery was reported at [location]. Officers [Names] were first to respond.
+[# suspects] were spotted. Officers requested suspects to surrender — suspects evaded in [vehicle].
+Pursuit followed. Suspects were neutralized using nonlethal force and apprehended.
+Moved to hospital, then MRPD for processing. Suspects identified as [Names]. Plead guilty — fined.
+Commanding Officer: [Name]
+Items Taken: [List] | Items to be Returned: [List]
+
+________________________________________
+
+STORE ROBBERY (24/7):
+On [date] at [time], a store robbery was reported at [location]. Officers [Names] responded.
+[# suspects] spotted inside. Negotiations began — suspects put forward hostage demands.
+Officers agreed to preserve hostage. Suspects fled in [vehicle]. Pursuit, neutralized, apprehended.
+Commanding Officer: [Name] | Hostage Name: [Name]
+Items Taken: [List] | Items to be Returned: [List]
+
+________________________________________
+
+BANK ROBBERY (10-90 / FLEECA):
+On [date] at [time], robbery reported at Fleeca Bank [Location]. Negotiations by [Officers].
+Suspects robbed bank and fled in [vehicle]. Pursuit — suspects neutralized. Moved to hospital, then MRPD.
+Suspects: [Names]. Plead guilty — fined and processed.
+Commanding Officer: [Name] | Hostage Name: [Name]
+Items Taken: [List] | Items to be Returned: [List]`
+    },
+    {
+      title: 'Dispatch Call Template',
+      windowTitle: 'Radio & Dispatch Protocols',
+      content: `DISPATCH CALL FORMAT:
+[Callsign] to Dispatch — [10-Code] — [Location]
+
+EXAMPLE DISPATCH CALLS:
+
+10-11 — Animal Problem
+"Dispatch, 10-11 at [Location]. Animal causing disturbance. Requesting [animal control/backup]."
+
+10-15 — Prisoner in Custody
+"Dispatch, 10-15. Suspect [Name] in custody. Transporting to [Facility]. ETA [Time]."
+
+10-31 — Crime in Progress
+"Dispatch, 10-31 in progress at [Location]. [Description of crime]. Requesting backup."
+
+10-33 — Emergency / Break-In
+"ALL UNITS — 10-33 at [Location]. [# suspects]. [Weapons/Hostages]. OFFICER NEEDS ASSISTANCE."
+
+10-41 — On Duty
+"Dispatch, [Callsign] is 10-41. Available for service."
+
+10-42 — Off Duty
+"Dispatch, [Callsign] is 10-42. Going off duty."
+
+10-51 — Wrecker Needed
+"Dispatch, 10-51 at [Location]. [Vehicle Description/Plate]."
+
+10-80 — Pursuit in Progress
+"Dispatch, 10-80. Pursuit of [Vehicle] heading [Direction] on [Street]. Speed: [Approx]. Reason: [Offense]."
+
+10-90 — Bank Robbery
+"ALL UNITS — 10-90 in progress at [Bank Name/Location]. [# suspects]. Armed. ALL AVAILABLE UNITS RESPOND."
+
+RADIO ETIQUETTE:
+• Always identify your callsign first
+• Speak clearly — no slang on official channels
+• Confirm receipt: "Copy that" or "10-4"
+• Emergency override: "ALL UNITS — 10-33"
+• End transmissions: "[Callsign] out"`
+    }
+  ];
+
+  return (
+    <div className="space-y-6 pt-4">
+      <div className="flex flex-wrap gap-3 mb-6">
+        {tabs.map((tab, idx) => (
+          <button
+            key={idx}
+            onClick={() => setActiveTab(idx)}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${activeTab === idx ? 'bg-[#0ea5e9]/20 text-[#0ea5e9] border-[#0ea5e9]/50 shadow-[0_0_15px_rgba(14,165,233,0.1)]' : 'bg-transparent text-slate-400 border-slate-800 hover:border-slate-600 hover:text-slate-200'}`}
+          >
+            {tab.title}
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-xl border border-slate-800/80 bg-[#0f172a] shadow-xl overflow-hidden relative">
+        <div className="flex items-center gap-2 px-4 py-3 bg-[#1e293b]/50 border-b border-slate-800/80">
+          <div className="flex gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+          </div>
+          <div className="text-slate-300 text-xs font-bold tracking-wide ml-4">
+            {tabs[activeTab].windowTitle}
+          </div>
+        </div>
+
+        <div className="p-6 overflow-x-auto text-slate-300 font-mono text-[11px] sm:text-xs leading-loose whitespace-pre">
+          {tabs[activeTab].content}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export const documents = [
@@ -18,9 +196,9 @@ export const documents = [
     url: 'https://docs.google.com/document/d/1O_G17ln-H-2MLofUvsf6gl4NGmEbmn04icIRm2lnHKQ/edit',
     original: 'https://docs.google.com/document/d/1O_G17ln-H-2MLofUvsf6gl4NGmEbmn04icIRm2lnHKQ/view',
     sections: [
-      { 
-        badge: 'INTRO', 
-        title: 'Introduction & What It Takes to be a SASP Member', 
+      {
+        badge: 'INTRO',
+        title: 'Introduction & What It Takes to be a SASP Member',
         color: '#3b82f6',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
@@ -48,9 +226,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'RESPONSE CODES', 
-        title: 'Response Codes & Meanings', 
+      {
+        badge: 'RESPONSE CODES',
+        title: 'Response Codes & Meanings',
         color: '#f59e0b',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
@@ -73,9 +251,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'PURSUIT', 
-        title: 'Pursuit Codes (Condition 1, 2, 3)', 
+      {
+        badge: 'PURSUIT',
+        title: 'Pursuit Codes (Condition 1, 2, 3)',
         color: '#ef4444',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
@@ -98,9 +276,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'RIGHTS', 
-        title: 'Miranda Rights (When to read)', 
+      {
+        badge: 'RIGHTS',
+        title: 'Miranda Rights (When to read)',
         color: '#8b5cf6',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
@@ -117,9 +295,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'CHASE', 
-        title: 'Vehicle Chase Protocol', 
+      {
+        badge: 'CHASE',
+        title: 'Vehicle Chase Protocol',
         color: '#ec4899',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
@@ -141,9 +319,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'FORCE', 
-        title: 'USE OF FORCE: Escalation Pyramid', 
+      {
+        badge: 'FORCE',
+        title: 'USE OF FORCE: Escalation Pyramid',
         color: '#14b8a6',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2 pb-10">
@@ -154,7 +332,7 @@ export const documents = [
                 <div className="text-slate-300 font-medium leading-relaxed">Officers must attempt to de-escalate situations whenever feasible before resorting to higher levels of force.</div>
               </div>
             </div>
-            
+
             <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[23px] before:w-0.5 before:bg-slate-800 before:z-0">
               {[
                 { title: 'Officer Presence', desc: 'No force used. Considered the best way to resolve a situation.', color: '#3b82f6' },
@@ -165,7 +343,7 @@ export const documents = [
                 { title: 'Deadly Force', desc: 'Firearms. Used only when there is an imminent threat of death or serious injury.', color: '#b91c1c' }
               ].map((item, i) => (
                 <div key={i} className="relative z-10 flex gap-6 items-center group">
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-full border-[3px] bg-slate-950 flex items-center justify-center font-black text-lg shrink-0 transition-transform group-hover:scale-110 shadow-lg"
                     style={{ borderColor: item.color, color: item.color, boxShadow: `0 0 15px ${hexToRgba(item.color, 0.2)}` }}
                   >
@@ -181,9 +359,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'RESPONSE', 
-        title: 'Criminal Activity Response Table', 
+      {
+        badge: 'RESPONSE',
+        title: 'Criminal Activity Response Table',
         color: '#10b981',
         content: (
           <div className="p-0 sm:p-0 pt-0 text-sm mt-0 border-t border-slate-800/80 overflow-x-auto custom-scrollbar rounded-b-2xl">
@@ -225,9 +403,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'GENERAL', 
-        title: 'General Guidelines & Mandatory Equipment', 
+      {
+        badge: 'GENERAL',
+        title: 'General Guidelines & Mandatory Equipment',
         color: '#84cc16',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
@@ -250,15 +428,15 @@ export const documents = [
                 ))}
               </ul>
             </div>
-            
+
             <div className="rounded-xl border border-[#84cc16]/30 bg-[#84cc16]/5 p-5 space-y-4 mt-8">
               <div className="text-[#84cc16] font-extrabold tracking-widest uppercase text-xs">
                 MANDATORY EQUIPMENT
               </div>
               <div className="flex flex-wrap gap-3">
                 {['Glock', 'Taser', 'Radio', 'Transponder'].map((item, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className="px-4 py-1.5 rounded-full border font-bold text-sm shadow-sm"
                     style={{
                       backgroundColor: hexToRgba('#84cc16', 0.05),
@@ -274,9 +452,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'BOOSTING', 
-        title: 'Boosting SOP (Vehicle Theft Response)', 
+      {
+        badge: 'BOOSTING',
+        title: 'Boosting SOP (Vehicle Theft Response)',
         color: '#a855f7',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
@@ -307,7 +485,7 @@ export const documents = [
                   { title: 'Tracker active 30 min', desc: 'Reduce fair pursuit time by 20 min' },
                   { title: 'Tracker active 45 min', desc: 'Chase ends' }
                 ].map((item, i) => (
-                  <div 
+                  <div
                     key={i}
                     className="rounded-xl border p-4 text-center space-y-1.5"
                     style={{
@@ -342,9 +520,9 @@ export const documents = [
           </div>
         )
       },
-      { 
-        badge: 'RACING', 
-        title: 'Racing SOP & Code Amber (Tire Pop Rules)', 
+      {
+        badge: 'RACING',
+        title: 'Racing SOP & Code Amber (Tire Pop Rules)',
         color: '#0ea5e9',
         content: (
           <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2 relative pb-12">
@@ -397,7 +575,7 @@ export const documents = [
                 Avoid chasing solo; have at least one Ride-Along when pursuing a vehicle with more than 2 occupants.
               </div>
             </div>
-            
+
             <div className="absolute bottom-4 left-6 text-slate-600 text-[11px] font-medium">
               Last Updated: 04/08/2025 by X-100 / X-200
             </div>
@@ -407,12 +585,20 @@ export const documents = [
     ]
   },
   {
-    id: 'roster',
-    title: 'Master Roster',
-    description: 'San Andreas State Police — Official Personnel and Rank Directory.',
-    icon: <FileSpreadsheet className="w-4 h-4" />,
-    url: 'https://docs.google.com/spreadsheets/d/1yucIZVIu4KlfED4G0zujeGv6oDSZYNK_kbY2uMnpFSk/edit',
-    original: 'https://docs.google.com/spreadsheets/d/1yucIZVIu4KlfED4G0zujeGv6oDSZYNK_kbY2uMnpFSk/view'
+    id: 'penal_code',
+    title: 'San Andreas Penal Code',
+    description: 'Official comprehensive list of charges, classifications, sentences, fines, and points.',
+    icon: <Scale className="w-4 h-4" />,
+    url: '',
+    original: '',
+    sections: [
+      {
+        badge: 'PENAL CODE',
+        title: 'Master Database Sync',
+        color: '#0ea5e9',
+        content: <PenalCodeComponent />
+      }
+    ]
   },
   {
     id: 'uniform',
@@ -431,20 +617,150 @@ export const documents = [
     original: 'https://docs.google.com/document/d/1EaRgGD-dzD4PhqXNh0wZSoGCyzVWbZswb_bfqXN2hMc/view'
   },
   {
-    id: 'penal code',
-    title: 'Penal Code',
-    description: 'San Andreas State Police — penal code regulations.',
-    icon: <FileText className="w-4 h-4" />,
-    url: 'https://docs.google.com/spreadsheets/d/1mIAwJtkIUgG9cpyUjEYHEfKROksWSjc3dzu_unqVg-o/edit',
-    original: 'https://docs.google.com/spreadsheets/d/1mIAwJtkIUgG9cpyUjEYHEfKROksWSjc3dzu_unqVg-o/view'
-  },
-  {
     id: 'case law',
     title: 'Case Law',
     description: 'San Andreas State Police — relevant case law and legal precedents.',
     icon: <FileText className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1nUmUonFXReZJ1cFiuuMI5bdBAy41o1OvQnGsoRkgAOU/edit',
-    original: 'https://docs.google.com/document/d/1nUmUonFXReZJ1cFiuuMI5bdBAy41o1OvQnGsoRkgAOU/view'
+    original: 'https://docs.google.com/document/d/1nUmUonFXReZJ1cFiuuMI5bdBAy41o1OvQnGsoRkgAOU/view',
+    sections: [
+      {
+        badge: 'CASE LAWS',
+        title: 'DOJ Case Laws',
+        color: '#0ea5e9',
+        content: (
+          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
+            <div className="text-center space-y-2 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase">
+                <Book className="w-3.5 h-3.5" /> Case Laws
+              </div>
+              <h2 className="text-3xl font-black text-white tracking-tight">DOJ <span className="text-[#0ea5e9]">Case Laws</span></h2>
+              <p className="text-slate-400 font-medium">Landmark legal cases every SASP officer must know. — Department of Justice</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {[
+                {
+                  title: 'Miranda vs Arizona',
+                  badge: 'MIRANDA RIGHTS',
+                  color: '#a855f7',
+                  desc: 'Any statements a defendant in custody makes during interrogation are admissible only if law enforcement told them of the right to remain silent and right to speak with an attorney before interrogation started.'
+                },
+                {
+                  title: 'Pennsylvania vs Mimms',
+                  badge: 'TRAFFIC STOP',
+                  color: '#3b82f6',
+                  desc: 'On a traffic stop, police can order a driver out at any time and pat them down for weapons.'
+                },
+                {
+                  title: 'Maryland vs Wilson',
+                  badge: 'TRAFFIC STOP',
+                  color: '#3b82f6',
+                  desc: 'Same as Pennsylvania vs Mimms, but applies to passengers in the vehicle.'
+                },
+                {
+                  title: 'Brendlin vs California',
+                  badge: 'DETENTION',
+                  color: '#14b8a6',
+                  desc: 'Allows officers to keep passengers in the car. Passengers are considered seized and cannot leave without permission once a car is lawfully stopped.'
+                },
+                {
+                  title: 'Tennessee vs Garner',
+                  badge: 'USE OF FORCE',
+                  color: '#ef4444',
+                  desc: 'A police officer may use deadly force to prevent the escape of a fleeing suspect if the officer has a good faith belief that the suspect poses a significant risk of death or injury to an officer or others.'
+                },
+                {
+                  title: 'Chimel vs California',
+                  badge: 'SEARCH & SEIZURE',
+                  color: '#f97316',
+                  desc: 'Search incident to arrest. If you arrest someone you can perform a warrantless search on their person and the immediate area in the arrested person\'s control (e.g. cab of car, couch they were sitting on).'
+                },
+                {
+                  title: 'Terry vs Ohio',
+                  badge: 'STOP & FRISK',
+                  color: '#eab308',
+                  desc: 'Stop and Frisk. Officers can do a pat down (NOT a search!) on a person they believe has committed, is committing, or is about to commit a crime, and has reason to believe the suspect may be armed and dangerous.'
+                },
+                {
+                  title: 'Minnesota vs Dickerson',
+                  badge: 'SEARCH & SEIZURE',
+                  color: '#f97316',
+                  desc: 'When doing a pat down for weapons and you feel other contraband, and you have enough reasonable suspicion (e.g. being in a heavy drug area), you can make a warrantless seizure on those items.'
+                },
+                {
+                  title: 'Illinois vs Wardlow',
+                  badge: 'REASONABLE SUSPICION',
+                  color: '#eab308',
+                  desc: 'Unprovoked flight or evasive behavior from an identifiable police officer, combined with being in a high crime area, provides enough reasonable suspicion for a Terry stop.'
+                },
+                {
+                  title: 'Graham vs Connor',
+                  badge: 'USE OF FORCE',
+                  color: '#ef4444',
+                  desc: 'Objective Reasonableness. In a court of law, everyone should look from the officer\'s perspective — did they use a reasonable amount of force given what was in front of them?'
+                },
+                {
+                  title: 'Florida vs J.L.',
+                  badge: 'SEARCH & SEIZURE',
+                  color: '#f97316',
+                  desc: 'You CANNOT search someone solely based on an anonymous tip.'
+                },
+                {
+                  title: 'Maryland vs King',
+                  badge: 'EVIDENCE',
+                  color: '#10b981',
+                  desc: 'DNA swabs, fingerprints, and photographs can be taken without a warrant, like Chimel but for body parts.'
+                },
+                {
+                  title: 'Mapp vs Ohio',
+                  badge: 'EVIDENCE',
+                  color: '#10b981',
+                  desc: 'If you obtain evidence illegally, such as from an unlawful search, it CANNOT be used in court. (Fruits of the Poisonous Tree)'
+                },
+                {
+                  title: 'Whren vs U.S.',
+                  badge: 'TRAFFIC STOP',
+                  color: '#3b82f6',
+                  desc: 'Any traffic violation committed by a driver is a legitimate legal basis for a traffic stop.'
+                },
+                {
+                  title: 'Horton vs California',
+                  badge: 'PLAIN VIEW',
+                  color: '#059669',
+                  desc: 'The Fourth Amendment does not prohibit the warrantless seizure of evidence that is in plain view.'
+                },
+                {
+                  title: 'Hibel vs Nevada',
+                  badge: 'STOP & IDENTIFY',
+                  color: '#6366f1',
+                  desc: 'Stop and identify does NOT violate the Fifth Amendment rights against self-incrimination. Terry Stops do not violate the Fourth Amendment.'
+                }
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div className="flex items-center justify-between gap-4">
+                    <h3 className="font-bold text-white text-[15px]">{item.title}</h3>
+                    <div
+                      className="px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase shrink-0"
+                      style={{
+                        backgroundColor: hexToRgba(item.color, 0.1),
+                        borderColor: hexToRgba(item.color, 0.3),
+                        color: item.color
+                      }}
+                    >
+                      {item.badge}
+                    </div>
+                  </div>
+                  <p className="text-slate-400 font-medium text-[13px] leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    ]
   },
   {
     id: 'Amendments',
@@ -452,7 +768,146 @@ export const documents = [
     description: 'San Andreas State Police — relevant amendments and updates.',
     icon: <FileText className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1ZZ4uWbraVBspQQjYb4GOwg4JIAiTOqF8-ot9v5yQWww/edit',
-    original: 'https://docs.google.com/document/d/1ZZ4uWbraVBspQQjYb4GOwg4JIAiTOqF8-ot9v5yQWww/view'
+    original: 'https://docs.google.com/document/d/1ZZ4uWbraVBspQQjYb4GOwg4JIAiTOqF8-ot9v5yQWww/view',
+    sections: [
+      {
+        badge: 'CONSTITUTION',
+        title: 'Bill of Constitution',
+        color: '#0ea5e9',
+        content: (
+          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
+            <div className="space-y-4">
+              <div className="text-center space-y-2 mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase">
+                  <Scale className="w-3.5 h-3.5" /> Constitution & Bill of Amendments
+                </div>
+                <h2 className="text-3xl font-black text-white tracking-tight">Bill of <span className="text-[#0ea5e9]">Constitution</span></h2>
+                <p className="text-slate-400 font-medium">Department of Justice — Qui Pro Domina Justitia Sequitur</p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-4">
+                <p className="text-slate-300 leading-relaxed font-medium">
+                  The Bill of Rights comprises the first ten amendments to the State of Los Santos Constitution. These amendments add specific guarantees of personal freedoms and rights, clear limitations on the government's power in judicial and other proceedings, and explicit declarations that all powers not specifically granted to the Government are reserved for the state or the people.
+                </p>
+                <p className="text-[#0ea5e9] leading-relaxed font-medium">
+                  In simple terms: An amendment is like editing the rulebook of the country. It's a way to change or add new rules to how the government works or to protect people's rights. So basically, any law passed by parliament can be filtered or changed to correct what the government wants to fix.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6 pt-4">
+              <div className="text-center text-slate-500 font-bold tracking-[0.2em] uppercase text-xs">
+                Quick Reference
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { num: '1st', text: 'No Religious Discrimination' },
+                  { num: '2nd', text: 'Right to Bear Arms with Paperwork' },
+                  { num: '3rd', text: 'No Warrant, No Entry' },
+                  { num: '4th', text: 'No Warrant, No Search & Seizure' },
+                  { num: '5th', text: 'No Incrimination Without Evidence' },
+                  { num: '6th', text: 'Right to Attorney' },
+                  { num: '7th', text: 'Right to Trial by a Judge' },
+                  { num: '8th', text: 'No Cruel or Unusual Punishments' },
+                  { num: '9th', text: 'Protects Unlisted Rights' },
+                  { num: '10th', text: 'Federal Powers Limited to Constitution' },
+                ].map((amendment, i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <span className="text-[#0ea5e9] font-black text-lg w-10 shrink-0">{amendment.num}</span>
+                    <span className="text-slate-300 font-medium">{amendment.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Full Amendment Details
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    num: '1st',
+                    category: 'FREEDOM OF EXPRESSION & RELIGION',
+                    subtitle: 'No Religious Discrimination',
+                    desc: 'Prevents Congress from making any law respecting establishment of religion, impeding free exercise of religion, abridging freedom of speech, infringing on freedom of the press, interfering with the right to peaceably assemble, or prohibiting the right to petition the government. (I.e. No religious discrimination)'
+                  },
+                  {
+                    num: '2nd',
+                    category: 'BEARING ARMS',
+                    subtitle: 'Right to Bear Arms with Paperwork',
+                    desc: 'Protects the right to keep and bear arms. (I.e. You have the right to keep and carry weapons with proper paperwork)'
+                  },
+                  {
+                    num: '3rd',
+                    category: 'QUARTERING OF SOLDIERS',
+                    subtitle: 'No Warrant, No Entry',
+                    desc: 'Places restrictions on the quartering of soldiers in private homes. (I.e. Without any warrant, LEO cannot enter anyone\'s property)'
+                  },
+                  {
+                    num: '4th',
+                    category: 'SEARCH AND SEIZURE',
+                    subtitle: 'No Warrant, No Search & Seizure',
+                    desc: 'Prohibits unreasonable searches and seizures of property by the government. It protects against arbitrary arrests and is the basis of the law regarding search warrants, stop-and-frisk, safety inspections, wiretaps, and other forms of surveillance. (I.e. Without warrant, LEO cannot search and seize private property)'
+                  },
+                  {
+                    num: '5th',
+                    category: 'RIGHTS OF PERSONS',
+                    subtitle: 'No Incrimination Without Evidence',
+                    desc: 'Protects against self-incrimination and forbids double jeopardy. Requires that due process of law be part of any proceeding that denies a citizen life, liberty, or property. (I.e. Without proper evidence and proof, LEO cannot incriminate any civilian through interrogations and threats directly or indirectly)'
+                  },
+                  {
+                    num: '6th',
+                    category: 'RIGHTS OF ACCUSED IN CRIMINAL PROSECUTIONS',
+                    subtitle: 'Right to Attorney',
+                    desc: 'Guarantees the rights of criminal defendants, including the right to a public trial without unnecessary delay, the right to a lawyer, and the right for the accused to know who the accusers are and the nature of the charges and evidence against them. (I.e. Every suspect has their right to an attorney)'
+                  },
+                  {
+                    num: '7th',
+                    category: 'CIVIL TRIALS',
+                    subtitle: 'Right to Trial by a Judge',
+                    desc: 'Provides for the right to trial by jury in certain civil cases, according to common law.'
+                  },
+                  {
+                    num: '8th',
+                    category: 'FURTHER GUARANTEES IN CRIMINAL CASES',
+                    subtitle: 'No Cruel or Unusual Punishments',
+                    desc: 'Prohibits cruel and unusual punishments, which are not limited to excessive fines.'
+                  },
+                  {
+                    num: '9th',
+                    category: 'UNENUMERATED RIGHTS',
+                    subtitle: 'Protects Unlisted Rights',
+                    desc: 'Protects rights not enumerated in the Constitution.'
+                  },
+                  {
+                    num: '10th',
+                    category: 'RESERVED POWERS',
+                    subtitle: 'Federal Powers Limited to Constitution',
+                    desc: 'States that the federal government possesses only those powers delegated, or enumerated, to it through the Constitution.'
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 sm:gap-6 p-4 sm:p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <div className="w-12 h-12 rounded-xl border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 flex items-center justify-center shrink-0">
+                      <span className="text-[#0ea5e9] font-black text-sm">{item.num}</span>
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">{item.category}</div>
+                      <div className="text-white font-bold text-sm tracking-wide">{item.subtitle}</div>
+                      <div className="text-slate-400 font-medium text-[13px] leading-relaxed pt-1">{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      }
+    ]
   },
   {
     id: 'Robbery Handbook',
@@ -460,14 +915,896 @@ export const documents = [
     description: 'San Andreas State Police — guidelines for handling robbery cases.',
     icon: <FileText className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1ntSUrX-Y79J9IDu7jcMyPInVc6LEYT0J84QhpKeyJLE/edit',
-    original: 'https://docs.google.com/document/d/1ntSUrX-Y79J9IDu7jcMyPInVc6LEYT0J84QhpKeyJLE/view'
+    original: 'https://docs.google.com/document/d/1ntSUrX-Y79J9IDu7jcMyPInVc6LEYT0J84QhpKeyJLE/view',
+    sections: [
+      {
+        badge: 'ROBBERY HANDBOOK',
+        title: 'SASP Robbery Response Handbook',
+        color: '#0ea5e9',
+        content: (
+          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
+            <div className="text-center space-y-2 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-4">
+                <AlertTriangle className="w-3.5 h-3.5" /> Robbery Handbook
+              </div>
+              <h2 className="text-4xl font-black text-white tracking-tight">SASP <span className="text-[#0ea5e9]">Robbery Response</span> Handbook</h2>
+              <p className="text-slate-400 font-medium pb-2">Official response protocols for all robbery tiers. All officers must know these by heart.</p>
+            </div>
+
+            <div className="pt-2">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Tier 1 Robberies
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {[
+                  {
+                    title: 'House Robbery (Breaking & Entering)',
+                    tier: 'TIER 1',
+                    tierColor: '#0d9488',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '2 units' },
+                      { label: 'MAX CIVILIANS', value: '4 people' },
+                      { label: 'NEGOTIATOR', value: 'No' },
+                      { label: 'HELICOPTER', value: 'No' }
+                    ],
+                    protocols: [
+                      'Minimum 2 officers required.',
+                      'No negotiator needed.',
+                      'Officers may enter if suspects are still inside.',
+                      'Search incident to arrest authorized once suspect is apprehended.'
+                    ],
+                    charges: [
+                      'Burglary (Primary Charge)',
+                      'Grand Theft',
+                      'Possession of Items used in a Commission of a Crime (2012)',
+                      'Reckless Evading (if evading)'
+                    ]
+                  },
+                  {
+                    title: 'Cutting Catalytic Converters',
+                    tier: 'TIER 1',
+                    tierColor: '#0d9488',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '1 units' },
+                      { label: 'MAX CIVILIANS', value: '2 people' },
+                      { label: 'NEGOTIATOR', value: 'No' },
+                      { label: 'HELICOPTER', value: 'No' }
+                    ],
+                    protocols: [
+                      'Officers should respond quickly and maintain observation.',
+                      'Suspects may flee in vehicles.'
+                    ],
+                    charges: [
+                      'Vehicle Tampering',
+                      'Reckless Evading (if evading)'
+                    ]
+                  },
+                  {
+                    title: 'Robbing Graveyards',
+                    tier: 'TIER 1',
+                    tierColor: '#0d9488',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '1 units' },
+                      { label: 'MAX CIVILIANS', value: '2 people' },
+                      { label: 'NEGOTIATOR', value: 'No' },
+                      { label: 'HELICOPTER', value: 'No' }
+                    ],
+                    protocols: [
+                      'Ensure the burial site is documented before evidence collection.'
+                    ],
+                    charges: [
+                      'Vandalism of the burial site (4004B)',
+                      'Reckless Evading (if evading)'
+                    ]
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <div
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        style={{
+                          backgroundColor: hexToRgba(item.tierColor, 0.1),
+                          borderColor: hexToRgba(item.tierColor, 0.3),
+                          color: item.tierColor
+                        }}
+                      >
+                        {item.tier}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {item.stats.map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                          <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
+                          <span className="text-white font-bold text-sm">{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Response Protocol</div>
+                      <ul className="space-y-2.5">
+                        {item.protocols.map((protocol, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#0ea5e9] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{protocol}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Applicable Charges</div>
+                      <ul className="space-y-2.5">
+                        {item.charges.map((charge, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#eab308] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-400 font-medium text-[13px] leading-relaxed font-mono">{charge}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Tier 2 Robberies
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {[
+                  {
+                    title: '24/7 / LTD Store / ATM Robberies',
+                    tier: 'TIER 2',
+                    tierColor: '#2563eb',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '2 units' },
+                      { label: 'MAX CIVILIANS', value: '4 people' },
+                      { label: 'NEGOTIATOR', value: 'Optional' },
+                      { label: 'HELICOPTER', value: 'No' }
+                    ],
+                    protocols: [
+                      'Minimum 2 officers required to respond.',
+                      'Maximum of 4 civilians allowed inside.',
+                      'Negotiator is optional but recommended.',
+                      'Perimeter must be set up at a safe distance.'
+                    ],
+                    charges: [
+                      '3rd Degree Robbery / 3rd Degree Aggravated Robbery',
+                      'Kidnapping (if hostages taken)',
+                      'Criminal Possession of Weapon (if armed, define class)',
+                      'Reckless Evading (if evading)'
+                    ]
+                  },
+                  {
+                    title: 'Humane Labs',
+                    tier: 'TIER 2',
+                    tierColor: '#2563eb',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '4 units' },
+                      { label: 'MAX CIVILIANS', value: '6 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Optional' }
+                    ],
+                    protocols: [
+                      'Scene command must be established before approach.',
+                      'Negotiator required.'
+                    ],
+                    charges: [
+                      '3rd Degree Robbery / 3rd Degree Aggravated Robbery',
+                      'Kidnapping (if hostages taken)',
+                      'Criminal Possession of Weapon (if armed, define class)',
+                      'Reckless Evading (if evading)'
+                    ]
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <div
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        style={{
+                          backgroundColor: hexToRgba(item.tierColor, 0.1),
+                          borderColor: hexToRgba(item.tierColor, 0.3),
+                          color: item.tierColor
+                        }}
+                      >
+                        {item.tier}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {item.stats.map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                          <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
+                          <span className="text-white font-bold text-sm">{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Response Protocol</div>
+                      <ul className="space-y-2.5">
+                        {item.protocols.map((protocol, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#0ea5e9] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{protocol}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Applicable Charges</div>
+                      <ul className="space-y-2.5">
+                        {item.charges.map((charge, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#eab308] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-400 font-medium text-[13px] leading-relaxed font-mono">{charge}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Tier 3 Robberies
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {[
+                  {
+                    title: 'Fleeca Bank',
+                    tier: 'TIER 3',
+                    tierColor: '#eab308',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '3 units' },
+                      { label: 'MAX CIVILIANS', value: '4 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Yes' }
+                    ],
+                    protocols: [
+                      'Minimum 3 officers required to respond.',
+                      'Negotiator must be designated before any contact.',
+                      'Officers must maintain cover positions.'
+                    ],
+                    charges: [
+                      '2nd Degree Robbery / 2nd Degree Aggravated Robbery (if armed)',
+                      'Criminal Possession of Weapon (define class)',
+                      'Kidnapping (if hostages taken)',
+                      'Reckless Evading (if evading)'
+                    ]
+                  },
+                  {
+                    title: 'Vangelico Jewelry Store',
+                    tier: 'TIER 3',
+                    tierColor: '#eab308',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '3 units' },
+                      { label: 'MAX CIVILIANS', value: '6 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Yes' }
+                    ],
+                    protocols: [
+                      'Minimum 3 officers required to respond.',
+                      'Designated negotiator required.',
+                      'No entering the store without authorization from scene command.'
+                    ],
+                    charges: [
+                      '2nd Degree Robbery / 2nd Degree Aggravated Robbery (if armed)',
+                      'Criminal Possession of Weapon (define class)',
+                      'Kidnapping (if hostages taken)',
+                      'Reckless Evading (if evading)'
+                    ]
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <div
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        style={{
+                          backgroundColor: hexToRgba(item.tierColor, 0.1),
+                          borderColor: hexToRgba(item.tierColor, 0.3),
+                          color: item.tierColor
+                        }}
+                      >
+                        {item.tier}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {item.stats.map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                          <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
+                          <span className="text-white font-bold text-sm">{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Response Protocol</div>
+                      <ul className="space-y-2.5">
+                        {item.protocols.map((protocol, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#0ea5e9] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{protocol}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Applicable Charges</div>
+                      <ul className="space-y-2.5">
+                        {item.charges.map((charge, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#eab308] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-400 font-medium text-[13px] leading-relaxed font-mono">{charge}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Tier 4 Robberies
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {[
+                  {
+                    title: 'Blaine County Savings Bank',
+                    tier: 'TIER 4',
+                    tierColor: '#f59e0b',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '5 units' },
+                      { label: 'MAX CIVILIANS', value: '6 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Yes' }
+                    ],
+                    protocols: [
+                      'Minimum 5 officers required to respond.',
+                      'Negotiator and scene command mandatory.',
+                      'Roadblocks authorized on major routes once suspects flee.'
+                    ],
+                    charges: [
+                      '1st Degree Robbery / 1st Degree Aggravated Robbery',
+                      'Reckless Evading (if evading)',
+                      'Criminal Possession of Weapon (define class)',
+                      'Kidnapping (if hostages taken)'
+                    ]
+                  },
+                  {
+                    title: 'Gruppe 6 (Armored Truck)',
+                    tier: 'TIER 4',
+                    tierColor: '#f59e0b',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '4 units' },
+                      { label: 'MAX CIVILIANS', value: '4 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Yes' }
+                    ],
+                    protocols: [
+                      'Minimum 4 officers required to respond.',
+                      'Negotiator required if suspects are stationary.',
+                      'Armored truck driver treated as a hostage — protect at all costs.'
+                    ],
+                    charges: [
+                      '1st Degree Robbery / 1st Degree Aggravated Robbery',
+                      'Reckless Evading (if evading)',
+                      'Criminal Possession of Weapon (define class)',
+                      'Kidnapping (if hostages taken)'
+                    ]
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <div
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        style={{
+                          backgroundColor: hexToRgba(item.tierColor, 0.1),
+                          borderColor: hexToRgba(item.tierColor, 0.3),
+                          color: item.tierColor
+                        }}
+                      >
+                        {item.tier}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {item.stats.map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                          <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
+                          <span className="text-white font-bold text-sm">{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Response Protocol</div>
+                      <ul className="space-y-2.5">
+                        {item.protocols.map((protocol, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#0ea5e9] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{protocol}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Applicable Charges</div>
+                      <ul className="space-y-2.5">
+                        {item.charges.map((charge, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#eab308] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-400 font-medium text-[13px] leading-relaxed font-mono">{charge}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Tier 5 Robberies
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {[
+                  {
+                    title: 'Gruppe 6 Office',
+                    tier: 'TIER 5',
+                    tierColor: '#be123c',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '5 units' },
+                      { label: 'MAX CIVILIANS', value: '6 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Yes' }
+                    ],
+                    protocols: [
+                      'Minimum 5 officers required to respond.',
+                      'Negotiator and scene command mandatory.',
+                      'High Command notification required.'
+                    ],
+                    charges: [
+                      '1st Degree Robbery / 1st Degree Aggravated Robbery',
+                      'Reckless Evading (if evading)',
+                      'Criminal Possession of Weapon (define class)',
+                      'Kidnapping (if hostages taken)'
+                    ]
+                  },
+                  {
+                    title: 'Pacific Standard',
+                    tier: 'TIER 5',
+                    tierColor: '#be123c',
+                    stats: [
+                      { label: 'MIN OFFICERS', value: '5 units' },
+                      { label: 'MAX CIVILIANS', value: '6 people' },
+                      { label: 'NEGOTIATOR', value: 'Required' },
+                      { label: 'HELICOPTER', value: 'Yes' }
+                    ],
+                    protocols: [
+                      'Minimum 5 officers required to respond.',
+                      'Negotiator and scene command mandatory.',
+                      'SRT deployment authorized.'
+                    ],
+                    charges: [
+                      '1st Degree Robbery / 1st Degree Aggravated Robbery (if government bank)',
+                      'Reckless Evading (if evading)',
+                      'Criminal Possession of Weapon (define class)',
+                      'Kidnapping (if hostages taken)'
+                    ]
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <div
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        style={{
+                          backgroundColor: hexToRgba(item.tierColor, 0.1),
+                          borderColor: hexToRgba(item.tierColor, 0.3),
+                          color: item.tierColor
+                        }}
+                      >
+                        {item.tier}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {item.stats.map((stat, idx) => (
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                          <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
+                          <span className="text-white font-bold text-sm">{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Response Protocol</div>
+                      <ul className="space-y-2.5">
+                        {item.protocols.map((protocol, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#0ea5e9] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{protocol}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">Applicable Charges</div>
+                      <ul className="space-y-2.5">
+                        {item.charges.map((charge, idx) => (
+                          <li key={idx} className="flex gap-3 items-start">
+                            <span className="text-[#eab308] mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"></span>
+                            <span className="text-slate-400 font-medium text-[13px] leading-relaxed font-mono">{charge}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Universal Robbery Protocols
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  'Always establish a Scene Command officer before approaching any robbery.',
+                  'Negotiator must be designated before any suspect communication — no freelancing.',
+                  'Perimeter must be secured before entry — maintain positions at all times.',
+                  'Officers are NOT authorized to make deals (e.g., free vehicles, no charges) without supervisor approval.',
+                  'Evidence collector must document all items taken or left by suspects.',
+                  'Medical must be requested at conclusion of every robbery response.',
+                  'Full MDT arrest report must be filed within 30 minutes of incident conclusion.',
+                  'Spike strips must NOT be placed inside active parking lots or near civilian vehicles.',
+                  'Helicopter may only ram/intervene if suspects are on foot — never while suspect is driving.',
+                  'Hostage safety is the FIRST priority — never take a shot that risks a hostage.',
+                  'If suspects are wearing a mask, Unauthorized Face Covering (5002) is applicable.',
+                  'If items used in commission of a crime are found, PC 2012 applies to all.'
+                ].map((rule, idx) => (
+                  <div key={idx} className="flex items-center gap-4 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                    <span className="text-[#0ea5e9] font-black text-lg w-8 shrink-0">{String(idx + 1).padStart(2, '0')}</span>
+                    <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{rule}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      }
+    ]
+  },
+  {
+    id: 'Engagement Rules',
+    title: 'Engagement Rules of Conduct',
+    description: 'Critical engagement policies for SASP cadets. MANDATORY for field deployment.',
+    icon: <Crosshair className="w-4 h-4" />,
+    url: '',
+    original: '',
+    sections: [
+      {
+        badge: 'CADET ENGAGEMENT RULES',
+        title: 'Engagement Rules of Conduct',
+        color: '#0ea5e9',
+        content: (
+          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
+            <div className="text-center space-y-2 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-4">
+                <Shield className="w-3.5 h-3.5" /> Cadet Engagement Rules
+              </div>
+              <h2 className="text-4xl font-black text-white tracking-tight"><span className="text-[#0ea5e9]">Engagement</span> Rules of Conduct</h2>
+              <p className="text-slate-400 font-medium pb-2 max-w-2xl mx-auto">Critical engagement policies for SASP cadets. These rules are MANDATORY and must be memorized before field deployment.</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Authorized */}
+              <div className="p-6 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-emerald-500/20 text-emerald-500">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-emerald-500 font-black text-[10px] tracking-widest uppercase">Authorized</div>
+                    <h3 className="text-white font-bold text-lg leading-tight">Engagement Within City Limits</h3>
+                  </div>
+                </div>
+                <p className="text-slate-300 leading-relaxed font-medium">
+                  Officers are <span className="text-emerald-400 font-bold">authorized</span> to engage in gang-related shootouts happening <span className="font-bold text-white">inside the city limits of Los Santos</span>, excluding South Side and East Side.
+                </p>
+                <ul className="space-y-2.5 pt-2">
+                  {[
+                    'Officers MUST warn suspects on megaphone to leave city premises MULTIPLE times before engaging.',
+                    'We understand the critical need to address and mitigate such situations swiftly to ensure safety and security of our citizens.',
+                    'If suspects shoot down a person, do NOT allow them to take the downed bodies with them (inside city limits only).',
+                    'Do NOT intervene if the officer count is below 10.'
+                  ].map((rule, i) => (
+                    <li key={i} className="flex gap-3 items-start">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span className="text-slate-400 font-medium leading-relaxed">{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Not Authorized */}
+              <div className="p-6 rounded-2xl border border-red-500/30 bg-red-950/20 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-red-500/20 text-red-500">
+                    <Crosshair className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-red-500 font-black text-[10px] tracking-widest uppercase">Not Authorized</div>
+                    <h3 className="text-white font-bold text-lg leading-tight">Non-Engagement Outside Los Santos Borders</h3>
+                  </div>
+                </div>
+                <p className="text-slate-300 leading-relaxed font-medium">
+                  Officers are <span className="text-red-400 font-bold">NOT authorized</span> to engage in any shootout occurring <span className="font-bold text-white">outside of Los Santos borders</span>, including areas such as Paleto Bay and Sandy Shores.
+                </p>
+                <ul className="space-y-2.5 pt-2">
+                  {[
+                    'Primary objective: take evidence and protect officer safety. Avoid unnecessary escalation.',
+                    'If suspects shoot down a person — let them take the bodies and leave the area.',
+                    'Officers are NOT authorized to follow them outside city borders.',
+                    'Paleto Bay and Sandy Shores are considered OUTSIDE jurisdiction for engagement.'
+                  ].map((rule, i) => (
+                    <li key={i} className="flex gap-3 items-start">
+                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <span className="text-slate-400 font-medium leading-relaxed">{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Conditional */}
+              <div className="p-6 rounded-2xl border border-amber-500/30 bg-amber-950/20 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-amber-500/20 text-amber-500">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-amber-500 font-black text-[10px] tracking-widest uppercase">Conditional</div>
+                    <h3 className="text-white font-bold text-lg leading-tight">Suspects Attempting to Bring Situation to City Limits</h3>
+                  </div>
+                </div>
+                <p className="text-slate-300 leading-relaxed font-medium">
+                  When suspects attempt to bring a shootout from Paleto Bay, Sandy Shores, or other external locations <span className="font-bold text-white">into city limits</span>:
+                </p>
+                <ul className="space-y-2.5 pt-2">
+                  {[
+                    'Officers MUST warn them on megaphone to leave city premises MULTIPLE times.',
+                    'Officers WILL be authorized to neutralize suspects if they don\'t comply.',
+                    'This action is taken to prevent escalation of violence and protect city integrity.',
+                    'Do NOT intervene if the officer count is below 10.',
+                    'Make sure NOT to interfere immediately — give them a chance to escape first.'
+                  ].map((rule, i) => (
+                    <li key={i} className="flex gap-3 items-start">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <span className="text-slate-400 font-medium leading-relaxed">{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Important / Map */}
+              <div className="p-6 rounded-2xl border border-rose-500/30 bg-rose-950/20 space-y-6">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-rose-500/20 text-rose-500">
+                      <MapIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-rose-500 font-black text-[10px] tracking-widest uppercase">Important</div>
+                      <h3 className="text-white font-bold text-lg leading-tight">Red-Marked Zones — Outside City Limits</h3>
+                    </div>
+                  </div>
+                  <button className="px-4 py-2 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/20 transition-colors flex items-center gap-2">
+                    <MapIcon className="w-3.5 h-3.5" /> View City Limits Map
+                  </button>
+                </div>
+                <p className="text-slate-300 leading-relaxed font-medium">
+                  All areas marked with <span className="text-rose-400 font-bold">Red Lines on the map</span> are considered <span className="font-bold text-white">OUTSIDE City Limits</span>. Engagement rules for outside-border areas apply to these zones.
+                </p>
+                <div className="rounded-xl overflow-hidden border border-rose-500/20">
+                  {/* Using a placeholder for the map image since it's a screenshot */}
+                  <div className="w-full h-48 bg-slate-900 flex items-center justify-center text-slate-500 text-sm font-medium">
+                    Map Image Placeholder
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-10">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Key Cadet Restrictions
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Column 1 */}
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets CANNOT make independent arrests without FTO present</span>
+                </div>
+
+                {/* Column 2 */}
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets CANNOT engage in shootouts without supervisor authorization</span>
+                </div>
+
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets CANNOT negotiate with suspects without designated negotiator</span>
+                </div>
+
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets CANNOT pursue outside city limits without command approval</span>
+                </div>
+
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets MUST file MDT reports for every incident they attend</span>
+                </div>
+
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets MUST wear full academy uniform during all training sessions</span>
+                </div>
+
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets MUST address all superior officers by their rank</span>
+                </div>
+
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="text-slate-300 text-xs font-medium">Cadets MUST always follow the chain of command</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    ]
+  },
+  {
+    id: 'Academy Training',
+    title: 'SASP Academy Training',
+    description: 'Provided by Shershah & Luthra — Official SASP Cadet Training Programme',
+    icon: <Book className="w-4 h-4" />,
+    url: '',
+    original: '',
+    sections: [
+      {
+        badge: 'ACADEMIC TRAINING GUIDE',
+        title: 'SASP Academy Training',
+        color: '#0ea5e9',
+        content: (
+          <div className="p-4 sm:p-6 pt-6 space-y-12 text-sm border-t border-slate-800/80 mt-2">
+            <div className="text-center space-y-2 mb-10">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-4">
+                <Book className="w-3.5 h-3.5" /> Academic Training Guide
+              </div>
+              <h2 className="text-4xl font-black text-white tracking-tight">SASP <span className="text-[#0ea5e9]">Academy Training</span></h2>
+              <p className="text-slate-400 font-medium pb-2 max-w-2xl mx-auto">Provided by Shershah & Luthra — Official SASP Cadet Training Programme</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { num: '01', title: 'ACADEMY ORIENTATION', desc: 'Introduction to SASP structure, chain of command, code of conduct, and department expectations.' },
+                { num: '02', title: 'LEGAL FOUNDATIONS', desc: 'Study of penal codes, constitutional amendments, case laws, and legal authority of officers.' },
+                { num: '03', title: 'PATROL PROCEDURES', desc: 'Traffic stops, foot pursuits, vehicle pursuits, use of force continuum, and scene management.' },
+                { num: '04', title: 'MDT & DOCUMENTATION', desc: 'Filing arrest reports, MDT usage, incident documentation, evidence handling, and chain of custody.' },
+                { num: '05', title: 'RADIO COMMUNICATION', desc: '10-codes, dispatch procedures, callsign protocols, and proper radio etiquette.' },
+                { num: '06', title: 'FIELD EVALUATION', desc: 'Supervised ride-along with FTO, practical assessments, and final cadet evaluation exam.' }
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col gap-4 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div className="text-4xl font-black text-[#0ea5e9]/20">{item.num}</div>
+                  <div>
+                    <h3 className="font-black text-[#0ea5e9] text-[11px] tracking-widest uppercase mb-2">{item.title}</h3>
+                    <p className="text-slate-400 font-medium leading-relaxed text-[13px]">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4">
+              <div className="flex items-center justify-center mb-8 relative">
+                <div className="absolute left-0 w-full h-px bg-slate-800/80"></div>
+                <div className="relative bg-slate-900 px-4 text-[#0ea5e9] font-bold tracking-[0.2em] uppercase text-[10px]">
+                  Academy Rules
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  'Cadets must wear proper academy uniform at all times during training',
+                  'Cadets must address all superior officers by rank',
+                  'Cadets are NOT authorized to make independent arrests without FTO supervision',
+                  'Cadets must complete all written assignments before proceeding to field training',
+                  'Tardiness or absence without notice will result in academic penalty',
+                  'Cadets must maintain professional conduct on and off duty',
+                  'Any violation of academy rules may result in immediate dismissal'
+                ].map((rule, idx) => (
+                  <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                    <CheckCircle2 className="w-5 h-5 text-[#0ea5e9] shrink-0" />
+                    <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{rule}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex gap-4 p-5 rounded-xl border border-amber-500/30 bg-amber-950/20 items-center">
+                <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                <p className="text-slate-300 font-medium text-[13px] leading-relaxed">
+                  <span className="font-bold text-white">Cadets who fail to meet academy standards will be subject to Performance Improvement Plans (PIP) or dismissal.</span> All training records are maintained in the department database.
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    ]
   },
   {
     id: 'MDT Templates',
-    title: 'MDT Templates',
-    description: 'San Andreas State Police — templates for MDT entries.',
+    title: 'MDT Templates & Dispatch',
+    description: 'Official templates for MDT reports and dispatch communications.',
     icon: <FileText className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1rB1SVjRxFpC9DNhyr0doN5MdL6bWs_CO7cPnNW6TuwM/edit?tab=t.0',
-    original: 'https://docs.google.com/document/d/1rB1SVjRxFpC9DNhyr0doN5MdL6bWs_CO7cPnNW6TuwM/edit?tab=t.0/view'
+    original: 'https://docs.google.com/document/d/1rB1SVjRxFpC9DNhyr0doN5MdL6bWs_CO7cPnNW6TuwM/edit?tab=t.0/view',
+    sections: [
+      {
+        badge: 'MDT TEMPLATES',
+        title: 'MDT Templates & Dispatch',
+        color: '#0ea5e9',
+        content: <MDTTemplatesComponent />
+      }
+    ]
   }
 ];
