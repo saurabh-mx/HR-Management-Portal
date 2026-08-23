@@ -148,7 +148,7 @@ export default function LOAManagement() {
 
       <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
         <div className="overflow-hidden">
-          <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+          <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader><CardTitle className="text-lg font-medium text-fuchsia-400">Submit LOA Request</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -175,7 +175,7 @@ export default function LOAManagement() {
         </div>
       </div>
 
-      <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-4">
           <CardTitle className="text-lg font-medium">Departmental LOA Records</CardTitle>
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -220,7 +220,7 @@ export default function LOAManagement() {
               </thead>
               <tbody className="group/table">
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="bg-slate-950/30 hover:bg-slate-900 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
+                  <tr key={req.id} className="bg-slate-950/30 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
                     <td className="py-3 px-4 rounded-l-lg font-medium text-white">
                       <span className="inline-block transition-transform duration-300 origin-left group-hover:text-brand">
                         {req.officer_name}
@@ -279,7 +279,7 @@ export default function LOAManagement() {
       {/* Delete Confirmation Modal */}
       {requestToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -295,7 +295,7 @@ export default function LOAManagement() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setRequestToDelete(null)}
-                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-colors"
                 >
                   Cancel
                 </button>
@@ -314,7 +314,7 @@ export default function LOAManagement() {
       {/* Status Action Confirmation Modal */}
       {statusAction && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className={`absolute top-0 left-0 right-0 h-1 ${statusAction.newStatus === 'Approved' ? 'bg-emerald-500' :
                 statusAction.newStatus === 'Denied' ? 'bg-rose-500' :
                   statusAction.newStatus === 'End Requested' ? 'bg-sky-500' :
@@ -341,7 +341,7 @@ export default function LOAManagement() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setStatusAction(null)}
-                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-colors"
                 >
                   Cancel
                 </button>

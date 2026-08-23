@@ -1,16 +1,18 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-
 import { useState, useEffect, useRef } from "react";
 import { LogOut, User, ChevronDown, ShieldCheck, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
+import { getDepartmentColor, hexToRgba } from "@/lib/theme";
 
 export default function MainLayout() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
   const { profile, logout } = useAuth();
+  const deptColor = getDepartmentColor(profile?.department || '');
 
   useEffect(() => {
     // Close dropdown if user clicks outside of it
@@ -23,30 +25,64 @@ export default function MainLayout() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-
+  useEffect(() => {
+    // Global mouse tracker for the premium glow effect
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
   };
 
   return (
-    <div className="flex h-screen bg-black text-foreground overflow-hidden relative">
-      {/* Group Photo Background Watermark */}
+    <div ref={containerRef} className="flex h-screen bg-[#020617] text-foreground overflow-hidden relative">
+      {/* Premium Glassmorphic Grid Background */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.35]"
-        style={{ backgroundImage: `url('/group-photo.jpg')`, backgroundPosition: 'center 20%' }}
+        className="absolute inset-0 z-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }}
       />
-      {/* Premium Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-black/60 bg-[radial-gradient(ellipse_at_top,_transparent,_rgba(0,0,0,0.85))] z-0 pointer-events-none"></div>
+      
+      {/* Global Mouse Tracker Glow */}
+      <div 
+        className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300 opacity-100 mix-blend-screen"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, ${hexToRgba(deptColor, 0.18)}, transparent 50%)`
+        }}
+      />
       
       <Sidebar />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
         
         {/* Top Header */}
-        <header className="relative h-16 border-b border-brand/30 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 flex items-center justify-between px-6 z-40 shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-          <span className="text-brand font-bold tracking-widest uppercase text-sm drop-shadow-md">
+        <header 
+          className="relative h-16 bg-slate-950/80 backdrop-blur-xl flex items-center justify-between px-6 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)] transition-all duration-500"
+          style={{
+            borderBottom: `1px solid ${hexToRgba(deptColor, 0.3)}`,
+            boxShadow: `0 4px 20px -10px ${hexToRgba(deptColor, 0.4)}`
+          }}
+        >
+          <span 
+            className="font-black tracking-widest uppercase text-sm drop-shadow-md"
+            style={{ color: deptColor }}
+          >
             {profile?.role ? `${profile.role} Portal` : 'Portal'}
           </span>
           
@@ -55,52 +91,64 @@ export default function MainLayout() {
               {/* Profile Button */}
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded-md transition-colors border border-transparent hover:border-brand/30 group"
+                className="flex items-center gap-3 hover:bg-slate-900/50 p-2 rounded-xl transition-all duration-300 border border-transparent group"
+                style={{
+                  border: isDropdownOpen ? `1px solid ${hexToRgba(deptColor, 0.5)}` : '1px solid transparent',
+                  backgroundColor: isDropdownOpen ? hexToRgba(deptColor, 0.1) : 'transparent'
+                }}
               >
-                <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center border border-brand/30 group-hover:border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.1)] transition-colors overflow-hidden">
+                <div 
+                  className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center transition-all duration-300 overflow-hidden"
+                  style={{
+                    border: `1px solid ${hexToRgba(deptColor, 0.5)}`,
+                    boxShadow: `0 0 15px ${hexToRgba(deptColor, 0.2)}`
+                  }}
+                >
                   {profile?.avatar_url ? (
                     <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-5 h-5 text-brand" />
+                    <User className="w-5 h-5" style={{ color: deptColor }} />
                   )}
                 </div>
                 <div className="text-left hidden md:block">
-                  <div className="text-sm font-bold tracking-wide text-slate-200 uppercase leading-tight">
+                  <div className="text-sm font-black tracking-wide text-white uppercase leading-tight">
                     {profile ? profile.name : "Loading..."}
                   </div>
-                  <div className="text-xs text-muted-foreground font-medium">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                     {profile ? profile.role : "Connecting..."}
                   </div>
-              </div>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
   
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-slate-950 border border-brand/50 rounded-lg shadow-[0_5px_20px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50">
+                <div 
+                  className="absolute right-0 mt-2 w-64 bg-slate-950/90 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50 transition-all animate-in fade-in zoom-in-95 duration-200"
+                  style={{ border: `1px solid ${hexToRgba(deptColor, 0.3)}` }}
+                >
                   
                   {/* User Info Section */}
-                  <div className="px-4 py-3 border-b border-brand/30 bg-slate-900/50">
-                    <p className="text-sm font-bold tracking-wider uppercase text-slate-200">{profile?.name}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
+                  <div className="px-4 py-4 border-b bg-slate-900/50" style={{ borderColor: hexToRgba(deptColor, 0.2) }}>
+                    <p className="text-sm font-black tracking-wider uppercase text-white">{profile?.name}</p>
+                    <div className="flex items-center gap-1.5 mt-2">
                       {profile?.is_admin ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive uppercase tracking-wider border border-destructive/20">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-400 uppercase tracking-wider border border-rose-500/20">
                           <ShieldCheck className="w-3 h-3" /> Command / HR
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border border-border">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border border-slate-700">
                           <Shield className="w-3 h-3" /> Standard Officer
                         </span>
                       )}
                     </div>
                   </div>
   
-
                   {/* Logout Action */}
                   <div className="p-2">
                     <button 
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/30 hover:border-red-500/50 px-3 py-2 text-sm rounded-md transition-all font-bold tracking-wider uppercase"
+                      className="w-full flex items-center justify-center gap-2 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/30 hover:border-red-500/50 px-3 py-2.5 text-xs rounded-xl transition-all font-black tracking-widest uppercase hover:scale-[1.02]"
                     >
                       <LogOut className="w-4 h-4" />
                       Secure Logout
@@ -113,7 +161,7 @@ export default function MainLayout() {
           </div>
         </header>
         
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
           <Outlet />
         </main>
       </div>

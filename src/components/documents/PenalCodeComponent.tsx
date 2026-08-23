@@ -1,141 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
-import { Search, RotateCcw, AlertTriangle, Scale, Download, Link, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, RotateCcw, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
-const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQE40aOQ-HZjmifYwYf60i40Ep-Y6ag-_P3bmIwBekbROIgoKus42xqeudr6sRbbzPpdgajvFZzouz2/pub?gid=0&single=true&output=csv';
+// Removed parseCSV logic - now in PenalCodeSyncModal
 
-// Title headers we want to detect from the sheet
-const TITLE_PATTERNS = [
-  'TITLE 1:', 'TITLE 2:', 'TITLE 3:', 'TITLE 4:', 'TITLE 5:',
-  'TITLE 6:', 'TITLE 7:', 'TITLE 8:', 'TITLE 9:', 'TITLE 10:',
-  'TITLE A:', 'TITLE B:', 'TITLE C:', 'TITLE D:'
-];
-
-// Title A-D are definition/provision sections with a different column layout
 const DEFINITION_TITLES = ['TITLE A', 'TITLE B', 'TITLE C', 'TITLE D'];
 const isDefinitionSection = (title: string) => DEFINITION_TITLES.some(t => title.toUpperCase().includes(t));
-
-function parseCSV(text: string) {
-  const rows: any[] = [];
-  const lines = text.split('\n');
-  
-  let currentTitle = '';
-  let dataLineCount = 0; // track CSV data lines to skip the first 16 (TOC/index rows)
-  
-  for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i].replace(/\r$/, '');
-    if (!rawLine.trim()) continue;
-    
-    // Skip the first 16 data rows (table of contents / index)
-    dataLineCount++;
-    if (dataLineCount <= 16) continue;
-    
-    // Check if this line is a TITLE header row
-    const upperLine = rawLine.toUpperCase();
-    const matchedTitle = TITLE_PATTERNS.find(t => upperLine.includes(t));
-    if (matchedTitle) {
-      const titleIdx = upperLine.indexOf(matchedTitle.split(':')[0]);
-      const titleText = rawLine.substring(titleIdx).replace(/,+/g, ' ').replace(/"/g, '').trim();
-      currentTitle = titleText;
-      continue;
-    }
-    
-    // Check if this is the column header row (starts with "PC #")
-    if (rawLine.startsWith('PC #')) continue;
-    
-    // Skip rows that don't start with P.C.
-    if (!rawLine.match(/^P\.C\.\s?\d/)) continue;
-    
-    // Parse the data row — handle multi-line quoted fields
-    let fullLine = rawLine;
-    // If the line has an unclosed quote, keep appending next lines
-    const quoteCount = (fullLine.match(/"/g) || []).length;
-    if (quoteCount % 2 !== 0) {
-      let j = i + 1;
-      while (j < lines.length) {
-        fullLine += '\n' + lines[j].replace(/\r$/, '');
-        const newQuoteCount = (fullLine.match(/"/g) || []).length;
-        if (newQuoteCount % 2 === 0) {
-          i = j; // skip these lines
-          break;
-        }
-        j++;
-      }
-    }
-    
-    // Parse fields from the line
-    const values: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    for (let k = 0; k < fullLine.length; k++) {
-      const char = fullLine[k];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        values.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    values.push(current.trim());
-    
-    // Map columns based on section type
-    const pcNumber = values[0] || '';
-    
-    if (pcNumber && isDefinitionSection(currentTitle)) {
-      // Title A-D layout: PC#, (empty x5), Name, (empty x5), Description
-      const name = values[6] || values[1] || '';
-      const desc = values[12] || values[11] || '';
-      rows.push({
-        pc_number: pcNumber.trim(),
-        offense: name.trim(),
-        classification: '',
-        sentence: '',
-        fine: '',
-        points: '',
-        description: desc.trim(),
-        title_header: currentTitle
-      });
-    } else if (pcNumber) {
-      // Title 1-10 layout: PC#, Offense, (empty), (empty), CLASSIFICATION, (empty), SENTENCE, (empty), FINE, (empty), LICENSE POINTS, DESCRIPTION
-      const offense = values[1] || '';
-      const classification = values[4] || values[3] || '';
-      const sentence = values[6] || '';
-      const fine = values[8] || '';
-      const points = values[10] || '';
-      const description = values[11] || '';
-      rows.push({
-        pc_number: pcNumber.trim(),
-        offense: offense.trim(),
-        classification: classification.trim(),
-        sentence: sentence.trim(),
-        fine: fine.trim(),
-        points: points.trim(),
-        description: description.trim(),
-        title_header: currentTitle
-      });
-    }
-  }
-  return rows;
-}
 
 export const PenalCodeComponent = () => {
   const [charges, setCharges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [showLinkInput, setShowLinkInput] = useState(false);
-  const [customUrl, setCustomUrl] = useState('');
-  const [autoSync, setAutoSync] = useState(false);
-  const [nextSyncIn, setNextSyncIn] = useState(0);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const autoSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const AUTO_SYNC_INTERVAL = 5 * 60;
 
   const fetchCharges = async () => {
     setLoading(true);
@@ -156,80 +33,9 @@ export const PenalCodeComponent = () => {
     fetchCharges();
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (autoSyncRef.current) clearInterval(autoSyncRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, []);
 
-  const runImport = async (url: string) => {
-    setImporting(true);
-    setImportResult(null);
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch CSV. Check the link.');
-      const csvText = await response.text();
 
-      const parsed = parseCSV(csvText);
-      if (parsed.length === 0) throw new Error('No data found in sheet');
 
-      // Clear existing data
-      await supabase.from('penal_code').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-
-      // Insert in batches of 50
-      for (let i = 0; i < parsed.length; i += 50) {
-        const batch = parsed.slice(i, i + 50);
-        const { error: insertError } = await supabase.from('penal_code').insert(batch);
-        if (insertError) throw insertError;
-      }
-
-      setImportResult(`Successfully imported ${parsed.length} charges!`);
-      await fetchCharges();
-    } catch (err: any) {
-      console.error('Import error:', err);
-      setImportResult(`Error: ${err.message}`);
-    } finally {
-      setImporting(false);
-      setTimeout(() => setImportResult(null), 5000);
-    }
-  };
-
-  const handleImport = () => {
-    const url = customUrl.trim() || DEFAULT_CSV_URL;
-    runImport(url);
-  };
-
-  const toggleAutoSync = () => {
-    if (autoSync) {
-      if (autoSyncRef.current) clearInterval(autoSyncRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
-      autoSyncRef.current = null;
-      countdownRef.current = null;
-      setAutoSync(false);
-      setNextSyncIn(0);
-    } else {
-      const url = customUrl.trim() || DEFAULT_CSV_URL;
-      runImport(url);
-      setAutoSync(true);
-      setNextSyncIn(AUTO_SYNC_INTERVAL);
-
-      countdownRef.current = setInterval(() => {
-        setNextSyncIn(prev => (prev <= 1 ? AUTO_SYNC_INTERVAL : prev - 1));
-      }, 1000);
-
-      autoSyncRef.current = setInterval(() => {
-        runImport(url);
-        setNextSyncIn(AUTO_SYNC_INTERVAL);
-      }, AUTO_SYNC_INTERVAL * 1000);
-    }
-  };
-
-  const formatCountdown = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
 
   const getSeverityColor = (classification: string) => {
     const cls = (classification || '').toLowerCase();
@@ -285,77 +91,6 @@ export const PenalCodeComponent = () => {
 
   return (
     <div className="space-y-6 pt-4 text-sm w-full">
-      {/* Header */}
-      <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800/80 space-y-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-black text-white flex items-center gap-3">
-              <Scale className="w-6 h-6 text-[#0ea5e9]" />
-              San Andreas Penal Code
-            </h2>
-            <p className="text-slate-400 font-medium mt-1">Official comprehensive list of charges, fines, and times.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowLinkInput(!showLinkInput)}
-              className={`p-2.5 rounded-xl border transition-all ${showLinkInput ? 'bg-[#0ea5e9]/10 text-[#0ea5e9] border-[#0ea5e9]/30' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-slate-200'}`}
-              title="Custom CSV Link"
-            >
-              <Link className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleImport}
-              disabled={importing}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all font-bold disabled:opacity-50"
-            >
-              {importing ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {importing ? 'Importing...' : 'Import'}
-            </button>
-            <button
-              onClick={toggleAutoSync}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all font-bold text-xs ${autoSync ? 'bg-[#0ea5e9]/10 text-[#0ea5e9] border-[#0ea5e9]/30' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-slate-200'}`}
-            >
-              {autoSync ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-              Auto Sync
-            </button>
-          </div>
-        </div>
-
-        {autoSync && (
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#0ea5e9]/5 border border-[#0ea5e9]/20">
-            <div className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse" />
-            <span className="text-[#0ea5e9] text-xs font-bold">Auto Sync Active</span>
-            <span className="text-slate-500 text-xs">— Next sync in <span className="text-[#0ea5e9] font-mono font-bold">{formatCountdown(nextSyncIn)}</span></span>
-          </div>
-        )}
-
-        {showLinkInput && (
-          <div className="flex gap-3 items-center">
-            <div className="relative flex-1">
-              <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Paste a custom CSV link here, or leave blank for master sheet..."
-                value={customUrl}
-                onChange={(e) => setCustomUrl(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 pl-9 pr-4 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-[#0ea5e9]/50 transition-colors"
-              />
-            </div>
-            {customUrl && (
-              <button onClick={() => setCustomUrl('')} className="text-xs text-slate-500 hover:text-slate-300 font-bold whitespace-nowrap">
-                Reset to Default
-              </button>
-            )}
-          </div>
-        )}
-
-        {importResult && (
-          <div className={`text-xs font-bold px-4 py-2 rounded-lg ${importResult.startsWith('Error') ? 'text-red-400 bg-red-500/5 border border-red-500/20' : 'text-emerald-400 bg-emerald-500/5 border border-emerald-500/20'}`}>
-            {importResult}
-          </div>
-        )}
-      </div>
-
       {/* Search & Filter */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
@@ -402,17 +137,27 @@ export const PenalCodeComponent = () => {
       ) : (
         <div className="space-y-8">
           {grouped.map((group, gIdx) => (
-            <div key={gIdx} className="space-y-0">
+            <div key={gIdx} className="space-y-0 animate-fadeSlideIn opacity-0" style={{ animationDelay: `${gIdx * 150}ms`, animationFillMode: 'forwards' }}>
               {/* Title Header */}
-              <div className="sticky top-0 z-10 bg-gradient-to-r from-[#0ea5e9]/10 via-slate-900/95 to-slate-900/95 backdrop-blur-sm px-6 py-4 rounded-t-2xl border border-slate-800/80 border-b-0">
-                <h3 className="text-lg font-black text-white tracking-wide flex items-center gap-3">
-                  <div className="w-1 h-6 rounded-full bg-[#0ea5e9]" />
-                  {group.title}
-                </h3>
+              <div className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md px-6 py-4 rounded-t-2xl border border-slate-700/50 border-b-0 shadow-[0_10px_20px_-10px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-3 group">
+                  <div className="w-1 h-6 rounded-full transition-all duration-500 group-hover:h-8 group-hover:w-1.5 bg-[#0ea5e9] shadow-[0_0_10px_rgba(14,165,233,0.5)]" />
+                  <h3 
+                    className="text-lg md:text-xl font-black tracking-wide drop-shadow-md transition-all duration-500 group-hover:scale-[1.01]"
+                    style={{
+                      background: `linear-gradient(135deg, #ffffff 0%, #0ea5e9 100%)`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      filter: `drop-shadow(0 0 8px rgba(14,165,233,0.4))`
+                    }}
+                  >
+                    {group.title}
+                  </h3>
+                </div>
               </div>
 
               {/* Table — different layout for definition vs offense sections */}
-              <div className="overflow-x-auto rounded-b-2xl border border-slate-800/80 border-t-0">
+              <div className="overflow-x-auto rounded-b-2xl border border-slate-700/50 border-t-0 bg-[#0f172a]/90 backdrop-blur-sm relative z-10 shadow-2xl">
                 {isDefinitionSection(group.title) ? (
                   /* Simple table for Title A-D (Sentencing, Definitions, Provisions) */
                   <table className="w-full text-left">
@@ -425,7 +170,7 @@ export const PenalCodeComponent = () => {
                     </thead>
                     <tbody>
                       {group.items.map((charge) => (
-                        <tr key={charge.id} className="border-t border-slate-800/50 hover:bg-slate-800/30 transition-colors align-top">
+                        <tr key={charge.id} className="border-t border-slate-800/50 hover:bg-slate-800/60 hover:scale-[1.01] hover:shadow-lg hover:shadow-[#0ea5e9]/10 transition-all duration-300 align-top group relative z-10 cursor-default">
                           <td className="px-4 py-3">
                             <span className="text-[#0ea5e9] font-mono font-bold text-xs">{charge.pc_number}</span>
                           </td>
@@ -461,7 +206,7 @@ export const PenalCodeComponent = () => {
                           <>
                             <tr
                               key={charge.id}
-                              className={`border-t border-slate-800/50 transition-colors cursor-pointer ${isExpanded ? 'bg-slate-800/40' : 'hover:bg-slate-800/30'}`}
+                              className={`border-t border-slate-800/50 transition-all duration-300 cursor-pointer relative z-10 ${isExpanded ? 'bg-slate-800/60 shadow-lg' : 'hover:bg-slate-800/60 hover:scale-[1.01] hover:shadow-lg hover:shadow-[#0ea5e9]/10'}`}
                               onClick={() => setExpandedRow(isExpanded ? null : charge.id)}
                             >
                               <td className="px-4 py-3">

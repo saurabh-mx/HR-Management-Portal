@@ -148,7 +148,7 @@ export default function AuditLogs() {
   if (isAdmin === false) {
     return (
       <div className="flex items-center justify-center h-full p-8">
-        <div className="text-center space-y-4 max-w-md bg-slate-900/50 p-8 rounded-2xl border border-rose-500/20 shadow-[0_0_50px_rgba(244,63,94,0.05)]">
+        <div className="text-center space-y-4 max-w-md bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 p-8 rounded-2xl border border-rose-500/20 shadow-[0_0_50px_rgba(244,63,94,0.05)]">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-6 h-6 text-rose-500" />
           </div>
@@ -248,7 +248,7 @@ export default function AuditLogs() {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-slate-900/60 p-1.5 rounded-xl border border-slate-800/60 backdrop-blur-xl w-fit mb-6">
+      <div className="flex bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 p-1.5 rounded-xl border border-slate-800/60 backdrop-blur-xl w-fit mb-6">
         <button
           onClick={() => { setActiveTab('System'); setActionFilter('All'); }}
           className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all flex items-center gap-2 ${
@@ -272,7 +272,7 @@ export default function AuditLogs() {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl shadow-2xl overflow-hidden">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -297,7 +297,7 @@ export default function AuditLogs() {
             <tbody className="text-sm group/table">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-500 font-medium bg-slate-900/20 rounded-lg">
+                  <td colSpan={5} className="p-8 text-center text-slate-500 font-medium bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/20 rounded-lg">
                     No logs found matching your criteria.
                   </td>
                 </tr>
@@ -310,7 +310,7 @@ export default function AuditLogs() {
                     const realName = employeeMap[discordTag] || log.target_employee;
 
                     return (
-                      <tr key={log.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                      <tr key={log.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                         <td className="p-4 font-bold text-slate-200 rounded-l-lg">
                           <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
                             {realName !== "System" && realName !== "Unknown" ? realName : (employeeMap[discordTag] || "—")}
@@ -344,7 +344,7 @@ export default function AuditLogs() {
                   }
 
                   return (
-                    <tr key={log.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                    <tr key={log.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                       <td className="p-4 font-mono text-slate-300 rounded-l-lg">
                         <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
                           {log.target_employee || "—"}

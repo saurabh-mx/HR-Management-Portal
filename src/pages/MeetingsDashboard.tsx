@@ -222,9 +222,9 @@ export default function MeetingsDashboard() {
       {isAdmin && (
         <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
           <div className="overflow-hidden">
-            <Card className="bg-slate-900/60 backdrop-blur-xl border border-blue-900/50 shadow-[0_0_40px_rgba(59,130,246,0.1)] text-slate-200 relative overflow-hidden">
+            <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 backdrop-blur-xl border border-blue-900/50 shadow-[0_0_40px_rgba(59,130,246,0.1)] text-slate-200 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-blue-400"></div>
-          <CardHeader className="border-b border-slate-800/60 bg-slate-900/40 pb-4">
+          <CardHeader className="border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 pb-4">
             <CardTitle className="text-xl font-semibold text-blue-400 flex items-center gap-3">
               <PlusCircle className="w-5 h-5 text-blue-500" /> 
               {meetingToEdit ? "Update Meeting" : "Schedule New Meeting"}
@@ -234,23 +234,23 @@ export default function MeetingsDashboard() {
             <form onSubmit={handleScheduleMeeting} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-2 lg:col-span-2">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Meeting Title</label>
-                <input required type="text" value={newMeeting.title} onChange={e => setNewMeeting({ ...newMeeting, title: e.target.value })} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900" placeholder="e.g. Traffic Stop Training" />
+                <input required type="text" value={newMeeting.title} onChange={e => setNewMeeting({ ...newMeeting, title: e.target.value })} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" placeholder="e.g. Traffic Stop Training" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</label>
-                <input required type="date" value={newMeeting.meeting_date} onChange={e => setNewMeeting({ ...newMeeting, meeting_date: e.target.value })} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900 cursor-pointer" />
+                <input required type="date" value={newMeeting.meeting_date} onChange={e => setNewMeeting({ ...newMeeting, meeting_date: e.target.value })} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 cursor-pointer" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Time (Local)</label>
-                <input required type="time" value={newMeeting.meeting_time} onChange={e => setNewMeeting({ ...newMeeting, meeting_time: e.target.value })} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900 cursor-pointer" />
+                <input required type="time" value={newMeeting.meeting_time} onChange={e => setNewMeeting({ ...newMeeting, meeting_time: e.target.value })} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 cursor-pointer" />
               </div>
               <div className="space-y-2 lg:col-span-3">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Agenda / Description</label>
-                <input required type="text" value={newMeeting.description} onChange={e => setNewMeeting({ ...newMeeting, description: e.target.value })} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900" placeholder="Enter meeting details, location, or requirements..." />
+                <input required type="text" value={newMeeting.description} onChange={e => setNewMeeting({ ...newMeeting, description: e.target.value })} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" placeholder="Enter meeting details, location, or requirements..." />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Meeting Type</label>
-                <select value={newMeeting.type} onChange={e => setNewMeeting({ ...newMeeting, type: e.target.value })} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900">
+                <select value={newMeeting.type} onChange={e => setNewMeeting({ ...newMeeting, type: e.target.value })} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500">
                   <option value="Mandatory">Mandatory</option>
                   <option value="Training">Training</option>
                   <option value="Optional">Optional / Briefing</option>
@@ -258,11 +258,11 @@ export default function MeetingsDashboard() {
               </div>
               <div className="space-y-2 lg:col-span-2">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Join Link (Optional)</label>
-                <input type="url" value={joinLink} onChange={e => setJoinLink(e.target.value)} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900" placeholder="https://zoom.us/j/..." />
+                <input type="url" value={joinLink} onChange={e => setJoinLink(e.target.value)} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" placeholder="https://zoom.us/j/..." />
               </div>
               <div className="space-y-2 lg:col-span-2">
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Link Title (Optional)</label>
-                <input type="text" value={joinLinkTitle} onChange={e => setJoinLinkTitle(e.target.value)} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-900" placeholder="e.g. Join Zoom Meeting" />
+                <input type="text" value={joinLinkTitle} onChange={e => setJoinLinkTitle(e.target.value)} className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" placeholder="e.g. Join Zoom Meeting" />
               </div>
               <div className="lg:col-span-4 flex justify-end mt-4">
                 <button type="submit" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-8 py-3 rounded-lg font-bold tracking-wide transition-all duration-300 shadow-lg shadow-blue-900/20 hover:shadow-blue-500/30 hover:-translate-y-0.5 text-sm">
@@ -303,7 +303,7 @@ export default function MeetingsDashboard() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {todaysMeetings.map((meeting) => (
-                      <Card key={meeting.id} className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 flex flex-col group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-1 hover:shadow-2xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-900 border-l-4" style={{ borderLeftColor: meeting.type === 'Mandatory' ? "#f43f5e" : meeting.type === 'Training' ? "#10b981" : "#64748b" }}>
+                      <Card key={meeting.id} className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 flex flex-col group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-1 hover:shadow-2xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border-l-4" style={{ borderLeftColor: meeting.type === 'Mandatory' ? "#f43f5e" : meeting.type === 'Training' ? "#10b981" : "#64748b" }}>
                         <CardHeader className="pb-2 flex flex-row items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
@@ -396,7 +396,7 @@ export default function MeetingsDashboard() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {otherMeetings.map((meeting) => (
-                      <Card key={meeting.id} className="bg-slate-900/30 backdrop-blur-md border-slate-800/40 shadow-md overflow-hidden text-slate-300 flex flex-col group transition-all duration-300 relative hover:z-20 hover:-translate-y-0.5 hover:shadow-xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-900/60 opacity-80 border-l-2" style={{ borderLeftColor: meeting.type === 'Mandatory' ? "#f43f5e" : meeting.type === 'Training' ? "#10b981" : "#64748b" }}>
+                      <Card key={meeting.id} className="bg-slate-900/30 backdrop-blur-md border-slate-800/40 shadow-md overflow-hidden text-slate-300 flex flex-col group transition-all duration-300 relative hover:z-20 hover:-translate-y-0.5 hover:shadow-xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 opacity-80 border-l-2" style={{ borderLeftColor: meeting.type === 'Mandatory' ? "#f43f5e" : meeting.type === 'Training' ? "#10b981" : "#64748b" }}>
                         <CardHeader className="pb-2 flex flex-row items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
@@ -478,7 +478,7 @@ export default function MeetingsDashboard() {
       {/* Delete Confirmation Modal */}
       {meetingToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -493,7 +493,7 @@ export default function MeetingsDashboard() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setMeetingToDelete(null)}
-                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-colors"
                 >
                   Close
                 </button>

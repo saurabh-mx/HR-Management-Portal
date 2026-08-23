@@ -9,7 +9,8 @@ import { useAuth } from "@/context/AuthContext";
 import { logAuditAction } from "@/lib/auditLogger";
 import LOASyncModal from "@/components/admin/LOASyncModal";
 import DataSyncModal from "@/components/admin/DataSyncModal";
-import { CalendarOff } from "lucide-react";
+import PenalCodeSyncModal from "@/components/admin/PenalCodeSyncModal";
+import { CalendarOff, Download } from "lucide-react";
 
 interface Employee {
   id: string;
@@ -65,6 +66,7 @@ export default function AdminPanel() {
   
   const [showLOASyncModal, setShowLOASyncModal] = useState(false);
   const [showDataSyncModal, setShowDataSyncModal] = useState(false);
+  const [showPenalCodeSyncModal, setShowPenalCodeSyncModal] = useState(false);
 
   const [rosterSearch, setRosterSearch] = useState("");
   const [rosterRoleFilter, setRosterRoleFilter] = useState("All");
@@ -573,7 +575,7 @@ export default function AdminPanel() {
 
           {/* Stats Chips */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/40 backdrop-blur-sm border border-white/5 shadow-lg hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/60 transition-all duration-300 border border-slate-700/50">
               <Users className="w-3.5 h-3.5 text-slate-400" />
               <span className="text-xs font-medium text-slate-300">{employees.length}</span>
               <span className="text-xs text-slate-500">Personnel</span>
@@ -588,13 +590,13 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── QUICK ACTIONS ROW ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* Directory Imports */}
         <button
           onClick={() => setShowDataSyncModal(true)}
           disabled={showDataSyncModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-900/60 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
           <div className="relative flex items-start gap-4">
@@ -618,7 +620,7 @@ export default function AdminPanel() {
         <button
           onClick={() => setShowLOASyncModal(true)}
           disabled={showLOASyncModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-fuchsia-500/40 hover:bg-slate-900/60 hover:shadow-[0_0_30px_-5px_rgba(217,70,239,0.15)] disabled:opacity-60"
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-fuchsia-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(217,70,239,0.15)] disabled:opacity-60"
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
           <div className="relative flex items-start gap-4">
@@ -632,8 +634,26 @@ export default function AdminPanel() {
           </div>
         </button>
 
+        {/* Penal Code Sync */}
+        <button
+          onClick={() => setShowPenalCodeSyncModal(true)}
+          disabled={showPenalCodeSyncModal}
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-sky-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.15)] disabled:opacity-60"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+          <div className="relative flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500/20 transition-colors">
+              <Download className="w-5 h-5 text-sky-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-0.5">Penal Code Import</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Sync criminal charges from Sheets</p>
+            </div>
+          </div>
+        </button>
+
         {/* Onboard Count / Quick Stat */}
-        <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left">
+        <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md p-5 text-left">
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full -translate-y-8 translate-x-8" />
           <div className="relative flex items-start gap-4">
             <div className="w-11 h-11 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center flex-shrink-0">
@@ -652,7 +672,7 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── ONBOARD RECRUIT ─── */}
-      <div className="rounded-xl border border-slate-800/60 bg-slate-900/30 backdrop-blur-md overflow-hidden">
+      <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 backdrop-blur-md overflow-hidden">
         <div className="px-5 py-3.5 border-b border-slate-800/60 flex items-center gap-2.5">
           <UserPlus className="w-4 h-4 text-rose-400" />
           <h2 className="text-sm font-semibold text-white">Onboard Recruit</h2>
@@ -683,7 +703,7 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── ROSTER TABLE ─── */}
-      <div className="rounded-xl border border-slate-800/60 bg-slate-900/30 backdrop-blur-md overflow-hidden">
+      <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 backdrop-blur-md overflow-hidden">
         {/* Table Header with Search & Filters */}
         <div className="px-5 py-3.5 border-b border-slate-800/60">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -744,7 +764,7 @@ export default function AdminPanel() {
                 const dept = emp.department || 'SASP';
 
                 return (
-                  <tr key={emp.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                  <tr key={emp.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                     <td className="px-5 py-3 rounded-l-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase flex-shrink-0 group-hover:border-brand/30 transition-colors">
@@ -832,16 +852,21 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── MODALS ─── */}
-      <LOASyncModal 
-        isOpen={showLOASyncModal} 
-        onClose={() => setShowLOASyncModal(false)} 
-        onSuccess={() => {}} 
-      />
-
       <DataSyncModal 
         isOpen={showDataSyncModal} 
         onClose={() => setShowDataSyncModal(false)} 
         onSuccess={() => fetchEmployees()} 
+      />
+
+      <LOASyncModal 
+        isOpen={showLOASyncModal} 
+        onClose={() => setShowLOASyncModal(false)} 
+      />
+
+      <PenalCodeSyncModal
+        isOpen={showPenalCodeSyncModal}
+        onClose={() => setShowPenalCodeSyncModal(false)}
+        onSuccess={() => {}}
       />
 
       <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
@@ -855,7 +880,7 @@ export default function AdminPanel() {
           <DialogFooter className="mt-4 sm:space-x-2 space-y-2 sm:space-y-0 flex-col sm:flex-row">
             <button
               onClick={() => setShowConfirmModal(false)}
-              className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded-lg transition-colors w-full sm:w-auto"
+              className="px-4 py-2 border border-slate-700 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] text-slate-300 text-sm font-medium rounded-lg transition-colors w-full sm:w-auto"
               disabled={isCommitting}
             >
               Cancel

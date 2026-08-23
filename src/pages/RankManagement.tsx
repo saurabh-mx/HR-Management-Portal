@@ -302,7 +302,7 @@ export default function RankManagement() {
       {isAdmin && (
         <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
           <div className="overflow-hidden">
-            <Card className="bg-slate-900/40 backdrop-blur-md border border-amber-900/50 text-slate-200 shadow-xl relative overflow-hidden">
+            <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-amber-900/50 text-slate-200 shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-amber-400 flex items-center gap-2">
               <Shield className="w-5 h-5" /> Submit Rank / Commendation Request
@@ -328,7 +328,7 @@ export default function RankManagement() {
 
                 {/* Autocomplete Dropdown */}
                 {showSuggestions && newRecord.officer_name.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto animated-scrollbar bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
+                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto animated-scrollbar bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
                     {employees
                       .filter(emp =>
                         (emp.name && emp.name.toLowerCase().includes(newRecord.officer_name.toLowerCase())) ||
@@ -338,7 +338,7 @@ export default function RankManagement() {
                       .map((emp, idx) => (
                         <div
                           key={idx}
-                          className="px-3 py-2 hover:bg-slate-800 cursor-pointer text-sm flex justify-between items-center"
+                          className="px-3 py-2 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] cursor-pointer text-sm flex justify-between items-center"
                           onClick={() => {
                             setNewRecord({
                               ...newRecord,
@@ -366,7 +366,7 @@ export default function RankManagement() {
                   readOnly
                   type="text"
                   value={newRecord.department}
-                  className="w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
+                  className="w-full rounded-md border border-slate-800 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
                   placeholder="Auto-filled"
                 />
               </div>
@@ -377,7 +377,7 @@ export default function RankManagement() {
                   readOnly
                   type="text"
                   value={newRecord.current_rank}
-                  className="w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
+                  className="w-full rounded-md border border-slate-800 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
                   placeholder="Auto-filled"
                 />
               </div>
@@ -445,7 +445,7 @@ export default function RankManagement() {
       )}
 
       {/* RECORDS BOARD WITH SEARCH & FILTER */}
-      <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="border-b border-slate-800 pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle className="text-lg font-medium">Departmental Records</CardTitle>
@@ -520,7 +520,7 @@ export default function RankManagement() {
                             setSelectedRecords([]);
                           }
                         }}
-                        className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
+                        className="rounded border-slate-700 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
                       />
                     </th>
                   )}
@@ -536,13 +536,13 @@ export default function RankManagement() {
               <tbody className="">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? 8 : 7} className="py-8 text-center text-slate-500 bg-slate-900/20 rounded-lg">
+                    <td colSpan={isAdmin ? 8 : 7} className="py-8 text-center text-slate-500 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/20 rounded-lg">
                       No records match your search criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredRecords.map((record) => (
-                    <tr key={record.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(234,179,8,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(234,179,8,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                    <tr key={record.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(234,179,8,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(234,179,8,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                       {isAdmin && (
                         <td className="py-3 px-3 rounded-l-lg">
                           <input
@@ -555,7 +555,7 @@ export default function RankManagement() {
                                 setSelectedRecords(prev => prev.filter(id => id !== record.id));
                               }
                             }}
-                            className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
+                            className="rounded border-slate-700 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
                           />
                         </td>
                       )}
@@ -607,7 +607,7 @@ export default function RankManagement() {
       {/* CONFIRMATION MODAL */}
       {modalState.isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 shadow-2xl rounded-xl max-w-sm w-full p-6 relative overflow-hidden">
+          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 shadow-2xl rounded-xl max-w-sm w-full p-6 relative overflow-hidden">
             <div className={`absolute top-0 left-0 right-0 h-1.5 ${modalState.type === 'Approve' ? 'bg-emerald-500' :
                 modalState.type === 'Deny' ? 'bg-rose-500' : 'bg-red-700'
               }`}></div>

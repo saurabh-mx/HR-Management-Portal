@@ -17,24 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-
-const getDepartmentColor = (dept: string) => {
-  switch (dept) {
-    case "LSPD": return "#3b82f6";
-    case "BCSO": return "#f59e0b";
-    case "SAPR": return "#10b981";
-    case "SASP Academy": return "#94a3b8";
-    default: return "#22d3ee";
-  }
-};
-
-const hexToRgba = (hex: string, alpha: number) => {
-  if (!hex || hex.length !== 7) return `rgba(255, 255, 255, ${alpha})`;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
+import { getDepartmentColor, hexToRgba } from '@/lib/theme';
 
 const NavButton = ({ item, isActive, isCollapsed, index, deptColor }: any) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -156,8 +139,7 @@ export const Sidebar = () => {
               className="inline-block"
               style={{ 
                 animation: 'popInOut 2.5s ease-in-out infinite',
-                color: deptColor,
-                textShadow: `0 0 15px ${hexToRgba(deptColor, 0.8)}`
+                color: deptColor
               }}
             >
               {profile?.department || 'SASP'}

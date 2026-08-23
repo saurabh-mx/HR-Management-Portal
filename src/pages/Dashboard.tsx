@@ -202,7 +202,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
           <div className="pb-1">
             <button 
               onClick={() => setShowIdModal(true)} 
-              className="bg-slate-900/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-brand/50 group"
+              className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-brand/50 group"
             >
               <Download className="w-4 h-4 text-brand group-hover:scale-110 transition-transform" />
               Export ID Card
@@ -476,7 +476,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
 
       {/* Strike Preview Modal */}
       <Dialog open={!!selectedStrike} onOpenChange={(open) => !open && setSelectedStrike(null)}>
-        <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-rose-900/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/95 backdrop-blur-xl border-rose-900/50 text-slate-200 shadow-2xl rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-widest uppercase text-rose-500 border-b border-rose-900/30 pb-3 flex items-center gap-2">
               <ShieldAlert className="w-5 h-5" /> Disciplinary Action Report
@@ -521,7 +521,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
 
       {/* Announcement Preview Modal */}
       <Dialog open={!!selectedAnnouncement} onOpenChange={(open) => !open && setSelectedAnnouncement(null)}>
-        <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-widest uppercase text-brand border-b border-brand/30 pb-3 flex items-center gap-2">
               <Megaphone className="w-5 h-5" /> Official Announcement
@@ -562,7 +562,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
                     <div className="space-y-4">
                       <div className="text-sm text-slate-300 leading-relaxed font-light whitespace-pre-wrap space-y-1">{formatMessage(text)}</div>
                       {imgUrl && (
-                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-800/80 shadow-lg bg-slate-900 flex justify-center">
+                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-800/80 shadow-lg bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 flex justify-center">
                           <img src={imgUrl} alt="Announcement Attachment" className="w-full h-auto object-contain max-h-[800px]" />
                         </div>
                       )}
@@ -577,7 +577,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
 
       {/* ID Card Export Modal */}
       <Dialog open={showIdModal} onOpenChange={setShowIdModal}>
-        <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl max-w-lg z-[9999]">
+        <DialogContent className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl max-w-lg z-[9999]">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-widest uppercase text-brand border-b border-brand/30 pb-3 flex items-center gap-2">
               <Download className="w-5 h-5" /> Official Personnel Record
@@ -611,7 +611,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
                 />
                 
                 <div className="flex flex-col items-center text-center space-y-4 z-10 relative">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]">
                     {profile?.name?.charAt(0) || "U"}
                   </div>
                   

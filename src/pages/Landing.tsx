@@ -4,7 +4,7 @@ import LoginModal from "@/components/auth/LoginModal";
 export default function Landing() {
   return (
     <div
-      className="min-h-screen flex flex-col font-sans text-slate-300 relative overflow-hidden bg-slate-900"
+      className="min-h-screen flex flex-col font-sans text-slate-300 relative overflow-hidden bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500"
       style={{
         backgroundImage: "url('/sasp-tall-bg.png')",
         backgroundSize: "cover",
@@ -18,7 +18,7 @@ export default function Landing() {
       {/* Navigation Header */}
       <header className="absolute top-0 w-full flex items-center justify-between px-6 py-6 z-50">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-7 h-7 bg-slate-900/80 rounded-sm border border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.4)] backdrop-blur-md rotate-45">
+          <div className="flex items-center justify-center w-7 h-7 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 rounded-sm border border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.4)] backdrop-blur-md rotate-45">
             <Shield className="w-5 h-5 text-brand -rotate-45" />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md">
@@ -31,7 +31,7 @@ export default function Landing() {
           <a href="#community" className="hover:text-emerald-400 transition-colors">COMMUNITY</a>
           <a href="#recruitment" className="hover:text-brand transition-colors">RECRUITMENT</a>
           <LoginModal>
-            <button className="px-6 py-2 bg-slate-900/80 text-emerald-500 border border-emerald-600/50 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] backdrop-blur-sm tracking-widest uppercase text-xs">
+            <button className="px-6 py-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 text-emerald-500 border border-emerald-600/50 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] backdrop-blur-sm tracking-widest uppercase text-xs">
               PORTAL LOGIN
             </button>
           </LoginModal>

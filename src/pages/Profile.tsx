@@ -145,7 +145,7 @@ Join Date: ${formatDate(profile.department_join_date)}
       <div className="relative z-10 space-y-8">
         
         {/* HERO HEADER */}
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md">
           <div className="absolute top-0 right-0 p-6 flex flex-col items-end z-20">
             {canToggleAdmin && (
               <div className="flex items-center gap-4 bg-slate-950/80 backdrop-blur-md border border-slate-700/50 px-4 py-2 rounded-xl shadow-lg">
@@ -199,7 +199,7 @@ Join Date: ${formatDate(profile.department_join_date)}
           
           {/* LEFT COLUMN: ID CARD & ACTIONS */}
           <div className="col-span-1 lg:col-span-4 space-y-6">
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 p-6 rounded-xl shadow-xl flex flex-col items-center">
+            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-6 rounded-xl shadow-xl flex flex-col items-center">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 w-full border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Shield className="w-4 h-4" /> Digital Credentials
               </h3>
@@ -211,7 +211,7 @@ Join Date: ${formatDate(profile.department_join_date)}
                   style={{ backgroundImage: `url(${deptLogo})`, backgroundSize: '80%' }}
                 />
                 <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-4 transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                     ) : (
@@ -253,14 +253,14 @@ Join Date: ${formatDate(profile.department_join_date)}
                 <button onClick={downloadIdImage} className="w-full bg-brand/10 hover:bg-brand/20 text-brand border border-brand/30 px-4 py-2.5 rounded-md font-bold tracking-widest text-[10px] uppercase transition-colors flex items-center justify-center gap-2">
                   <Download className="w-3.5 h-3.5" /> Export as Image
                 </button>
-                <button onClick={downloadIdText} className="w-full bg-slate-800/50 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2.5 rounded-md font-bold tracking-widest text-[10px] uppercase transition-colors flex items-center justify-center gap-2">
+                <button onClick={downloadIdText} className="w-full bg-slate-800/40 backdrop-blur-sm border border-white/5 shadow-lg hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/60 transition-all duration-300 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2.5 rounded-md font-bold tracking-widest text-[10px] uppercase transition-colors flex items-center justify-center gap-2">
                   <FileText className="w-3.5 h-3.5" /> Export Details
                 </button>
               </div>
             </div>
             
             {/* Security Settings Panel */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 p-6 rounded-xl shadow-xl">
+            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-6 rounded-xl shadow-xl">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Key className="w-4 h-4" /> Security Settings
               </h3>
@@ -302,7 +302,7 @@ Join Date: ${formatDate(profile.department_join_date)}
           <div className="col-span-1 lg:col-span-8 space-y-6">
             
             {/* Identity & Contact */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
+            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Fingerprint className="w-4 h-4" /> Personal Dossier
               </h3>
@@ -327,7 +327,7 @@ Join Date: ${formatDate(profile.department_join_date)}
             </div>
 
             {/* Service Record */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
+            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <ClipboardList className="w-4 h-4" /> Service Record
               </h3>
@@ -370,7 +370,7 @@ Join Date: ${formatDate(profile.department_join_date)}
             </div>
 
             {/* Certifications */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
+            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Medal className="w-4 h-4" /> Certifications & Qualifications
               </h3>
@@ -426,7 +426,7 @@ Join Date: ${formatDate(profile.department_join_date)}
                 )}
                 
                 {!profile.cert_fto && !profile.cert_asd && !profile.cert_heat && !profile.cert_swat && !profile.cert_cid && !profile.cert_meu && !profile.cert_k9 && !profile.cert_sop && (
-                  <div className="w-full text-center py-8 border border-dashed border-slate-800 rounded-xl bg-slate-900/20">
+                  <div className="w-full text-center py-8 border border-dashed border-slate-800 rounded-xl bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/20">
                     <p className="text-sm text-slate-500 font-medium italic">No specialized certifications recorded in dossier.</p>
                   </div>
                 )}
@@ -445,14 +445,14 @@ Join Date: ${formatDate(profile.department_join_date)}
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Camera className="w-5 h-5 text-brand" /> Profile Picture
               </h3>
-              <button onClick={() => setIsEditingAvatar(false)} className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+              <button onClick={() => setIsEditingAvatar(false)} className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Preview */}
             <div className="flex justify-center">
-              <div className="w-28 h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900 flex items-center justify-center overflow-hidden">
+              <div className="w-28 h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 flex items-center justify-center overflow-hidden">
                 {avatarInput ? (
                   <img src={avatarInput} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : avatarUrl ? (
@@ -472,7 +472,7 @@ Join Date: ${formatDate(profile.department_join_date)}
                 type="url"
                 value={avatarInput}
                 onChange={e => setAvatarInput(e.target.value)}
-                className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-brand/50 focus:border-brand/50 transition-colors"
+                className="w-full rounded-lg border border-slate-800 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-brand/50 focus:border-brand/50 transition-colors"
                 placeholder="https://i.imgur.com/your-image.png"
                 autoFocus
               />

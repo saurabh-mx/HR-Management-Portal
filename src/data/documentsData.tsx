@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Book, ShieldAlert, FileText, Zap, AlertTriangle, Scale, CheckCircle2, XCircle, Map as MapIcon, Shield, Crosshair } from 'lucide-react';
+import { Book, ShieldAlert, FileText, Zap, AlertTriangle, Scale, CheckCircle2, XCircle, Map as MapIcon, Crosshair } from 'lucide-react';
 import { PenalCodeComponent } from '../components/documents/PenalCodeComponent';
 
 export const hexToRgba = (hex: string, alpha: number) => {
@@ -154,33 +154,45 @@ RADIO ETIQUETTE:
   ];
 
   return (
-    <div className="space-y-6 pt-4">
-      <div className="flex flex-wrap gap-3 mb-6">
+    <div className="space-y-8 pt-4">
+      <div className="flex flex-wrap gap-4 mb-6">
         {tabs.map((tab, idx) => (
           <button
             key={idx}
             onClick={() => setActiveTab(idx)}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${activeTab === idx ? 'bg-[#0ea5e9]/20 text-[#0ea5e9] border-[#0ea5e9]/50 shadow-[0_0_15px_rgba(14,165,233,0.1)]' : 'bg-transparent text-slate-400 border-slate-800 hover:border-slate-600 hover:text-slate-200'}`}
+            className={`group relative px-6 py-2.5 rounded-2xl text-xs font-black tracking-widest uppercase transition-all duration-500 overflow-hidden ${activeTab === idx
+              ? 'bg-[#0ea5e9]/10 text-[#0ea5e9] border border-[#0ea5e9]/40 shadow-[0_0_20px_rgba(14,165,233,0.2)] scale-105'
+              : 'bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group text-slate-400 border border-slate-800/80 hover:bg-slate-800/50 hover:text-white hover:border-slate-700 hover:scale-105'
+              }`}
           >
-            {tab.title}
+            {activeTab === idx && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0ea5e9]/10 to-transparent animate-pulse pointer-events-none" />
+            )}
+            <span className="relative z-10">{tab.title}</span>
           </button>
         ))}
       </div>
 
-      <div className="rounded-xl border border-slate-800/80 bg-[#0f172a] shadow-xl overflow-hidden relative">
-        <div className="flex items-center gap-2 px-4 py-3 bg-[#1e293b]/50 border-b border-slate-800/80">
+      <div className="group rounded-3xl border border-slate-700/50 bg-[#020617]/90 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl overflow-hidden relative transition-all duration-500 hover:shadow-[0_30px_60px_-20px_rgba(14,165,233,0.15)] hover:border-[#0ea5e9]/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0ea5e9]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+        {/* Terminal Header */}
+        <div className="flex items-center gap-3 px-5 py-4 bg-slate-900/80 border-b border-slate-800/80 relative z-10">
           <div className="flex gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+            <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
           </div>
-          <div className="text-slate-300 text-xs font-bold tracking-wide ml-4">
+          <div className="text-[#0ea5e9] text-xs font-black tracking-[0.2em] uppercase ml-4">
             {tabs[activeTab].windowTitle}
           </div>
         </div>
 
-        <div className="p-6 overflow-x-auto text-slate-300 font-mono text-[11px] sm:text-xs leading-loose whitespace-pre">
-          {tabs[activeTab].content}
+        {/* Terminal Content */}
+        <div className="relative z-10 p-8 overflow-x-auto">
+          <div className="text-emerald-400 font-mono text-[13px] sm:text-sm leading-loose whitespace-pre-wrap selection:bg-emerald-500/30">
+            {tabs[activeTab].content}
+          </div>
         </div>
       </div>
     </div>
@@ -190,7 +202,7 @@ RADIO ETIQUETTE:
 export const documents = [
   {
     id: 'sop',
-    title: 'Standard Operating Procedures',
+    title: 'SASP SOP',
     description: 'San Andreas State Police — Official Standard Operating Procedures for all field personnel.',
     icon: <Book className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1O_G17ln-H-2MLofUvsf6gl4NGmEbmn04icIRm2lnHKQ/edit',
@@ -201,7 +213,7 @@ export const documents = [
         title: 'Introduction & What It Takes to be a SASP Member',
         color: '#3b82f6',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
+          <div className="p-4 sm:p-8 pt-8 space-y-8 text-sm  mt-2 relative">
             <div className="space-y-4">
               <div className="text-[#3b82f6] font-extrabold tracking-widest uppercase text-xs">
                 Mission Statement
@@ -211,14 +223,20 @@ export const documents = [
               </p>
             </div>
             <div className="space-y-4 pt-4">
-              <div className="text-[#3b82f6] font-extrabold tracking-widest uppercase text-xs">
+              <div className="flex items-center gap-2 text-[#3b82f6] font-extrabold tracking-widest uppercase text-xs mb-4">
+                <div className="w-8 h-[1px] bg-gradient-to-r from-[#3b82f6] to-transparent"></div>
                 Core Values
               </div>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {['Integrity', 'Professionalism', 'Respect', 'Accountability', 'Courage', 'Compassion'].map((value, i) => (
-                  <li key={i} className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-800/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></div>
-                    <span className="text-slate-300 font-bold tracking-wide">{value}</span>
+                  <li 
+                    key={i} 
+                    className="animate-fadeSlideIn opacity-0 relative overflow-hidden flex items-center gap-3 bg-slate-900/30 backdrop-blur-md p-4 rounded-xl border border-white/5 hover:border-[#3b82f6]/40 hover:bg-slate-800/40 hover:scale-[1.03] transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_8px_20px_-10px_rgba(59,130,246,0.3)] group cursor-default"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#3b82f6]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative z-10 w-2 h-2 rounded-full bg-[#3b82f6] shadow-[0_0_10px_#3b82f6]"></div>
+                    <span className="relative z-10 text-slate-200 font-bold tracking-wide group-hover:text-white transition-colors">{value}</span>
                   </li>
                 ))}
               </ul>
@@ -231,20 +249,32 @@ export const documents = [
         title: 'Response Codes & Meanings',
         color: '#f59e0b',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 sm:p-8 pt-8 space-y-8 text-sm  mt-2 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { code: 'Code 1', desc: 'Routine response. Non-emergency. Obey all traffic laws.' },
-                { code: 'Code 2', desc: 'Urgent response. Lights only. No sirens. Proceed with caution.' },
-                { code: 'Code 3', desc: 'Emergency response. Lights and sirens. Priority dispatch.' },
-                { code: 'Code 4', desc: 'Situation resolved. No further units required.' },
-                { code: 'Code 5', desc: 'Felony traffic stop. High risk.' },
-                { code: 'Code 77', desc: 'Possible ambush. Use extreme caution.' },
-                { code: 'Code 100', desc: 'Barricade situation or units holding position.' },
+                { code: 'Code 1', desc: 'Routine response. Non-emergency. Obey all traffic laws.', color: '#3b82f6' },
+                { code: 'Code 2', desc: 'Urgent response. Lights only. No sirens. Proceed with caution.', color: '#eab308' },
+                { code: 'Code 3', desc: 'Emergency response. Lights and sirens. Priority dispatch.', color: '#ef4444' },
+                { code: 'Code 4', desc: 'Situation resolved. No further units required.', color: '#10b981' },
+                { code: 'Code 5', desc: 'Felony traffic stop. High risk.', color: '#f97316' },
+                { code: 'Code 77', desc: 'Possible ambush. Use extreme caution.', color: '#8b5cf6' },
+                { code: 'Code 100', desc: 'Barricade situation or units holding position.', color: '#64748b' },
               ].map((item, i) => (
-                <div key={i} className="flex flex-col gap-1.5 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
-                  <div className="text-[#f59e0b] font-black text-lg tracking-wide">{item.code}</div>
-                  <div className="text-slate-400 font-medium leading-relaxed">{item.desc}</div>
+                <div 
+                  key={i} 
+                  className="animate-fadeSlideIn opacity-0 relative overflow-hidden flex flex-col gap-2 p-5 rounded-xl border border-white/5 bg-gradient-to-br from-slate-900/40 to-slate-950/40 backdrop-blur-sm hover:scale-[1.03] hover:-translate-y-1 transition-all duration-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_4px_15px_-5px_rgba(0,0,0,0.5)] group cursor-default" 
+                  style={{ '--hover-color': item.color, animationDelay: `${i * 100}ms` } as React.CSSProperties}
+                >
+                  {/* Hover glow */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" style={{ background: `linear-gradient(135deg, ${item.color}, transparent)` }}></div>
+                  {/* Top accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}` }}></div>
+                  
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}` }}></div>
+                    <div className="font-black text-lg tracking-widest drop-shadow-sm group-hover:drop-shadow-[0_0_8px_currentColor]" style={{ color: item.color }}>{item.code}</div>
+                  </div>
+                  <div className="text-slate-300/90 font-medium leading-relaxed relative z-10 mt-1">{item.desc}</div>
                 </div>
               ))}
             </div>
@@ -256,18 +286,25 @@ export const documents = [
         title: 'Pursuit Codes (Condition 1, 2, 3)',
         color: '#ef4444',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
-            <div className="space-y-6">
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
+            <div className="space-y-4">
               {[
                 { cond: 'Condition 1', desc: 'Minor traffic infractions, non-violent fleeing. Max 2 units.', color: '#3b82f6' },
                 { cond: 'Condition 2', desc: 'Felony evasion, stolen vehicle, reckless driving. Max 4 units. Air-1 authorized.', color: '#f59e0b' },
                 { cond: 'Condition 3', desc: 'Violent felonies, shots fired, immediate threat to life. Max 6 units. Air-1 and Interceptor authorized.', color: '#ef4444' }
               ].map((item, i) => (
-                <div key={i} className="flex flex-col sm:flex-row gap-4 sm:items-center p-5 rounded-xl border bg-slate-900/30" style={{ borderColor: hexToRgba(item.color, 0.3) }}>
-                  <div className="px-4 py-2 rounded-lg font-black tracking-widest text-xs uppercase" style={{ backgroundColor: hexToRgba(item.color, 0.15), color: item.color }}>
+                <div 
+                  key={i} 
+                  className="animate-fadeSlideIn opacity-0 relative overflow-hidden flex flex-col sm:flex-row gap-5 sm:items-center p-6 rounded-2xl border border-white/5 bg-slate-900/30 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-300 group"
+                  style={{ animationDelay: `${i * 150}ms` }}
+                >
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 group-hover:w-2" style={{ backgroundColor: item.color, boxShadow: `0 0 15px ${item.color}` }}></div>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `linear-gradient(90deg, ${hexToRgba(item.color, 0.1)}, transparent)` }}></div>
+                  
+                  <div className="px-5 py-2.5 rounded-xl font-black tracking-widest text-xs uppercase shadow-inner relative z-10 border" style={{ backgroundColor: hexToRgba(item.color, 0.1), color: item.color, borderColor: hexToRgba(item.color, 0.2) }}>
                     {item.cond}
                   </div>
-                  <div className="text-slate-300 font-medium flex-1 leading-relaxed">
+                  <div className="text-slate-200 font-medium flex-1 leading-relaxed relative z-10 text-[15px]">
                     {item.desc}
                   </div>
                 </div>
@@ -281,10 +318,12 @@ export const documents = [
         title: 'Miranda Rights (When to read)',
         color: '#8b5cf6',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#8b5cf6]"></div>
-              <p className="text-lg font-bold text-slate-200 leading-relaxed italic">
+          <div className="p-4 sm:p-8 pt-8 space-y-8 text-sm  mt-2 relative">
+            <div className="p-8 rounded-3xl bg-gradient-to-r from-slate-900/80 to-slate-900/40 border border-white/5 relative overflow-hidden backdrop-blur-xl shadow-2xl group animate-fadeSlideIn opacity-0">
+              <div className="absolute top-0 left-0 w-2 h-full bg-[#8b5cf6] shadow-[0_0_20px_#8b5cf6] transition-all duration-500 group-hover:w-3"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,_var(--tw-gradient-stops))] from-[#8b5cf6]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              
+              <p className="text-xl md:text-2xl font-medium text-slate-200 leading-loose italic relative z-10 pl-4 border-l-2 border-white/10 ml-2">
                 "You have the right to remain silent. Anything you say can and will be used against you in a court of law. You have the right to an attorney. If you cannot afford an attorney, one will be provided for you. Do you understand these rights as I have read them to you?"
               </p>
             </div>
@@ -300,7 +339,7 @@ export const documents = [
         title: 'Vehicle Chase Protocol',
         color: '#ec4899',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2">
+          <div className="p-4 sm:p-8 pt-8 space-y-8 text-sm  mt-2 relative">
             <ul className="space-y-4">
               {[
                 'Primary unit maintains visual and calls out locations/directions.',
@@ -310,9 +349,15 @@ export const documents = [
                 'Maintain safe following distance to avoid collisions if suspect brakes suddenly.',
                 'Pitting authorized only when safe and within SOP guidelines.'
               ].map((text, i) => (
-                <li key={i} className="flex gap-4 items-start">
-                  <span className="text-[#ec4899] mt-0.5 font-black text-lg leading-none shrink-0">•</span>
-                  <span className="text-slate-400 font-medium text-[15px] leading-relaxed">{text}</span>
+                <li 
+                  key={i} 
+                  className="animate-fadeSlideIn opacity-0 flex gap-4 items-center group p-4 rounded-xl border border-transparent hover:border-white/5 hover:bg-slate-900/30 transition-all duration-300"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-[#ec4899]/10 flex items-center justify-center shrink-0 border border-[#ec4899]/30 group-hover:bg-[#ec4899] group-hover:shadow-[0_0_15px_#ec4899] transition-all duration-500">
+                    <span className="text-[#ec4899] font-black group-hover:text-white transition-colors">{i + 1}</span>
+                  </div>
+                  <span className="text-slate-300 font-medium text-[16px] leading-relaxed group-hover:text-white transition-colors">{text}</span>
                 </li>
               ))}
             </ul>
@@ -324,7 +369,7 @@ export const documents = [
         title: 'USE OF FORCE: Escalation Pyramid',
         color: '#14b8a6',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2 pb-10">
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative pb-10">
             <div className="bg-[#eab308]/10 border border-[#eab308]/30 rounded-xl p-4 flex gap-4 items-start">
               <AlertTriangle className="w-6 h-6 text-[#eab308] shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -333,7 +378,7 @@ export const documents = [
               </div>
             </div>
 
-            <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[23px] before:w-0.5 before:bg-slate-800 before:z-0">
+            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[31px] before:w-[2px] before:bg-gradient-to-b before:from-[#3b82f6] before:via-[#f59e0b] before:to-[#b91c1c] before:opacity-50 before:z-0">
               {[
                 { title: 'Officer Presence', desc: 'No force used. Considered the best way to resolve a situation.', color: '#3b82f6' },
                 { title: 'Verbal Commands', desc: 'Clear and direct orders. Used to persuade or instruct subjects.', color: '#10b981' },
@@ -342,16 +387,23 @@ export const documents = [
                 { title: 'Less-Lethal Weapons', desc: 'Taser, baton, beanbag. Used for assaultive behavior.', color: '#ef4444' },
                 { title: 'Deadly Force', desc: 'Firearms. Used only when there is an imminent threat of death or serious injury.', color: '#b91c1c' }
               ].map((item, i) => (
-                <div key={i} className="relative z-10 flex gap-6 items-center group">
+                <div 
+                  key={i} 
+                  className="animate-fadeSlideIn opacity-0 relative z-10 flex gap-8 items-center group"
+                  style={{ animationDelay: `${i * 150}ms` }}
+                >
                   <div
-                    className="w-12 h-12 rounded-full border-[3px] bg-slate-950 flex items-center justify-center font-black text-lg shrink-0 transition-transform group-hover:scale-110 shadow-lg"
-                    style={{ borderColor: item.color, color: item.color, boxShadow: `0 0 15px ${hexToRgba(item.color, 0.2)}` }}
+                    className="w-16 h-16 rounded-full border-4 bg-slate-950 flex items-center justify-center font-black text-2xl shrink-0 transition-transform duration-500 group-hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.8)] relative"
+                    style={{ borderColor: item.color, color: item.color }}
                   >
+                    {/* Pulsing ring */}
+                    <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: item.color }}></div>
                     {i + 1}
                   </div>
-                  <div className="flex-1 p-4 rounded-xl border bg-slate-900/40 transition-colors group-hover:bg-slate-900/60" style={{ borderColor: hexToRgba(item.color, 0.2) }}>
-                    <div className="font-extrabold uppercase text-xs tracking-wider mb-1" style={{ color: item.color }}>{item.title}</div>
-                    <div className="text-slate-400 font-medium leading-relaxed">{item.desc}</div>
+                  <div className="flex-1 p-5 rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-md shadow-xl transition-all duration-500 hover:scale-[1.02] relative overflow-hidden" style={{ '--hover-color': item.color } as React.CSSProperties}>
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" style={{ background: `linear-gradient(90deg, ${item.color}, transparent)` }}></div>
+                    <div className="font-black uppercase text-sm tracking-widest mb-1 drop-shadow-md" style={{ color: item.color }}>{item.title}</div>
+                    <div className="text-slate-300 font-medium leading-relaxed text-[15px] relative z-10">{item.desc}</div>
                   </div>
                 </div>
               ))}
@@ -364,40 +416,46 @@ export const documents = [
         title: 'Criminal Activity Response Table',
         color: '#10b981',
         content: (
-          <div className="p-0 sm:p-0 pt-0 text-sm mt-0 border-t border-slate-800/80 overflow-x-auto custom-scrollbar rounded-b-2xl">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-              <thead>
-                <tr className="border-b border-slate-800/80">
-                  <th className="py-5 px-6 font-extrabold text-[#0ea5e9] uppercase tracking-wider text-xs w-1/4">Crime</th>
-                  <th className="py-5 px-6 font-extrabold text-[#0ea5e9] uppercase tracking-wider text-xs">Units</th>
-                  <th className="py-5 px-6 font-extrabold text-[#0ea5e9] uppercase tracking-wider text-xs">Employees</th>
-                  <th className="py-5 px-6 font-extrabold text-[#0ea5e9] uppercase tracking-wider text-xs">Helicopter</th>
-                  <th className="py-5 px-6 font-extrabold text-[#0ea5e9] uppercase tracking-wider text-xs">Bike</th>
-                  <th className="py-5 px-6 font-extrabold text-[#0ea5e9] uppercase tracking-wider text-xs">Interceptor</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {[
-                  ['10-13A (Clean-up)', 'Unlimited', 'Unlimited', 'N/A', 'N/A', 'N/A'],
-                  ['Pacific Std / Paleto', '5', '10', 'Yes', 'Yes', 'Yes'],
-                  ['Gruppe 6', '4', '10', 'Yes', 'Yes', 'Yes'],
-                  ['Jewelry / Fleeca', '4', '10', 'Yes (Either)', 'Yes (Either)', 'No'],
-                  ['Drug Run', '4', '10', 'Yes', 'Yes', 'No'],
-                  ['Prison Transport', '7', '15', 'Yes', 'No', 'Yes'],
-                  ['Shootout vs Officers', '10*', '10', 'Yes', 'N/A', 'N/A']
-                ].map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3.5 px-6 font-bold text-white">{row[0]}</td>
-                    <td className="py-3.5 px-6 text-slate-400 font-medium">{row[1]}</td>
-                    <td className="py-3.5 px-6 text-slate-400 font-medium">{row[2]}</td>
-                    <td className="py-3.5 px-6 text-slate-400 font-medium">{row[3]}</td>
-                    <td className="py-3.5 px-6 text-slate-400 font-medium">{row[4]}</td>
-                    <td className="py-3.5 px-6 text-slate-400 font-medium">{row[5]}</td>
+          <div className="p-0 sm:p-0 pt-0 mt-0 overflow-hidden rounded-2xl border border-white/5 bg-slate-900/30 backdrop-blur-md shadow-2xl relative">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[700px]">
+                <thead>
+                  <tr className="bg-slate-900/80 border-b border-white/10">
+                    <th className="py-5 px-6 font-black text-[#10b981] uppercase tracking-[0.2em] text-[10px] w-1/4 drop-shadow-sm">Crime</th>
+                    <th className="py-5 px-6 font-black text-[#10b981] uppercase tracking-[0.2em] text-[10px] drop-shadow-sm">Units</th>
+                    <th className="py-5 px-6 font-black text-[#10b981] uppercase tracking-[0.2em] text-[10px] drop-shadow-sm">Employees</th>
+                    <th className="py-5 px-6 font-black text-[#10b981] uppercase tracking-[0.2em] text-[10px] drop-shadow-sm">Helicopter</th>
+                    <th className="py-5 px-6 font-black text-[#10b981] uppercase tracking-[0.2em] text-[10px] drop-shadow-sm">Bike</th>
+                    <th className="py-5 px-6 font-black text-[#10b981] uppercase tracking-[0.2em] text-[10px] drop-shadow-sm">Interceptor</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="p-4 px-6 text-[13px] text-slate-500 font-medium border-t border-slate-800/80 bg-slate-900/20">
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {[
+                    ['10-13A (Clean-up)', 'Unlimited', 'Unlimited', 'N/A', 'N/A', 'N/A'],
+                    ['Pacific Std / Paleto', '5', '10', 'Yes', 'Yes', 'Yes'],
+                    ['Gruppe 6', '4', '10', 'Yes', 'Yes', 'Yes'],
+                    ['Jewelry / Fleeca', '4', '10', 'Yes (Either)', 'Yes (Either)', 'No'],
+                    ['Drug Run', '4', '10', 'Yes', 'Yes', 'No'],
+                    ['Prison Transport', '7', '15', 'Yes', 'No', 'Yes'],
+                    ['Shootout vs Officers', '10*', '10', 'Yes', 'N/A', 'N/A']
+                  ].map((row, i) => (
+                    <tr 
+                      key={i} 
+                      className="animate-fadeSlideIn opacity-0 hover:bg-slate-800/40 transition-colors duration-300 cursor-default group"
+                      style={{ animationDelay: `${i * 100}ms` }}
+                    >
+                      <td className="py-4 px-6 font-bold text-slate-200 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">{row[0]}</td>
+                      <td className="py-4 px-6 text-slate-400 font-medium text-[15px] group-hover:text-slate-300 transition-colors">{row[1]}</td>
+                      <td className="py-4 px-6 text-slate-400 font-medium text-[15px] group-hover:text-slate-300 transition-colors">{row[2]}</td>
+                      <td className="py-4 px-6 text-slate-400 font-medium text-[15px] group-hover:text-slate-300 transition-colors">{row[3]}</td>
+                      <td className="py-4 px-6 text-slate-400 font-medium text-[15px] group-hover:text-slate-300 transition-colors">{row[4]}</td>
+                      <td className="py-4 px-6 text-slate-400 font-medium text-[15px] group-hover:text-slate-300 transition-colors">{row[5]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-4 px-6 text-[11px] uppercase tracking-widest text-slate-500 font-bold bg-slate-900/60 border-t border-white/5">
               * 10 units max for officer shootouts. Employees = total personnel including ride-alongs.
             </div>
           </div>
@@ -408,12 +466,13 @@ export const documents = [
         title: 'General Guidelines & Mandatory Equipment',
         color: '#84cc16',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
-            <div className="space-y-4">
-              <div className="text-[#0ea5e9] font-extrabold tracking-widest uppercase text-xs">
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-[#84cc16] font-extrabold tracking-widest uppercase text-xs mb-2">
+                <div className="w-8 h-[1px] bg-gradient-to-r from-[#84cc16] to-transparent"></div>
                 GENERAL RULES
               </div>
-              <ul className="space-y-6">
+              <ul className="space-y-4">
                 {[
                   "Always ask suspects if they require legal representation and medical treatment.",
                   "Officers are subject to random drug testing; no being under the influence on duty.",
@@ -421,28 +480,31 @@ export const documents = [
                   "Double ups are highly recommended but NOT mandatory.",
                   "Follow the Escalation of Force Pyramid at all times."
                 ].map((text, i) => (
-                  <li key={i} className="flex gap-4 items-start">
-                    <span className="text-[#84cc16] mt-0.5 font-black text-lg leading-none shrink-0">•</span>
-                    <span className="text-slate-400 font-medium text-[15px] leading-relaxed">{text}</span>
+                  <li 
+                    key={i} 
+                    className="animate-fadeSlideIn opacity-0 flex gap-4 items-center group p-4 rounded-xl border border-transparent hover:border-white/5 hover:bg-slate-900/30 transition-all duration-300"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-[#84cc16] shrink-0 group-hover:shadow-[0_0_10px_#84cc16] transition-all duration-500"></div>
+                    <span className="text-slate-300 font-medium text-[16px] leading-relaxed group-hover:text-white transition-colors">{text}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="rounded-xl border border-[#84cc16]/30 bg-[#84cc16]/5 p-5 space-y-4 mt-8">
-              <div className="text-[#84cc16] font-extrabold tracking-widest uppercase text-xs">
+            <div className="rounded-3xl border border-white/5 bg-gradient-to-br from-slate-900/40 to-slate-950/40 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_10px_30px_-10px_rgba(0,0,0,0.5)] p-6 md:p-8 space-y-6 mt-10 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#84cc16]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+              
+              <div className="flex items-center gap-2 text-[#84cc16] font-extrabold tracking-widest uppercase text-xs relative z-10">
+                <div className="w-8 h-[1px] bg-gradient-to-r from-[#84cc16] to-transparent"></div>
                 MANDATORY EQUIPMENT
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-4 relative z-10">
                 {['Glock', 'Taser', 'Radio', 'Transponder'].map((item, i) => (
                   <div
                     key={i}
-                    className="px-4 py-1.5 rounded-full border font-bold text-sm shadow-sm"
-                    style={{
-                      backgroundColor: hexToRgba('#84cc16', 0.05),
-                      borderColor: hexToRgba('#84cc16', 0.3),
-                      color: '#84cc16'
-                    }}
+                    className="animate-fadeSlideIn opacity-0 px-5 py-2.5 rounded-lg border border-[#84cc16]/20 bg-[#84cc16]/10 text-[#84cc16] font-bold text-sm tracking-wide shadow-sm hover:scale-105 hover:bg-[#84cc16] hover:text-slate-950 transition-all duration-300 cursor-default"
+                    style={{ animationDelay: `${i * 100}ms` }}
                   >
                     {item}
                   </div>
@@ -457,7 +519,7 @@ export const documents = [
         title: 'Boosting SOP (Vehicle Theft Response)',
         color: '#a855f7',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
             <div className="space-y-4">
               <div className="text-[#0ea5e9] font-extrabold tracking-widest uppercase text-xs">
                 VEHICLE SWAP RULES
@@ -467,7 +529,7 @@ export const documents = [
                   "Vehicle swaps only allowed on C & D class boosts if original car is already in police custody.",
                   "B-Class and above: NO swaps allowed. Code Amber (1 rear tire pop) initiated immediately."
                 ].map((text, i) => (
-                  <li key={i} className="flex gap-4 items-start">
+                  <li key={i} className="flex gap-4 items-start group hover:translate-x-2 transition-transform duration-300">
                     <span className="text-[#a855f7] mt-0.5 font-black text-lg leading-none shrink-0">•</span>
                     <span className="text-slate-400 font-medium text-[15px] leading-relaxed">{text}</span>
                   </li>
@@ -525,7 +587,7 @@ export const documents = [
         title: 'Racing SOP & Code Amber (Tire Pop Rules)',
         color: '#0ea5e9',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-6 text-sm border-t border-slate-800/80 mt-2 relative pb-12">
+          <div className="p-4 sm:p-8 pt-8 space-y-8 text-sm  mt-2 relative relative pb-12">
             <div className="space-y-4">
               <div className="text-[#0ea5e9] font-extrabold tracking-widest uppercase text-xs">
                 RACING RESPONSE RULES
@@ -538,7 +600,7 @@ export const documents = [
                   "Vehicle swaps: allowed once within 30 minutes.",
                   "Tire pop permitted after 40 minutes AND a vehicle swap has occurred."
                 ].map((text, i) => (
-                  <li key={i} className="flex gap-4 items-start">
+                  <li key={i} className="flex gap-4 items-start group hover:translate-x-2 transition-transform duration-300">
                     <span className="text-[#0ea5e9] mt-0.5 font-black text-lg leading-none shrink-0">•</span>
                     <span className="text-slate-400 font-medium text-[15px] leading-relaxed">{text}</span>
                   </li>
@@ -546,7 +608,7 @@ export const documents = [
               </ul>
             </div>
 
-            <div className="rounded-xl border border-[#eab308]/30 bg-[#eab308]/5 p-5 space-y-4 mt-8">
+            <div className="rounded-2xl border border-[#eab308]/30 bg-[#eab308]/5 hover:bg-[#eab308]/10 hover:border-[#eab308]/50 hover:scale-[1.02] transition-all duration-300 shadow-[0_0_20px_rgba(234,179,8,0.05)] hover:shadow-[0_0_30px_rgba(234,179,8,0.15)] group cursor-default p-5 space-y-4 mt-8">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-[#eab308] shrink-0 fill-[#eab308]" />
                 <div className="text-[#eab308] font-extrabold tracking-widest uppercase text-xs">
@@ -559,7 +621,7 @@ export const documents = [
                   "Must be done on foot — step out of vehicle before popping.",
                   "Exception: In-vehicle pop allowed if suspect is repeatedly ramming or causing head-on collisions."
                 ].map((text, i) => (
-                  <li key={i} className="flex gap-4 items-start">
+                  <li key={i} className="flex gap-4 items-start group hover:translate-x-2 transition-transform duration-300">
                     <span className="text-[#eab308] mt-0.5 font-black text-lg leading-none shrink-0">•</span>
                     <span className="text-slate-400 font-medium text-[15px] leading-relaxed">{text}</span>
                   </li>
@@ -586,11 +648,11 @@ export const documents = [
   },
   {
     id: 'penal_code',
-    title: 'San Andreas Penal Code',
+    title: 'SA Penal Code',
     description: 'Official comprehensive list of charges, classifications, sentences, fines, and points.',
     icon: <Scale className="w-4 h-4" />,
-    url: '',
-    original: '',
+    url: 'https://docs.google.com/spreadsheets/d/1mIAwJtkIUgG9cpyUjEYHEfKROksWSjc3dzu_unqVg-o/edit',
+    original: 'https://docs.google.com/spreadsheets/d/1mIAwJtkIUgG9cpyUjEYHEfKROksWSjc3dzu_unqVg-o/edit',
     sections: [
       {
         badge: 'PENAL CODE',
@@ -629,14 +691,8 @@ export const documents = [
         title: 'DOJ Case Laws',
         color: '#0ea5e9',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
-            <div className="text-center space-y-2 mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase">
-                <Book className="w-3.5 h-3.5" /> Case Laws
-              </div>
-              <h2 className="text-3xl font-black text-white tracking-tight">DOJ <span className="text-[#0ea5e9]">Case Laws</span></h2>
-              <p className="text-slate-400 font-medium">Landmark legal cases every SASP officer must know. — Department of Justice</p>
-            </div>
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
+
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {[
@@ -737,7 +793,7 @@ export const documents = [
                   desc: 'Stop and identify does NOT violate the Fifth Amendment rights against self-incrimination. Terry Stops do not violate the Fourth Amendment.'
                 }
               ].map((item, i) => (
-                <div key={i} className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                <div key={i} className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                   <div className="flex items-center justify-between gap-4">
                     <h3 className="font-bold text-white text-[15px]">{item.title}</h3>
                     <div
@@ -775,17 +831,11 @@ export const documents = [
         title: 'Bill of Constitution',
         color: '#0ea5e9',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
             <div className="space-y-4">
-              <div className="text-center space-y-2 mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase">
-                  <Scale className="w-3.5 h-3.5" /> Constitution & Bill of Amendments
-                </div>
-                <h2 className="text-3xl font-black text-white tracking-tight">Bill of <span className="text-[#0ea5e9]">Constitution</span></h2>
-                <p className="text-slate-400 font-medium">Department of Justice — Qui Pro Domina Justitia Sequitur</p>
-              </div>
 
-              <div className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-4">
+
+              <div className="p-6 rounded-2xl bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group border border-slate-800/60 space-y-4">
                 <p className="text-slate-300 leading-relaxed font-medium">
                   The Bill of Rights comprises the first ten amendments to the State of Los Santos Constitution. These amendments add specific guarantees of personal freedoms and rights, clear limitations on the government's power in judicial and other proceedings, and explicit declarations that all powers not specifically granted to the Government are reserved for the state or the people.
                 </p>
@@ -812,7 +862,7 @@ export const documents = [
                   { num: '9th', text: 'Protects Unlisted Rights' },
                   { num: '10th', text: 'Federal Powers Limited to Constitution' },
                 ].map((amendment, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <span className="text-[#0ea5e9] font-black text-lg w-10 shrink-0">{amendment.num}</span>
                     <span className="text-slate-300 font-medium">{amendment.text}</span>
                   </div>
@@ -891,7 +941,7 @@ export const documents = [
                     desc: 'States that the federal government possesses only those powers delegated, or enumerated, to it through the Constitution.'
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-4 sm:gap-6 p-4 sm:p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex gap-4 sm:gap-6 p-4 sm:p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <div className="w-12 h-12 rounded-xl border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 flex items-center justify-center shrink-0">
                       <span className="text-[#0ea5e9] font-black text-sm">{item.num}</span>
                     </div>
@@ -922,14 +972,8 @@ export const documents = [
         title: 'SASP Robbery Response Handbook',
         color: '#0ea5e9',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
-            <div className="text-center space-y-2 mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-4">
-                <AlertTriangle className="w-3.5 h-3.5" /> Robbery Handbook
-              </div>
-              <h2 className="text-4xl font-black text-white tracking-tight">SASP <span className="text-[#0ea5e9]">Robbery Response</span> Handbook</h2>
-              <p className="text-slate-400 font-medium pb-2">Official response protocols for all robbery tiers. All officers must know these by heart.</p>
-            </div>
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
+
 
             <div className="pt-2">
               <div className="flex items-center justify-center mb-8 relative">
@@ -1002,7 +1046,7 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
                       <div
@@ -1019,7 +1063,7 @@ export const documents = [
 
                     <div className="grid grid-cols-2 gap-3">
                       {item.stats.map((stat, idx) => (
-                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                           <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
                           <span className="text-white font-bold text-sm">{stat.value}</span>
                         </div>
@@ -1109,7 +1153,7 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
                       <div
@@ -1126,7 +1170,7 @@ export const documents = [
 
                     <div className="grid grid-cols-2 gap-3">
                       {item.stats.map((stat, idx) => (
-                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                           <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
                           <span className="text-white font-bold text-sm">{stat.value}</span>
                         </div>
@@ -1216,7 +1260,7 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
                       <div
@@ -1233,7 +1277,7 @@ export const documents = [
 
                     <div className="grid grid-cols-2 gap-3">
                       {item.stats.map((stat, idx) => (
-                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                           <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
                           <span className="text-white font-bold text-sm">{stat.value}</span>
                         </div>
@@ -1323,7 +1367,7 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
                       <div
@@ -1340,7 +1384,7 @@ export const documents = [
 
                     <div className="grid grid-cols-2 gap-3">
                       {item.stats.map((stat, idx) => (
-                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                           <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
                           <span className="text-white font-bold text-sm">{stat.value}</span>
                         </div>
@@ -1430,7 +1474,7 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
                       <div
@@ -1447,7 +1491,7 @@ export const documents = [
 
                     <div className="grid grid-cols-2 gap-3">
                       {item.stats.map((stat, idx) => (
-                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40">
+                        <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                           <span className="text-[#0ea5e9] font-black text-[9px] tracking-widest uppercase">{stat.label}</span>
                           <span className="text-white font-bold text-sm">{stat.value}</span>
                         </div>
@@ -1505,7 +1549,7 @@ export const documents = [
                   'If suspects are wearing a mask, Unauthorized Face Covering (5002) is applicable.',
                   'If items used in commission of a crime are found, PC 2012 applies to all.'
                 ].map((rule, idx) => (
-                  <div key={idx} className="flex items-center gap-4 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                  <div key={idx} className="flex items-center gap-4 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                     <span className="text-[#0ea5e9] font-black text-lg w-8 shrink-0">{String(idx + 1).padStart(2, '0')}</span>
                     <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{rule}</span>
                   </div>
@@ -1530,89 +1574,84 @@ export const documents = [
         title: 'Engagement Rules of Conduct',
         color: '#0ea5e9',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-8 text-sm border-t border-slate-800/80 mt-2">
-            <div className="text-center space-y-2 mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-4">
-                <Shield className="w-3.5 h-3.5" /> Cadet Engagement Rules
-              </div>
-              <h2 className="text-4xl font-black text-white tracking-tight"><span className="text-[#0ea5e9]">Engagement</span> Rules of Conduct</h2>
-              <p className="text-slate-400 font-medium pb-2 max-w-2xl mx-auto">Critical engagement policies for SASP cadets. These rules are MANDATORY and must be memorized before field deployment.</p>
-            </div>
-
-            <div className="space-y-4">
+          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
+            <div className="space-y-6">
               {/* Authorized */}
-              <div className="p-6 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-emerald-500/20 text-emerald-500">
+              <div className="p-6 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 backdrop-blur-md shadow-lg hover:shadow-[0_15px_40px_-10px_rgba(16,185,129,0.3)] hover:scale-[1.02] hover:-translate-y-1 hover:border-emerald-500/50 hover:bg-emerald-900/40 transition-all duration-500 space-y-4 group cursor-default relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="p-2 rounded-full bg-emerald-500/20 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-slate-900 transition-colors duration-500">
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="text-emerald-500 font-black text-[10px] tracking-widest uppercase">Authorized</div>
-                    <h3 className="text-white font-bold text-lg leading-tight">Engagement Within City Limits</h3>
+                    <h3 className="text-white font-bold text-lg leading-tight group-hover:text-emerald-300 transition-colors">Engagement Within City Limits</h3>
                   </div>
                 </div>
-                <p className="text-slate-300 leading-relaxed font-medium">
-                  Officers are <span className="text-emerald-400 font-bold">authorized</span> to engage in gang-related shootouts happening <span className="font-bold text-white">inside the city limits of Los Santos</span>, excluding South Side and East Side.
+                <p className="text-slate-300 leading-relaxed font-medium relative z-10">
+                  Officers are <span className="text-emerald-400 font-bold group-hover:text-emerald-300">authorized</span> to engage in gang-related shootouts happening <span className="font-bold text-white">inside the city limits of Los Santos</span>, excluding South Side and East Side.
                 </p>
-                <ul className="space-y-2.5 pt-2">
+                <ul className="space-y-2.5 pt-2 relative z-10">
                   {[
                     'Officers MUST warn suspects on megaphone to leave city premises MULTIPLE times before engaging.',
                     'We understand the critical need to address and mitigate such situations swiftly to ensure safety and security of our citizens.',
                     'If suspects shoot down a person, do NOT allow them to take the downed bodies with them (inside city limits only).',
                     'Do NOT intervene if the officer count is below 10.'
                   ].map((rule, i) => (
-                    <li key={i} className="flex gap-3 items-start">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-slate-400 font-medium leading-relaxed">{rule}</span>
+                    <li key={i} className="flex gap-3 items-start group/li">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500/70 group-hover/li:text-emerald-400 shrink-0 mt-0.5 transition-colors" />
+                      <span className="text-slate-400 font-medium leading-relaxed group-hover/li:text-slate-200 transition-colors">{rule}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Not Authorized */}
-              <div className="p-6 rounded-2xl border border-red-500/30 bg-red-950/20 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-red-500/20 text-red-500">
+              <div className="p-6 rounded-2xl border border-red-500/30 bg-red-950/20 backdrop-blur-md shadow-lg hover:shadow-[0_15px_40px_-10px_rgba(239,68,68,0.3)] hover:scale-[1.02] hover:-translate-y-1 hover:border-red-500/50 hover:bg-red-900/40 transition-all duration-500 space-y-4 group cursor-default relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="p-2 rounded-full bg-red-500/20 text-red-500 group-hover:bg-red-500 group-hover:text-slate-900 transition-colors duration-500">
                     <Crosshair className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="text-red-500 font-black text-[10px] tracking-widest uppercase">Not Authorized</div>
-                    <h3 className="text-white font-bold text-lg leading-tight">Non-Engagement Outside Los Santos Borders</h3>
+                    <h3 className="text-white font-bold text-lg leading-tight group-hover:text-red-300 transition-colors">Non-Engagement Outside Los Santos Borders</h3>
                   </div>
                 </div>
-                <p className="text-slate-300 leading-relaxed font-medium">
-                  Officers are <span className="text-red-400 font-bold">NOT authorized</span> to engage in any shootout occurring <span className="font-bold text-white">outside of Los Santos borders</span>, including areas such as Paleto Bay and Sandy Shores.
+                <p className="text-slate-300 leading-relaxed font-medium relative z-10">
+                  Officers are <span className="text-red-400 font-bold group-hover:text-red-300">NOT authorized</span> to engage in any shootout occurring <span className="font-bold text-white">outside of Los Santos borders</span>, including areas such as Paleto Bay and Sandy Shores.
                 </p>
-                <ul className="space-y-2.5 pt-2">
+                <ul className="space-y-2.5 pt-2 relative z-10">
                   {[
                     'Primary objective: take evidence and protect officer safety. Avoid unnecessary escalation.',
                     'If suspects shoot down a person — let them take the bodies and leave the area.',
                     'Officers are NOT authorized to follow them outside city borders.',
                     'Paleto Bay and Sandy Shores are considered OUTSIDE jurisdiction for engagement.'
                   ].map((rule, i) => (
-                    <li key={i} className="flex gap-3 items-start">
-                      <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                      <span className="text-slate-400 font-medium leading-relaxed">{rule}</span>
+                    <li key={i} className="flex gap-3 items-start group/li">
+                      <XCircle className="w-4 h-4 text-red-500/70 group-hover/li:text-red-400 shrink-0 mt-0.5 transition-colors" />
+                      <span className="text-slate-400 font-medium leading-relaxed group-hover/li:text-slate-200 transition-colors">{rule}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Conditional */}
-              <div className="p-6 rounded-2xl border border-amber-500/30 bg-amber-950/20 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-amber-500/20 text-amber-500">
+              <div className="p-6 rounded-2xl border border-amber-500/30 bg-amber-950/20 backdrop-blur-md shadow-lg hover:shadow-[0_15px_40px_-10px_rgba(245,158,11,0.3)] hover:scale-[1.02] hover:-translate-y-1 hover:border-amber-500/50 hover:bg-amber-900/40 transition-all duration-500 space-y-4 group cursor-default relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="p-2 rounded-full bg-amber-500/20 text-amber-500 group-hover:bg-amber-500 group-hover:text-slate-900 transition-colors duration-500">
                     <AlertTriangle className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="text-amber-500 font-black text-[10px] tracking-widest uppercase">Conditional</div>
-                    <h3 className="text-white font-bold text-lg leading-tight">Suspects Attempting to Bring Situation to City Limits</h3>
+                    <h3 className="text-white font-bold text-lg leading-tight group-hover:text-amber-300 transition-colors">Suspects Attempting to Bring Situation to City Limits</h3>
                   </div>
                 </div>
-                <p className="text-slate-300 leading-relaxed font-medium">
+                <p className="text-slate-300 leading-relaxed font-medium relative z-10">
                   When suspects attempt to bring a shootout from Paleto Bay, Sandy Shores, or other external locations <span className="font-bold text-white">into city limits</span>:
                 </p>
-                <ul className="space-y-2.5 pt-2">
+                <ul className="space-y-2.5 pt-2 relative z-10">
                   {[
                     'Officers MUST warn them on megaphone to leave city premises MULTIPLE times.',
                     'Officers WILL be authorized to neutralize suspects if they don\'t comply.',
@@ -1620,36 +1659,38 @@ export const documents = [
                     'Do NOT intervene if the officer count is below 10.',
                     'Make sure NOT to interfere immediately — give them a chance to escape first.'
                   ].map((rule, i) => (
-                    <li key={i} className="flex gap-3 items-start">
-                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                      <span className="text-slate-400 font-medium leading-relaxed">{rule}</span>
+                    <li key={i} className="flex gap-3 items-start group/li">
+                      <AlertTriangle className="w-4 h-4 text-amber-500/70 group-hover/li:text-amber-400 shrink-0 mt-0.5 transition-colors" />
+                      <span className="text-slate-400 font-medium leading-relaxed group-hover/li:text-slate-200 transition-colors">{rule}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Important / Map */}
-              <div className="p-6 rounded-2xl border border-rose-500/30 bg-rose-950/20 space-y-6">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="p-6 rounded-2xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-md shadow-lg hover:shadow-[0_15px_40px_-10px_rgba(244,63,94,0.3)] hover:scale-[1.02] hover:-translate-y-1 hover:border-rose-500/50 hover:bg-rose-900/40 transition-all duration-500 space-y-6 group cursor-default relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                <div className="flex items-center justify-between gap-4 flex-wrap relative z-10">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-rose-500/20 text-rose-500">
+                    <div className="p-2 rounded-full bg-rose-500/20 text-rose-500 group-hover:bg-rose-500 group-hover:text-slate-900 transition-colors duration-500">
                       <MapIcon className="w-5 h-5" />
                     </div>
                     <div>
                       <div className="text-rose-500 font-black text-[10px] tracking-widest uppercase">Important</div>
-                      <h3 className="text-white font-bold text-lg leading-tight">Red-Marked Zones — Outside City Limits</h3>
+                      <h3 className="text-white font-bold text-lg leading-tight group-hover:text-rose-300 transition-colors">Red-Marked Zones — Outside City Limits</h3>
                     </div>
                   </div>
-                  <button className="px-4 py-2 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/20 transition-colors flex items-center gap-2">
-                    <MapIcon className="w-3.5 h-3.5" /> View City Limits Map
+                  <button className="px-4 py-2 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/30 transition-colors flex items-center gap-2 group/btn">
+                    <MapIcon className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" /> View City Limits Map
                   </button>
                 </div>
-                <p className="text-slate-300 leading-relaxed font-medium">
-                  All areas marked with <span className="text-rose-400 font-bold">Red Lines on the map</span> are considered <span className="font-bold text-white">OUTSIDE City Limits</span>. Engagement rules for outside-border areas apply to these zones.
+                <p className="text-slate-300 leading-relaxed font-medium relative z-10">
+                  All areas marked with <span className="text-rose-400 font-bold group-hover:text-rose-300">Red Lines on the map</span> are considered <span className="font-bold text-white">OUTSIDE City Limits</span>. Engagement rules for outside-border areas apply to these zones.
                 </p>
-                <div className="rounded-xl overflow-hidden border border-rose-500/20">
+                <div className="rounded-xl overflow-hidden border border-rose-500/30 group-hover:border-rose-500/50 transition-colors relative z-10 shadow-inner bg-slate-900/50 backdrop-blur-sm">
                   {/* Using a placeholder for the map image since it's a screenshot */}
-                  <div className="w-full h-48 bg-slate-900 flex items-center justify-center text-slate-500 text-sm font-medium">
+                  <div className="w-full h-48 flex items-center justify-center text-rose-500/50 text-sm font-bold uppercase tracking-widest relative overflow-hidden group/map">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(244,63,94,0.1)_0%,transparent_70%)] opacity-50 group-hover/map:scale-110 transition-transform duration-1000"></div>
                     Map Image Placeholder
                   </div>
                 </div>
@@ -1666,43 +1707,43 @@ export const documents = [
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Column 1 */}
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <XCircle className="w-4 h-4 text-red-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets CANNOT make independent arrests without FTO present</span>
                 </div>
 
                 {/* Column 2 */}
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <XCircle className="w-4 h-4 text-red-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets CANNOT engage in shootouts without supervisor authorization</span>
                 </div>
 
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <XCircle className="w-4 h-4 text-red-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets CANNOT negotiate with suspects without designated negotiator</span>
                 </div>
 
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <XCircle className="w-4 h-4 text-red-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets CANNOT pursue outside city limits without command approval</span>
                 </div>
 
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets MUST file MDT reports for every incident they attend</span>
                 </div>
 
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets MUST wear full academy uniform during all training sessions</span>
                 </div>
 
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets MUST address all superior officers by their rank</span>
                 </div>
 
-                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                <div className="flex gap-3 items-center p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span className="text-slate-300 text-xs font-medium">Cadets MUST always follow the chain of command</span>
                 </div>
@@ -1726,15 +1767,7 @@ export const documents = [
         title: 'SASP Academy Training',
         color: '#0ea5e9',
         content: (
-          <div className="p-4 sm:p-6 pt-6 space-y-12 text-sm border-t border-slate-800/80 mt-2">
-            <div className="text-center space-y-2 mb-10">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-4">
-                <Book className="w-3.5 h-3.5" /> Academic Training Guide
-              </div>
-              <h2 className="text-4xl font-black text-white tracking-tight">SASP <span className="text-[#0ea5e9]">Academy Training</span></h2>
-              <p className="text-slate-400 font-medium pb-2 max-w-2xl mx-auto">Provided by Shershah & Luthra — Official SASP Cadet Training Programme</p>
-            </div>
-
+          <div className="p-4 sm:p-6 pt-6 space-y-12 text-sm  mt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 { num: '01', title: 'ACADEMY ORIENTATION', desc: 'Introduction to SASP structure, chain of command, code of conduct, and department expectations.' },
@@ -1744,7 +1777,7 @@ export const documents = [
                 { num: '05', title: 'RADIO COMMUNICATION', desc: '10-codes, dispatch procedures, callsign protocols, and proper radio etiquette.' },
                 { num: '06', title: 'FIELD EVALUATION', desc: 'Supervised ride-along with FTO, practical assessments, and final cadet evaluation exam.' }
               ].map((item, i) => (
-                <div key={i} className="flex flex-col gap-4 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+                <div key={i} className="flex flex-col gap-4 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
                   <div className="text-4xl font-black text-[#0ea5e9]/20">{item.num}</div>
                   <div>
                     <h3 className="font-black text-[#0ea5e9] text-[11px] tracking-widest uppercase mb-2">{item.title}</h3>
@@ -1772,7 +1805,7 @@ export const documents = [
                   'Cadets must maintain professional conduct on and off duty',
                   'Any violation of academy rules may result in immediate dismissal'
                 ].map((rule, idx) => (
-                  <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40">
+                  <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group">
                     <CheckCircle2 className="w-5 h-5 text-[#0ea5e9] shrink-0" />
                     <span className="text-slate-300 font-medium text-[13px] leading-relaxed">{rule}</span>
                   </div>

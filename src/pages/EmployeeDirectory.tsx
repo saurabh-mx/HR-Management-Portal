@@ -257,11 +257,11 @@ export default function EmployeeDirectory() {
     <div className="space-y-2.5 h-full flex flex-col justify-center">
       <h4 className="text-[10px] uppercase font-bold tracking-widest text-brand/80 mb-1 border-b border-brand/20 pb-1">Department Breakdown</h4>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP') }}>SASP</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP')}</span></div>
-        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('LSPD') }}><span className="font-bold" style={{ color: getDepartmentColor('LSPD') }}>LSPD</span><span className="font-bold text-slate-200">{getDeptCount(list, 'LSPD')}</span></div>
-        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('BCSO') }}><span className="font-bold" style={{ color: getDepartmentColor('BCSO') }}>BCSO</span><span className="font-bold text-slate-200">{getDeptCount(list, 'BCSO')}</span></div>
-        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SAPR') }}><span className="font-bold" style={{ color: getDepartmentColor('SAPR') }}>SAPR</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SAPR')}</span></div>
-        <div className="flex justify-between items-center col-span-2 bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP Academy') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP Academy') }}>SASP Academy</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP Academy')}</span></div>
+        <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP') }}>SASP</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP')}</span></div>
+        <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('LSPD') }}><span className="font-bold" style={{ color: getDepartmentColor('LSPD') }}>LSPD</span><span className="font-bold text-slate-200">{getDeptCount(list, 'LSPD')}</span></div>
+        <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('BCSO') }}><span className="font-bold" style={{ color: getDepartmentColor('BCSO') }}>BCSO</span><span className="font-bold text-slate-200">{getDeptCount(list, 'BCSO')}</span></div>
+        <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SAPR') }}><span className="font-bold" style={{ color: getDepartmentColor('SAPR') }}>SAPR</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SAPR')}</span></div>
+        <div className="flex justify-between items-center col-span-2 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP Academy') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP Academy') }}>SASP Academy</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP Academy')}</span></div>
       </div>
     </div>
   );
@@ -296,7 +296,7 @@ export default function EmployeeDirectory() {
                 </button>
                 <button 
                   onClick={() => setIsAdding(!isAdding)}
-                  className="bg-slate-900/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-emerald-500/50 group"
+                  className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-emerald-500/50 group"
                 >
                   {isAdding ? <X className="w-4 h-4 text-rose-500" /> : <Plus className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />}
                   {isAdding ? "Cancel" : "Onboard Recruit"}
@@ -309,7 +309,7 @@ export default function EmployeeDirectory() {
 
       {/* Only render the form if they are an Admin AND clicked the button */}
       {isAdmin && isAdding && (
-        <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
+        <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-emerald-400">Onboard New Personnel</CardTitle>
           </CardHeader>
@@ -397,7 +397,7 @@ export default function EmployeeDirectory() {
         />
       </div>
 
-      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 shadow-xl overflow-hidden">
+      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 shadow-xl overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-medium text-white">{activeDepartment === "All" ? "Global" : activeDepartment} Active Roster</CardTitle>
           <div className="relative mt-2">
@@ -481,7 +481,7 @@ export default function EmployeeDirectory() {
 
                 <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-6 flex-1 transform group-hover:scale-105 transition-transform duration-700 ease-out">
                   <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden"
+                    className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-sm shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden"
                     style={{
                       borderColor: getDepartmentColor(selectedEmployee.department),
                       color: getDepartmentColor(selectedEmployee.department)
@@ -567,7 +567,7 @@ export default function EmployeeDirectory() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 space-y-4 animated-scrollbar relative z-10 transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                  <div className="grid grid-cols-2 gap-3 bg-slate-900/50 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
+                  <div className="grid grid-cols-2 gap-3 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
                     <div>
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Citizen ID</p>
                       <p className="text-xs font-medium text-slate-200">{selectedEmployee.citizen_id || '—'}</p>
@@ -586,7 +586,7 @@ export default function EmployeeDirectory() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 bg-slate-900/50 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
+                  <div className="grid grid-cols-2 gap-3 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
                     <div>
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Join Date</p>
                       <p className="text-xs font-medium text-slate-200">{selectedEmployee.department_join_date || '—'}</p>
@@ -605,7 +605,7 @@ export default function EmployeeDirectory() {
                     </div>
                   </div>
 
-                  <div className="bg-slate-900/50 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
+                  <div className="bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Certifications</p>
                     <div className="grid grid-cols-3 gap-y-2 gap-x-2">
                       {[

@@ -191,16 +191,16 @@ export default function CommunicationsFeed() {
       {isAdmin && (
         <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
           <div className="overflow-hidden">
-            <Card className="bg-slate-900/60 backdrop-blur-xl border border-sky-900/50 shadow-[0_0_40px_rgba(14,165,233,0.1)] text-slate-200 relative overflow-hidden">
+            <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 backdrop-blur-xl border border-sky-900/50 shadow-[0_0_40px_rgba(14,165,233,0.1)] text-slate-200 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-600 to-sky-400"></div>
-          <CardHeader className="border-b border-slate-800/60 bg-slate-900/40 pb-4">
+          <CardHeader className="border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 pb-4">
             <CardTitle className="text-xl font-semibold text-sky-400 flex items-center gap-3">
               <Megaphone className="w-5 h-5 text-sky-500" />
               {postToEdit ? "Update Broadcast" : "Transmit New Broadcast"}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <form onSubmit={handleCreatePost} className="space-y-6">
+            <form onSubmit={handleCreatePost} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Broadcast Title</label>
@@ -209,7 +209,7 @@ export default function CommunicationsFeed() {
                     type="text" 
                     value={newPost.title} 
                     onChange={e => setNewPost({...newPost, title: e.target.value})} 
-                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-900" 
+                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" 
                     placeholder="e.g. BOLO: Black Sultan on Route 68" 
                   />
                 </div>
@@ -218,7 +218,7 @@ export default function CommunicationsFeed() {
                   <select 
                     value={newPost.category} 
                     onChange={e => setNewPost({...newPost, category: e.target.value})} 
-                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-900"
+                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500"
                   >
                     <option value="Announcement">Announcement</option>
                     <option value="BOLO / Alert">BOLO / Alert</option>
@@ -233,7 +233,7 @@ export default function CommunicationsFeed() {
                   rows={4}
                   value={newPost.message} 
                   onChange={e => setNewPost({...newPost, message: e.target.value})} 
-                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-900 resize-none" 
+                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 resize-none" 
                   placeholder="Enter dispatch details, instructions, or notes..." 
                 />
               </div>
@@ -243,7 +243,7 @@ export default function CommunicationsFeed() {
                   type="url" 
                   value={imageLink} 
                   onChange={e => setImageLink(e.target.value)} 
-                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-900" 
+                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" 
                   placeholder="https://example.com/image.png" 
                 />
               </div>
@@ -282,7 +282,7 @@ export default function CommunicationsFeed() {
                     <div className="h-px flex-1 bg-gradient-to-r from-brand/50 to-transparent"></div>
                   </div>
                   {todaysPosts.map((post) => (
-                    <Card key={post.id} className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-1 hover:shadow-2xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-900 border-l-4" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
+                    <Card key={post.id} className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-1 hover:shadow-2xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border-l-4" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <div className="flex items-center gap-3">
                           {post.category === "BOLO / Alert" ? (
@@ -365,7 +365,7 @@ export default function CommunicationsFeed() {
                     <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent"></div>
                   </div>
                   {previousPosts.map((post) => (
-                    <Card key={post.id} className="bg-slate-900/30 backdrop-blur-md border-slate-800/40 shadow-md overflow-hidden text-slate-300 group transition-all duration-300 relative hover:z-20 hover:-translate-y-0.5 hover:shadow-xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-900/60 opacity-80 border-l-2" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
+                    <Card key={post.id} className="bg-slate-900/30 backdrop-blur-md border-slate-800/40 shadow-md overflow-hidden text-slate-300 group transition-all duration-300 relative hover:z-20 hover:-translate-y-0.5 hover:shadow-xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 opacity-80 border-l-2" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <div className="flex items-center gap-3">
                           {post.category === "BOLO / Alert" ? (
@@ -442,7 +442,7 @@ export default function CommunicationsFeed() {
       {/* Delete Confirmation Modal */}
       {postToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -457,7 +457,7 @@ export default function CommunicationsFeed() {
               <div className="flex justify-end gap-3">
                 <button 
                   onClick={() => setPostToDelete(null)}
-                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-colors"
                 >
                   Cancel
                 </button>
