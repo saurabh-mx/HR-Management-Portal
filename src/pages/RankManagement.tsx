@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, Shield, FileText, CheckCircle2, XCircle, Trash2, Search, Plus, X, Filter } from "lucide-react";
+import { Award, Shield, CheckCircle2, XCircle, Trash2, Search, Plus, X, Filter, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
@@ -568,7 +568,7 @@ export default function RankManagement() {
                             record.status === 'Denied' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
                               'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           }`}>
-                          {record.status === 'Approved' ? <CheckCircle className="w-3 h-3" /> :
+                          {record.status === 'Approved' ? <CheckCircle2 className="w-3 h-3" /> :
                             record.status === 'Denied' ? <XCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                           {record.status}
                         </span>

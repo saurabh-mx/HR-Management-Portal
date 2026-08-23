@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarOff, CheckCircle, CheckCircle2, Clock, PlayCircle, Trash2, Search, Plus, X, Database } from "lucide-react";
+import { CalendarOff, CheckCircle, Clock, Trash2, Search, Plus, X, Database } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";

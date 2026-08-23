@@ -263,7 +263,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
             setIsSyncing(false);
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error(err);
           setErrorMsg("Error parsing CSV data. Please check the format.");
           setIsSyncing(false);
