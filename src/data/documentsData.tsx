@@ -793,21 +793,39 @@ export const documents = [
                   desc: 'Stop and identify does NOT violate the Fifth Amendment rights against self-incrimination. Terry Stops do not violate the Fourth Amendment.'
                 }
               ].map((item, i) => (
-                <div key={i} className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
+                <div 
+                  key={i} 
+                  className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-lg cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                  style={{ 
+                    animationDelay: `${i * 100}ms`, 
+                    animationFillMode: 'forwards',
+                  }}
+                >
                   <div className="flex items-center justify-between gap-4">
-                    <h3 className="font-bold text-white text-[15px]">{item.title}</h3>
+                    <h3 
+                      className="font-black text-[16px] tracking-wide transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-lg"
+                      style={{
+                        background: `linear-gradient(135deg, #ffffff 0%, ${item.color} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: `drop-shadow(0 0 8px ${hexToRgba(item.color, 0.4)})`
+                      }}
+                    >
+                      {item.title}
+                    </h3>
                     <div
-                      className="px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase shrink-0"
+                      className="px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase shrink-0 transition-transform duration-500 group-hover:scale-110"
                       style={{
                         backgroundColor: hexToRgba(item.color, 0.1),
                         borderColor: hexToRgba(item.color, 0.3),
-                        color: item.color
+                        color: item.color,
+                        boxShadow: `0 0 10px ${hexToRgba(item.color, 0.2)}`
                       }}
                     >
                       {item.badge}
                     </div>
                   </div>
-                  <p className="text-slate-400 font-medium text-[13px] leading-relaxed">
+                  <p className="text-slate-400 font-medium text-[13px] leading-relaxed group-hover:text-slate-300 transition-colors">
                     {item.desc}
                   </p>
                 </div>
@@ -862,9 +880,23 @@ export const documents = [
                   { num: '9th', text: 'Protects Unlisted Rights' },
                   { num: '10th', text: 'Federal Powers Limited to Constitution' },
                 ].map((amendment, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
-                    <span className="text-[#0ea5e9] font-black text-lg w-10 shrink-0">{amendment.num}</span>
-                    <span className="text-slate-300 font-medium">{amendment.text}</span>
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 50}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
+                    <span className="text-[#0ea5e9] font-black text-lg w-10 shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]">{amendment.num}</span>
+                    <span 
+                      className="text-slate-300 font-bold transition-all duration-500 group-hover:text-white group-hover:tracking-wide"
+                      style={{
+                        textShadow: '0 0 10px rgba(255,255,255,0)'
+                      }}
+                    >
+                      {amendment.text}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -941,14 +973,28 @@ export const documents = [
                     desc: 'States that the federal government possesses only those powers delegated, or enumerated, to it through the Constitution.'
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-4 sm:gap-6 p-4 sm:p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
-                    <div className="w-12 h-12 rounded-xl border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 flex items-center justify-center shrink-0">
-                      <span className="text-[#0ea5e9] font-black text-sm">{item.num}</span>
+                  <div 
+                    key={i} 
+                    className="flex gap-4 sm:gap-6 p-4 sm:p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 100}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-xl border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 flex items-center justify-center shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+                      <span className="text-[#0ea5e9] font-black text-sm drop-shadow-md">{item.num}</span>
                     </div>
                     <div className="space-y-1.5 flex-1">
-                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase">{item.category}</div>
-                      <div className="text-white font-bold text-sm tracking-wide">{item.subtitle}</div>
-                      <div className="text-slate-400 font-medium text-[13px] leading-relaxed pt-1">{item.desc}</div>
+                      <div className="text-[#0ea5e9] font-black text-[10px] tracking-widest uppercase transition-colors duration-500 group-hover:text-[#38bdf8]">{item.category}</div>
+                      <div 
+                        className="text-white font-black text-[15px] tracking-wide transition-all duration-500 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+                        style={{
+                          background: `linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >{item.subtitle}</div>
+                      <div className="text-slate-400 font-medium text-[13px] leading-relaxed pt-1 transition-colors duration-500 group-hover:text-slate-300">{item.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -1046,11 +1092,28 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
+                  <div 
+                    key={i} 
+                    className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-lg cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 100}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <h3 
+                        className="font-black text-lg leading-tight max-w-[200px] transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, #ffffff 0%, ${item.tierColor} 100%)`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: `drop-shadow(0 0 8px ${hexToRgba(item.tierColor, 0.4)})`
+                        }}
+                      >
+                        {item.title}
+                      </h3>
                       <div
-                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0 transition-transform duration-500 group-hover:scale-110"
                         style={{
                           backgroundColor: hexToRgba(item.tierColor, 0.1),
                           borderColor: hexToRgba(item.tierColor, 0.3),
@@ -1153,11 +1216,28 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
+                  <div 
+                    key={i} 
+                    className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-lg cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 100}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <h3 
+                        className="font-black text-lg leading-tight max-w-[200px] transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, #ffffff 0%, ${item.tierColor} 100%)`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: `drop-shadow(0 0 8px ${hexToRgba(item.tierColor, 0.4)})`
+                        }}
+                      >
+                        {item.title}
+                      </h3>
                       <div
-                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0 transition-transform duration-500 group-hover:scale-110"
                         style={{
                           backgroundColor: hexToRgba(item.tierColor, 0.1),
                           borderColor: hexToRgba(item.tierColor, 0.3),
@@ -1260,11 +1340,28 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
+                  <div 
+                    key={i} 
+                    className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-lg cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 100}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <h3 
+                        className="font-black text-lg leading-tight max-w-[200px] transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, #ffffff 0%, ${item.tierColor} 100%)`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: `drop-shadow(0 0 8px ${hexToRgba(item.tierColor, 0.4)})`
+                        }}
+                      >
+                        {item.title}
+                      </h3>
                       <div
-                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0 transition-transform duration-500 group-hover:scale-110"
                         style={{
                           backgroundColor: hexToRgba(item.tierColor, 0.1),
                           borderColor: hexToRgba(item.tierColor, 0.3),
@@ -1367,11 +1464,28 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
+                  <div 
+                    key={i} 
+                    className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-lg cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 100}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <h3 
+                        className="font-black text-lg leading-tight max-w-[200px] transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, #ffffff 0%, ${item.tierColor} 100%)`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: `drop-shadow(0 0 8px ${hexToRgba(item.tierColor, 0.4)})`
+                        }}
+                      >
+                        {item.title}
+                      </h3>
                       <div
-                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0 transition-transform duration-500 group-hover:scale-110"
                         style={{
                           backgroundColor: hexToRgba(item.tierColor, 0.1),
                           borderColor: hexToRgba(item.tierColor, 0.3),
@@ -1474,11 +1588,28 @@ export const documents = [
                     ]
                   }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-[#0ea5e9]/20 cursor-default group hover:bg-slate-900/60 transition-colors">
+                  <div 
+                    key={i} 
+                    className="flex flex-col gap-6 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/60 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-500 shadow-lg hover:shadow-lg cursor-default group hover:bg-slate-900/60 animate-fadeSlideIn opacity-0"
+                    style={{ 
+                      animationDelay: `${i * 100}ms`, 
+                      animationFillMode: 'forwards',
+                    }}
+                  >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-bold text-white text-base leading-tight max-w-[200px]">{item.title}</h3>
+                      <h3 
+                        className="font-black text-lg leading-tight max-w-[200px] transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, #ffffff 0%, ${item.tierColor} 100%)`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          filter: `drop-shadow(0 0 8px ${hexToRgba(item.tierColor, 0.4)})`
+                        }}
+                      >
+                        {item.title}
+                      </h3>
                       <div
-                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0"
+                        className="px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase shrink-0 transition-transform duration-500 group-hover:scale-110"
                         style={{
                           backgroundColor: hexToRgba(item.tierColor, 0.1),
                           borderColor: hexToRgba(item.tierColor, 0.3),
