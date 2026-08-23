@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
-import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Phone, Mail } from "lucide-react";
+import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Phone, Mail, Camera, LinkIcon, X } from "lucide-react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 
@@ -13,6 +13,11 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false);
+  const [avatarInput, setAvatarInput] = useState("");
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "—";
@@ -80,6 +85,47 @@ Join Date: ${formatDate(profile.department_join_date)}
     logAuditAction("ID_EXPORTED", profile.name || "Unknown", "Exported Digital ID Card as Text", profile.name);
   };
 
+  const handleSaveAvatar = async () => {
+    const url = avatarInput.trim();
+    if (!url) return toast.error("Please enter an image URL");
+    if (!profile?.id) return toast.error("Profile not found");
+    
+    setIsSavingAvatar(true);
+    const { error } = await supabase
+      .from('employees')
+      .update({ avatar_url: url })
+      .eq('id', profile.id);
+    
+    if (error) {
+      toast.error("Failed to save avatar: " + error.message);
+    } else {
+      setAvatarUrl(url);
+      setIsEditingAvatar(false);
+      setAvatarInput("");
+      toast.success("Profile picture updated!");
+      logAuditAction("AVATAR_UPDATED", profile.name || "Unknown", "Updated profile picture URL", profile.name);
+    }
+    setIsSavingAvatar(false);
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!profile?.id) return;
+    setIsSavingAvatar(true);
+    const { error } = await supabase
+      .from('employees')
+      .update({ avatar_url: null })
+      .eq('id', profile.id);
+    
+    if (error) {
+      toast.error("Failed to remove avatar: " + error.message);
+    } else {
+      setAvatarUrl("");
+      setIsEditingAvatar(false);
+      toast.success("Profile picture removed");
+    }
+    setIsSavingAvatar(false);
+  };
+
   if (!profile) return <div className="p-8 text-slate-400 animate-pulse">Loading Profile...</div>;
 
   const getDeptLogo = (dept: string) => {
@@ -118,16 +164,23 @@ Join Date: ${formatDate(profile.department_join_date)}
           </div>
           
           <div className="p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 z-10">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-xl border border-brand/50 shadow-[0_0_30px_rgba(var(--brand-main),0.15)] flex flex-col items-center justify-center bg-slate-950 overflow-hidden relative group">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-xl border border-brand/50 shadow-[0_0_30px_rgba(var(--brand-main),0.15)] flex flex-col items-center justify-center bg-slate-950 overflow-hidden relative group cursor-pointer" onClick={() => { setIsEditingAvatar(true); setAvatarInput(avatarUrl); }}>
               <div className="absolute inset-0 bg-brand/5 group-hover:bg-brand/10 transition-colors"></div>
-              <span className="text-5xl md:text-6xl font-light text-slate-300 group-hover:text-white transition-colors">{profile.name?.substring(0, 2).toUpperCase()}</span>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={profile.name} className="w-full h-full object-cover" onError={() => setAvatarUrl("")} />
+              ) : (
+                <span className="text-5xl md:text-6xl font-light text-slate-300 group-hover:text-white transition-colors">{profile.name?.substring(0, 2).toUpperCase()}</span>
+              )}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
             </div>
             
             <div className="flex-1 text-center md:text-left mt-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-bold uppercase tracking-widest mb-4">
                 <CheckCircle2 className="w-3 h-3" /> {profile.status || "Active Duty"}
               </div>
-              <h1 className="text-4xl md:text-5xl font-light tracking-wider text-white uppercase drop-shadow-lg mb-2">
+              <h1 className="text-3xl font-light tracking-wider text-white uppercase drop-shadow-lg mb-2">
                 {profile.name}
               </h1>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-400 font-medium tracking-wide">
@@ -158,8 +211,12 @@ Join Date: ${formatDate(profile.department_join_date)}
                   style={{ backgroundImage: `url(${deptLogo})`, backgroundSize: '80%' }}
                 />
                 <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-4 transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]">
-                    {profile.name?.charAt(0) || "U"}
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+                    ) : (
+                      profile.name?.charAt(0) || "U"
+                    )}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white tracking-wide leading-tight">{profile.name}</h2>
@@ -379,6 +436,71 @@ Join Date: ${formatDate(profile.department_join_date)}
           </div>
         </div>
       </div>
+
+      {/* Avatar URL Modal */}
+      {isEditingAvatar && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md" onClick={() => setIsEditingAvatar(false)}>
+          <div className="w-full max-w-md bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Camera className="w-5 h-5 text-brand" /> Profile Picture
+              </h3>
+              <button onClick={() => setIsEditingAvatar(false)} className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Preview */}
+            <div className="flex justify-center">
+              <div className="w-28 h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900 flex items-center justify-center overflow-hidden">
+                {avatarInput ? (
+                  <img src={avatarInput} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                ) : avatarUrl ? (
+                  <img src={avatarUrl} alt="Current" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-8 h-8 text-slate-600" />
+                )}
+              </div>
+            </div>
+
+            {/* URL Input */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <LinkIcon className="w-3 h-3" /> Image URL
+              </label>
+              <input
+                type="url"
+                value={avatarInput}
+                onChange={e => setAvatarInput(e.target.value)}
+                className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-brand/50 focus:border-brand/50 transition-colors"
+                placeholder="https://i.imgur.com/your-image.png"
+                autoFocus
+              />
+              <p className="text-[10px] text-slate-600">Paste a direct link to your image (imgur, discord CDN, etc.)</p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSaveAvatar}
+                disabled={isSavingAvatar || !avatarInput.trim()}
+                className="flex-1 bg-brand hover:bg-brand/90 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSavingAvatar ? "Saving..." : "Save Picture"}
+              </button>
+              {avatarUrl && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  disabled={isSavingAvatar}
+                  className="px-4 py-2.5 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

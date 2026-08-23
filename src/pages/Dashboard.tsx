@@ -159,16 +159,14 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
     <div className="p-8 space-y-8 bg-transparent min-h-full">
       
       {/* Sleek Glassmorphic Header */}
-      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
-        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+      <div className="relative mb-8">
+        <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
+            <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
               WELCOME, <span className="font-bold text-brand">{profile?.name || "OFFICER"}</span>
             </h1>
-            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
-            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               <Shield className="w-5 h-5 text-brand/70" /> 
               {profile?.rank || "Patrol"} <span className="text-slate-600">|</span> <span className="text-brand/80">{profile?.badge_number || "000"}</span>
             </p>
@@ -177,7 +175,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
           <div className="pb-1">
             <button 
               onClick={() => setShowIdModal(true)} 
-              className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-brand/50 group"
+              className="bg-slate-900/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-brand/50 group"
             >
               <Download className="w-4 h-4 text-brand group-hover:scale-110 transition-transform" />
               Export ID Card
@@ -441,7 +439,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
                 })
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-500/60 font-light italic gap-3">
-                <ShieldAlert className="w-8 h-8 opacity-20" />
+                <ShieldAlert className="w-6 h-6 opacity-20" />
                 <p>No active bulletins.</p>
               </div>
             )}

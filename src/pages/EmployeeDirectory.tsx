@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, CheckCircle2, Circle, Database } from "lucide-react";
+import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, CheckCircle2, Circle, Database, Edit } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from "@/components/admin/DataSyncModal";
@@ -99,6 +100,7 @@ const EmployeeRow = ({ employee, onClick }: { employee: Employee, onClick: () =>
 };
 
 export default function EmployeeDirectory() {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -128,11 +130,11 @@ export default function EmployeeDirectory() {
 
     const { data, error } = await supabase
       .from('employees')
-      .select('is_admin')
+      .select('is_admin, role')
       .eq('discord_tag', session.user.email.split('@')[0])
       .single();
     
-    if (!error && data?.is_admin) {
+    if (!error && (data?.is_admin || ['High Command', 'HR'].includes(data?.role || ''))) {
       setIsAdmin(true);
     }
   }
@@ -236,16 +238,14 @@ export default function EmployeeDirectory() {
     <div className="p-8 space-y-8 bg-transparent min-h-full">
       
       {/* Sleek Glassmorphic Header */}
-      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
-        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+      <div className="relative mb-8">
+        <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
+            <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
               PERSONNEL <span className="font-bold text-brand">DIRECTORY</span>
             </h1>
-            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
-            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Manage and view personnel rosters, department allocations, and statuses.
             </p>
           </div>
@@ -254,14 +254,17 @@ export default function EmployeeDirectory() {
             {isAdmin && (
               <>
                 <button 
-                  onClick={() => setIsSyncModalOpen(true)}
-                  className="bg-brand/10 backdrop-blur-md text-brand px-6 py-3 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-brand/20 transition-all flex items-center gap-2 border border-brand/30"
+                  onClick={() => navigate('/admin')}
+                  className="bg-sky-500/10 backdrop-blur-md text-sky-400 px-5 py-2.5 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-sky-500/20 transition-all flex items-center gap-2 border border-sky-500/30 shadow-[0_0_15px_rgba(14,165,233,0.15)]"
                 >
-                  <Database className="w-4 h-4" /> Master Import
+                  <Edit className="w-4 h-4" /> Manage Directory
+                </button>
+                <button onClick={() => setIsSyncModalOpen(true)} className="bg-brand/10 backdrop-blur-md text-brand px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-brand/20 transition-all flex items-center gap-2 border border-brand/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)] whitespace-nowrap">
+                  <Database className="w-4 h-4" /> Directory Imports
                 </button>
                 <button 
                   onClick={() => setIsAdding(!isAdding)}
-                  className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-emerald-500/50 group"
+                  className="bg-slate-900/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-emerald-500/50 group"
                 >
                   {isAdding ? <X className="w-4 h-4 text-rose-500" /> : <Plus className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />}
                   {isAdding ? "Cancel" : "Onboard Recruit"}

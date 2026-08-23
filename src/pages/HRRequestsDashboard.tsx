@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, CheckCircle, Clock, History, MessageSquare, Send, Ticket, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, History, MessageSquare, Send, Ticket, Trash2, Plus, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
@@ -26,6 +26,7 @@ interface Comment {
 export default function HRRequestsDashboard() {
   const { adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<HRRequest[]>([]);
+  const [showForm, setShowForm] = useState(false);
   const [userProfile, setUserProfile] = useState<{ name: string, email: string, isAdmin: boolean } | null>(null);
 
   // Tab State for filtering Active vs Resolved
@@ -103,6 +104,7 @@ export default function HRRequestsDashboard() {
       setIsCustomSubject(false);
       setShowSubmitConfirm(false);
       setShowSubmitSuccess(true);
+      setShowForm(false);
       setActiveTab('Active'); // Switch to active tab so they see their new ticket immediately
     }
   };
@@ -277,7 +279,7 @@ export default function HRRequestsDashboard() {
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                  <div className="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                     <CheckCircle className="w-5 h-5 text-emerald-500" />
                   </div>
                   <h3 className="text-lg font-bold text-white">Resolve Ticket</h3>
@@ -313,24 +315,37 @@ export default function HRRequestsDashboard() {
   return (
     <div className="p-8 space-y-8 bg-transparent min-h-full">
       {/* Sleek Glassmorphic Header */}
-      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
-        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+      <div className="relative mb-8">
+        <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <Ticket className="w-10 h-10 text-brand" />
+            <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <Ticket className="w-7 h-7 text-brand" />
               HR REQUESTS & <span className="font-bold text-brand">SUPPORT</span>
             </h1>
-            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
-            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               {userProfile?.isAdmin ? "Command View: Review and respond to departmental inquiries." : "Submit an official, confidential request directly to High Command."}
             </p>
+          </div>
+          <div className="shrink-0">
+            <button 
+              onClick={() => setShowForm(!showForm)} 
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all duration-300 shadow-md border text-sm ${
+                showForm 
+                ? 'bg-slate-900/80 text-white border-slate-700 hover:bg-slate-800' 
+                : 'bg-emerald-600/90 hover:bg-emerald-500 text-white border-emerald-500/50 hover:-translate-y-0.5'
+              }`}
+            >
+              {showForm ? <X className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
+              <span>{showForm ? "Cancel" : "Open Ticket"}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <Card className="bg-slate-900 border-emerald-900/50 text-slate-200">
+      <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
+        <div className="overflow-hidden">
+          <Card className="bg-slate-900 border-emerald-900/50 text-slate-200 relative overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-medium text-emerald-400">Open a Confidential Ticket</CardTitle>
         </CardHeader>
@@ -383,7 +398,9 @@ export default function HRRequestsDashboard() {
             </div>
           </form>
         </CardContent>
-      </Card>
+          </Card>
+        </div>
+      </div>
 
       {/* TICKETS BOARD WITH TABS */}
       <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
@@ -474,7 +491,7 @@ export default function HRRequestsDashboard() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                <div className="w-7 h-7 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
                   <Trash2 className="w-5 h-5 text-rose-500" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Delete Support Ticket</h3>
@@ -507,7 +524,7 @@ export default function HRRequestsDashboard() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <div className="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                   <Send className="w-5 h-5 text-emerald-500" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Confirm Submission</h3>
@@ -541,7 +558,7 @@ export default function HRRequestsDashboard() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
             <div className="p-6 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 mb-4">
-                <CheckCircle className="w-8 h-8 text-emerald-500" />
+                <CheckCircle className="w-6 h-6 text-emerald-500" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Request Submitted</h3>
               <p className="text-slate-400 text-sm mb-6 leading-relaxed">

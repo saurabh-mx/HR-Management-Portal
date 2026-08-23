@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldAlert, Trash2, Search } from "lucide-react";
+import { ShieldAlert, Trash2, Search, Plus, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +22,7 @@ export default function StrikeManagement() {
   const { adminSafeMode } = useAuth();
   const [strikes, setStrikes] = useState<Strike[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [isTrueAdmin, setIsTrueAdmin] = useState(false);
   const [isCommand, setIsCommand] = useState(false);
   const [authorName, setAuthorName] = useState("Command");
@@ -98,17 +99,14 @@ export default function StrikeManagement() {
 
     if (error) {
       console.error("Supabase error:", error);
-      alert("Failed to submit: " + error.message);
-      return;
-    }
-
-    if (data) {
-      const addedStrike = data[0];
-      logAuditAction("STRIKE_ISSUED", addedStrike.name, `Issued ${addedStrike.action_type}${addedStrike.action_type === 'Strike' ? ` (Level ${addedStrike.strike_level})` : ''} - Reason: ${addedStrike.reason}`, authorName);
-      setStrikes([addedStrike, ...strikes]);
+      alert("Failed to issue record: " + error.message);
+    } else if (data) {
+      logAuditAction("STRIKE_ISSUED", newStrike.name, `Issued ${actionType} (Level: ${strikeLevel}) Reason: ${newStrike.reason}`, authorName);
       setNewStrike({ name: "", reason: "" });
       setActionType("Warning");
       setStrikeLevel("1/5");
+      fetchStrikes();
+      setShowForm(false);
     }
   };
 
@@ -177,25 +175,40 @@ export default function StrikeManagement() {
   return (
     <div className="p-8 space-y-8 bg-transparent min-h-full">
       {/* Sleek Glassmorphic Header */}
-      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
-        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+      <div className="relative mb-8">
+        <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <ShieldAlert className="w-10 h-10 text-rose-500" />
+            <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <ShieldAlert className="w-7 h-7 text-rose-500" />
               DISCIPLINARY <span className="font-bold text-rose-500">ACTIONS</span>
             </h1>
-            <div className="w-24 h-1 bg-rose-500 mt-4 mb-3 shadow-[0_0_15px_rgba(244,63,94,0.8)] rounded-full"></div>
-            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+            <div className="w-16 h-1 bg-rose-500 mt-2 mb-2 shadow-[0_0_15px_rgba(244,63,94,0.8)] rounded-full"></div>
+            <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Official database for departmental strikes and reprimands.
             </p>
           </div>
+          {(isAdmin || isCommand) && (
+            <div className="shrink-0">
+              <button 
+                onClick={() => setShowForm(!showForm)} 
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all duration-300 shadow-md border text-sm ${
+                  showForm 
+                  ? 'bg-slate-900/80 text-white border-slate-700 hover:bg-slate-800' 
+                  : 'bg-rose-600/90 hover:bg-rose-500 text-white border-rose-500/50 hover:-translate-y-0.5'
+                }`}
+              >
+                {showForm ? <X className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
+                <span>{showForm ? "Cancel" : "Issue Action"}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {(isAdmin || isCommand) && (
-        <Card className="bg-slate-900/40 backdrop-blur-md border border-rose-900/50 text-slate-200 shadow-xl">
+        <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
+          <div className="overflow-hidden">
+            <Card className="bg-slate-900/40 backdrop-blur-md border border-rose-900/50 text-slate-200 shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-rose-400">
               {isCommand && !isAdmin ? "Issue Disciplinary Action" : "Issue Disciplinary Action"}
@@ -313,6 +326,8 @@ export default function StrikeManagement() {
             </form>
           </CardContent>
         </Card>
+          </div>
+        </div>
       )}
 
       <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
@@ -427,7 +442,7 @@ export default function StrikeManagement() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                <div className="w-7 h-7 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
                   <ShieldAlert className="w-5 h-5 text-rose-500" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Revoke Disciplinary Action</h3>
@@ -461,7 +476,7 @@ export default function StrikeManagement() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-red-600" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                <div className="w-7 h-7 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
                   <Trash2 className="w-5 h-5 text-red-500" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Delete Disciplinary Action</h3>

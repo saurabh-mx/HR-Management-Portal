@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarOff, CheckCircle, Clock, Trash2, Search } from "lucide-react";
+import { CalendarOff, CheckCircle, CheckCircle2, Clock, PlayCircle, Trash2, Search, Plus, X, Database } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
+import LOASyncModal from "@/components/admin/LOASyncModal";
 
 interface LOARequest {
   id: string;
@@ -20,12 +21,15 @@ export default function LOAManagement() {
   const { adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<LOARequest[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [isTrueAdmin, setIsTrueAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [authorName, setAuthorName] = useState("");
   const [newRequest, setNewRequest] = useState({ start_date: "", end_date: "", reason: "" });
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const [statusAction, setStatusAction] = useState<{ id: string, newStatus: string, title: string, message: string } | null>(null);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -55,6 +59,7 @@ export default function LOAManagement() {
       logAuditAction("LOA_SUBMITTED", authorName, `Submitted LOA request from ${newRequest.start_date} to ${newRequest.end_date}`, authorName);
       setRequests([data[0], ...requests]);
       setNewRequest({ start_date: "", end_date: "", reason: "" });
+      setShowForm(false);
     }
   };
 
@@ -95,6 +100,9 @@ export default function LOAManagement() {
     // Privacy filter: Normal users only see their own LOAs
     if (!isAdmin && req.officer_name !== authorName) return false;
 
+    // Status filter
+    if (statusFilter !== "All" && req.status !== statusFilter) return false;
+
     // Search filter
     return req.officer_name.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -102,24 +110,45 @@ export default function LOAManagement() {
   return (
     <div className="p-8 space-y-8 bg-transparent min-h-full">
       {/* Sleek Glassmorphic Header */}
-      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
-        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+      <div className="relative mb-8">
+        <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <CalendarOff className="w-10 h-10 text-brand" />
+            <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <CalendarOff className="w-7 h-7 text-brand" />
               LEAVE OF <span className="font-bold text-brand">ABSENCE</span>
             </h1>
-            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
-            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
+            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Submit and manage departmental time-off requests.
             </p>
+          </div>
+          <div className="shrink-0 flex items-center gap-3">
+            {isAdmin && (
+              <button 
+                onClick={() => setShowSyncModal(true)}
+                className="bg-brand/10 backdrop-blur-md text-brand px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-brand/20 transition-all flex items-center gap-2 border border-brand/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)]"
+              >
+                <Database className="w-4 h-4" /> Sync LOAs
+              </button>
+            )}
+            <button 
+              onClick={() => setShowForm(!showForm)} 
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all duration-300 shadow-md border text-sm ${
+                showForm 
+                ? 'bg-slate-900/80 text-white border-slate-700 hover:bg-slate-800' 
+                : 'bg-fuchsia-600/90 hover:bg-fuchsia-500 text-white border-fuchsia-500/50 hover:-translate-y-0.5'
+              }`}
+            >
+              {showForm ? <X className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
+              <span>{showForm ? "Cancel" : "Submit Request"}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
+        <div className="overflow-hidden">
+          <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader><CardTitle className="text-lg font-medium text-fuchsia-400">Submit LOA Request</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -142,21 +171,38 @@ export default function LOAManagement() {
             <div className="md:col-span-2 flex justify-end"><button type="submit" className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-5 py-2 rounded-md font-medium text-sm">Submit Request</button></div>
           </form>
         </CardContent>
-      </Card>
+          </Card>
+        </div>
+      </div>
 
       <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-4">
           <CardTitle className="text-lg font-medium">Departmental LOA Records</CardTitle>
-          {/* SEARCH BAR */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search officer..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-md text-sm text-white focus:outline-none focus:ring-1 focus:ring-fuchsia-500 w-64"
-            />
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            {/* STATUS FILTER */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand w-full sm:w-auto"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Approved">Active (Approved)</option>
+              <option value="Pending Review">Pending Review</option>
+              <option value="Denied">Denied</option>
+              <option value="Ended">Ended</option>
+            </select>
+
+            {/* SEARCH BAR */}
+            <div className="relative w-full sm:w-auto">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Search officer..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-md text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand w-full sm:w-64"
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -237,7 +283,7 @@ export default function LOAManagement() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+                <div className="w-7 h-7 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
                   <Trash2 className="w-5 h-5 text-rose-500" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Delete LOA Record</h3>
@@ -276,7 +322,7 @@ export default function LOAManagement() {
               }`} />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${statusAction.newStatus === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/20' :
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${statusAction.newStatus === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/20' :
                     statusAction.newStatus === 'Denied' ? 'bg-rose-500/10 border-rose-500/20' :
                       statusAction.newStatus === 'End Requested' ? 'bg-sky-500/10 border-sky-500/20' :
                         'bg-slate-500/10 border-slate-500/20'
@@ -314,6 +360,12 @@ export default function LOAManagement() {
           </div>
         </div>
       )}
+
+      <LOASyncModal 
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        onSuccess={fetchRequests}
+      />
     </div>
   );
 }

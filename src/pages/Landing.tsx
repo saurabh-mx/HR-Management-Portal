@@ -18,7 +18,7 @@ export default function Landing() {
       {/* Navigation Header */}
       <header className="absolute top-0 w-full flex items-center justify-between px-6 py-6 z-50">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-12 h-12 bg-slate-900/80 rounded-sm border border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.4)] backdrop-blur-md rotate-45">
+          <div className="flex items-center justify-center w-7 h-7 bg-slate-900/80 rounded-sm border border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.4)] backdrop-blur-md rotate-45">
             <Shield className="w-5 h-5 text-brand -rotate-45" />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md">
@@ -66,7 +66,7 @@ export default function Landing() {
       <section className="relative z-10 py-20 px-6 border-b border-slate-800/50">
         <div className="max-w-4xl mx-auto text-center relative z-20">
           <div className="inline-block p-4 border border-blue-900/50 bg-slate-950/60 backdrop-blur-md rotate-45 mb-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-            <Shield className="w-8 h-8 text-blue-500 -rotate-45 opacity-80" />
+            <Shield className="w-6 h-6 text-blue-500 -rotate-45 opacity-80" />
           </div>
           <p className="text-lg md:text-xl leading-loose font-light text-slate-300 bg-slate-950/60 p-8 rounded-xl backdrop-blur-sm border border-slate-800/50 shadow-xl">
             Welcome to the official portal of the San Andreas State Police (SASP). We give the utmost importance to law and order, standing as the frontline of defense across the state. Our commitment is unwavering, and our mission is clear: <br /><br /><span className="text-emerald-500 font-medium text-2xl tracking-widest uppercase">“To protect and to serve!”</span>
@@ -89,7 +89,7 @@ export default function Landing() {
             {/* Feature 1 (Blue) */}
             <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-blue-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
               <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-blue-500 transition-colors"></div>
-              <Scale className="w-10 h-10 text-slate-500 group-hover:text-blue-500 transition-colors mb-6" />
+              <Scale className="w-7 h-7 text-slate-500 group-hover:text-blue-500 transition-colors mb-6" />
               <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Statewide Jurisdiction</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-light">
                 From city streets to county highways, our troopers are equipped to handle complex emergencies and maintain peace across all of San Andreas.
@@ -99,7 +99,7 @@ export default function Landing() {
             {/* Feature 2 (Green) */}
             <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-emerald-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
               <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-emerald-500 transition-colors"></div>
-              <ShieldCheck className="w-10 h-10 text-slate-500 group-hover:text-emerald-500 transition-colors mb-6" />
+              <ShieldCheck className="w-7 h-7 text-slate-500 group-hover:text-emerald-500 transition-colors mb-6" />
               <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Unwavering Integrity</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-light">
                 We hold our officers to the highest ethical standards, ensuring transparent and fair treatment for all citizens we are sworn to protect.
@@ -109,7 +109,7 @@ export default function Landing() {
             {/* Feature 3 (Gold) */}
             <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-brand/50 transition-colors shadow-xl overflow-hidden rounded-lg">
               <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-brand transition-colors"></div>
-              <Crosshair className="w-10 h-10 text-slate-500 group-hover:text-brand transition-colors mb-6" />
+              <Crosshair className="w-7 h-7 text-slate-500 group-hover:text-brand transition-colors mb-6" />
               <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Tactical Excellence</h4>
               <p className="text-sm text-slate-400 leading-relaxed font-light">
                 Highly trained units stand ready to intercept and investigate criminal activity to keep our streets safe from advanced threats.

@@ -56,14 +56,31 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
   };
 
   const handleSyncCSV = async (eOrUrl?: any, fallbackDept?: string) => {
-    const urlToUse = typeof eOrUrl === 'string' ? eOrUrl : csvUrl;
+    let urlToUse = typeof eOrUrl === 'string' ? eOrUrl : csvUrl;
+    urlToUse = urlToUse.trim();
     if (!urlToUse) return alert("Please enter a valid Google Sheets CSV URL.");
+
+    // Auto-convert standard Google Sheets links to CSV export links
+    if (urlToUse.includes("docs.google.com/spreadsheets") && urlToUse.includes("/edit")) {
+      urlToUse = urlToUse.replace(/\/edit.*$/, '/export?format=csv');
+      setCsvUrl(urlToUse);
+    }
+
     setIsSyncing(true);
     setSyncStatus("Fetching CSV data...");
 
     try {
       const response = await fetch(urlToUse);
       const csvText = await response.text();
+
+      // Guard against HTML/login pages
+      if (csvText.trim().toLowerCase().startsWith('<!doctype html>') || csvText.includes('<script') || csvText.includes('<html')) {
+        alert("The URL returned a webpage, not CSV data. Ensure your Google Sheet is shared as 'Anyone with the link can view' and you are using the export link.");
+        setIsSyncing(false);
+        setSyncStatus("");
+        return;
+      }
+
       setSyncStatus("Parsing CSV data...");
       
       Papa.parse(csvText, {
@@ -583,7 +600,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
         <div className="flex-1 p-8 bg-slate-900/50 border-r border-slate-800/60">
           <h2 className="text-2xl font-light text-slate-200 tracking-wider mb-2 flex items-center gap-3">
             <Database className="w-6 h-6 text-brand" />
-            MASTER <span className="font-bold text-brand">IMPORT</span>
+            DIRECTORY <span className="font-bold text-brand">IMPORTS</span>
           </h2>
           <p className="text-sm text-slate-400 mb-8">Import personnel data securely from Google Sheets.</p>
 

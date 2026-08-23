@@ -28,6 +28,7 @@ export interface Employee {
   cert_k9?: boolean;
   cert_sop?: boolean;
   callsign?: string;
+  avatar_url?: string;
 }
 
 export type { Session };

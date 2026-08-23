@@ -150,7 +150,7 @@ export default function AuditLogs() {
       <div className="flex items-center justify-center h-full p-8">
         <div className="text-center space-y-4 max-w-md bg-slate-900/50 p-8 rounded-2xl border border-rose-500/20 shadow-[0_0_50px_rgba(244,63,94,0.05)]">
           <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-rose-500" />
+            <Shield className="w-6 h-6 text-rose-500" />
           </div>
           <h2 className="text-2xl font-bold text-white tracking-wider">ACCESS DENIED</h2>
           <p className="text-slate-400">You do not have the required clearance to view Audit Logs. This area is restricted to High Command and HR personnel.</p>
@@ -169,8 +169,8 @@ export default function AuditLogs() {
         </div>
         <div className="relative p-8 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <ClipboardList className="w-10 h-10 text-brand" />
+            <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
+              <ClipboardList className="w-7 h-7 text-brand" />
               AUDIT <span className="font-bold text-brand">LOGS</span>
             </h1>
             <p className="text-slate-400 mt-2 text-lg font-light tracking-wide max-w-xl">
@@ -318,7 +318,7 @@ export default function AuditLogs() {
                         </td>
                         <td className="p-4 font-medium text-slate-200">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                            <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                               <User className="w-4 h-4" />
                             </div>
                             <div>

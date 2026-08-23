@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Link as LinkIcon, Edit2, Plus, X } from "lucide-react";
+import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Link as LinkIcon, Edit2, Plus, X, Search } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import Papa from "papaparse";
 import { useAuth } from "@/context/AuthContext";
 import { logAuditAction } from "@/lib/auditLogger";
+import LOASyncModal from "@/components/admin/LOASyncModal";
+import DataSyncModal from "@/components/admin/DataSyncModal";
+import { CalendarOff } from "lucide-react";
 
 interface Employee {
   id: string;
@@ -58,6 +61,12 @@ export default function AdminPanel() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  
+  const [showLOASyncModal, setShowLOASyncModal] = useState(false);
+  const [showDataSyncModal, setShowDataSyncModal] = useState(false);
+
+  const [rosterSearch, setRosterSearch] = useState("");
+  const [rosterRoleFilter, setRosterRoleFilter] = useState("All");
 
   const [savedSyncs, setSavedSyncs] = useState<{ id: string, name: string, url: string }[]>([]);
   const [newSyncName, setNewSyncName] = useState("");
@@ -507,321 +516,335 @@ export default function AdminPanel() {
   }
 
   // ✅ AUTHORIZED HIGH COMMAND VIEW ✅
+
+  const filteredEmployees = employees.filter(emp => {
+    const q = rosterSearch.toLowerCase();
+    const matchesSearch = !q || emp.name.toLowerCase().includes(q) || (emp.badge_number || '').toLowerCase().includes(q);
+    const matchesRole = rosterRoleFilter === 'All' || (emp.role || 'Patrol Officer') === rosterRoleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  const getRoleBadge = (role: string) => {
+    const styles: Record<string, string> = {
+      'admin': 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+      'High Command': 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      'Command': 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+      'HR': 'bg-violet-500/15 text-violet-400 border-violet-500/30',
+      'Supervisor': 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+      'Patrol Officer': 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+      'Student': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    };
+    return styles[role] || styles['Patrol Officer'];
+  };
+
+  const getDeptColor = (dept: string) => {
+    const colors: Record<string, string> = {
+      'SASP': 'text-blue-400',
+      'LSPD': 'text-sky-400',
+      'BCSO': 'text-amber-400',
+      'SAPR': 'text-emerald-400',
+      'SASP Academy': 'text-violet-400',
+    };
+    return colors[dept] || 'text-slate-400';
+  };
+
   return (
-    <div className="p-8 space-y-8 bg-transparent min-h-full">
-      {/* Sleek Glassmorphic Header */}
-      <div className="relative overflow-hidden rounded-2xl mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.6)] border border-slate-800/60">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
-        <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+    <div className="p-6 md:p-8 space-y-6 bg-transparent min-h-full">
+
+      {/* ─── HEADER ─── */}
+      <div className="relative">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <ShieldCheck className="w-10 h-10 text-brand" />
-              HIGH COMMAND <span className="font-bold text-brand">TERMINAL</span>
-            </h1>
-            <div className="w-24 h-1 bg-brand mt-4 mb-3 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
-            <p className="text-slate-300 text-lg font-light tracking-wide flex items-center gap-2">
-              Manage departmental roster, access control, and security clearances.
-            </p>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-brand" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-white">
+                  Command Center
+                </h1>
+                <p className="text-xs text-slate-500 font-medium tracking-wide">
+                  HIGH COMMAND TERMINAL • AUTHORIZED ACCESS
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Chips */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <Users className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-xs font-medium text-slate-300">{employees.length}</span>
+              <span className="text-xs text-slate-500">Personnel</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-medium text-emerald-400">System Online</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 h-px bg-gradient-to-r from-brand/40 via-slate-800 to-transparent" />
+      </div>
+
+      {/* ─── QUICK ACTIONS ROW ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {/* Directory Imports */}
+        <button
+          onClick={() => setShowDataSyncModal(true)}
+          disabled={showDataSyncModal}
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-900/60 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+          <div className="relative flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+              {showDataSyncModal ? (
+                <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin" />
+              ) : (
+                <Database className="w-5 h-5 text-emerald-400" />
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-0.5">Directory Imports</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {showDataSyncModal ? "Fetching data..." : "Sync roster from Google Sheets"}
+              </p>
+            </div>
+          </div>
+        </button>
+
+        {/* LOA Sync */}
+        <button
+          onClick={() => setShowLOASyncModal(true)}
+          disabled={showLOASyncModal}
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-fuchsia-500/40 hover:bg-slate-900/60 hover:shadow-[0_0_30px_-5px_rgba(217,70,239,0.15)] disabled:opacity-60"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+          <div className="relative flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-fuchsia-500/20 transition-colors">
+              <CalendarOff className="w-5 h-5 text-fuchsia-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-0.5">Sync LOA Records</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Import leave of absences from Sheets</p>
+            </div>
+          </div>
+        </button>
+
+        {/* Onboard Count / Quick Stat */}
+        <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full -translate-y-8 translate-x-8" />
+          <div className="relative flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-brand" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-0.5">Access Overview</h3>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-xs text-slate-500"><span className="text-amber-400 font-semibold">{employees.filter(e => e.role === 'admin' || e.role === 'High Command').length}</span> HC</span>
+                <span className="text-xs text-slate-500"><span className="text-blue-400 font-semibold">{employees.filter(e => e.role === 'Command').length}</span> CMD</span>
+                <span className="text-xs text-slate-500"><span className="text-violet-400 font-semibold">{employees.filter(e => e.role === 'HR').length}</span> HR</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ADD NEW OFFICER FORM */}
-        <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 lg:col-span-1 h-fit">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-rose-400" /> Onboard Recruit
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddEmployee} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Full Name</label>
-                <input required type="text" value={newEmployee.name} onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. John Doe" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Badge Number</label>
-                <input required type="text" value={newEmployee.badge_number} onChange={e => setNewEmployee({ ...newEmployee, badge_number: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. X-200" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Discord Tag</label>
-                <input type="text" value={newEmployee.discord_tag} onChange={e => setNewEmployee({ ...newEmployee, discord_tag: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. username#1234" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Starting Rank</label>
-                <input required type="text" value={newEmployee.rank} onChange={e => setNewEmployee({ ...newEmployee, rank: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. Cadet" />
-              </div>
-              <button type="submit" className="w-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md font-medium transition-colors mt-2">
-                Add to Database
-              </button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* GOOGLE SHEETS SYNC */}
-        <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 lg:col-span-1 h-fit">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2 text-emerald-400">
-              <Database className="w-5 h-5" /> Sync from Google Sheets
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-xs text-slate-400">
-                Paste a public Google Sheets CSV URL. The sheet must have headers: <strong>Name, Callsign, Rank, Discord Tag</strong>.
-              </p>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={csvUrl}
-                  onChange={e => setCsvUrl(e.target.value)}
-                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-emerald-500"
-                  placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
-                />
-              </div>
-              <button
-                onClick={handleSyncCSV}
-                disabled={isSyncing || !csvUrl}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isSyncing ? (
-                  <><RefreshCw className="w-4 h-4 animate-spin" /> Syncing Data...</>
-                ) : (
-                  <><RefreshCw className="w-4 h-4" /> Run Database Sync</>
-                )}
-              </button>
+      {/* ─── ONBOARD RECRUIT ─── */}
+      <div className="rounded-xl border border-slate-800/60 bg-slate-900/30 backdrop-blur-md overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-800/60 flex items-center gap-2.5">
+          <UserPlus className="w-4 h-4 text-rose-400" />
+          <h2 className="text-sm font-semibold text-white">Onboard Recruit</h2>
+        </div>
+        <div className="p-5">
+          <form onSubmit={handleAddEmployee} className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[160px] space-y-1">
+              <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Full Name</label>
+              <input required type="text" value={newEmployee.name} onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} className="w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 transition-colors" placeholder="e.g. John Doe" />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* SAVED DATA SYNCS */}
-        <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 lg:col-span-1 h-fit">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2 text-blue-400">
-              <LinkIcon className="w-5 h-5" /> Saved Data Syncs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {savedSyncs.length === 0 ? (
-                <p className="text-xs text-slate-500 italic text-center py-2">No saved sync links yet.</p>
-              ) : (
-                <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                  {savedSyncs.map(sync => (
-                    <li key={sync.id} className="flex flex-col gap-2 p-3 border border-slate-800 bg-slate-950 rounded-md">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-slate-200 truncate">{sync.name}</span>
-                        <div className="flex gap-2">
-                          <button onClick={() => handleSyncCSV(sync.url)} disabled={isSyncing} className="text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50" title="Run Sync">
-                            <RefreshCw className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleEditSyncLink(sync)} className="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          {adminSafeMode && (
-                            <button onClick={() => handleDeleteSyncLink(sync.id)} className="text-rose-400 hover:text-rose-300 transition-colors" title="Delete">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-xs text-slate-500 truncate" title={sync.url}>{sync.url}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <form onSubmit={handleSaveSyncLink} className="space-y-2 pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-400">{editingSyncId ? "Edit Link" : "Add New Link"}</span>
-                  {editingSyncId && (
-                    <button type="button" onClick={() => { setEditingSyncId(null); setNewSyncName(""); setNewSyncUrl(""); }} className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1">
-                      <X className="w-3 h-3" /> Cancel
-                    </button>
-                  )}
-                </div>
-                <input required type="text" value={newSyncName} onChange={e => setNewSyncName(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-white focus:ring-1 focus:ring-blue-500" placeholder="Display Name (e.g. Main Roster)" />
-                <input required type="text" value={newSyncUrl} onChange={e => setNewSyncUrl(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-white focus:ring-1 focus:ring-blue-500" placeholder="Google Sheets CSV URL" />
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1 mt-1">
-                  {editingSyncId ? "Update Link" : <><Plus className="w-3 h-3" /> Save Link</>}
-                </button>
-              </form>
+            <div className="w-[140px] space-y-1">
+              <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Callsign</label>
+              <input required type="text" value={newEmployee.badge_number} onChange={e => setNewEmployee({ ...newEmployee, badge_number: e.target.value })} className="w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 transition-colors" placeholder="e.g. X-200" />
             </div>
-          </CardContent>
-        </Card>
-
-        {stagedEmployees.length > 0 && (
-          <Card className="bg-slate-900 border-amber-500/50 text-slate-200 lg:col-span-3">
-            <CardHeader>
-              <CardTitle className="text-amber-400">Review Pending Imports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4 flex gap-4 flex-wrap">
-                <div className="flex flex-col gap-2 p-2 border border-slate-800 rounded bg-slate-950">
-                  <span className="text-xs text-slate-500 font-medium">Bulk Set Department</span>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleBulkUpdate('department', 'SASP')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP</button>
-                    <button onClick={() => handleBulkUpdate('department', 'LSPD')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">LSPD</button>
-                    <button onClick={() => handleBulkUpdate('department', 'BCSO')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">BCSO</button>
-                    <button onClick={() => handleBulkUpdate('department', 'SAPR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SAPR</button>
-                    <button onClick={() => handleBulkUpdate('department', 'SASP Academy')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP Academy</button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 p-2 border border-slate-800 rounded bg-slate-950">
-                  <span className="text-xs text-slate-500 font-medium">Bulk Set Role</span>
-                  <div className="flex gap-2">
-                    {getRoleWeight(currentUserRole) >= 4 && <button onClick={() => handleBulkUpdate('role', 'admin')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">admin</button>}
-                    {getRoleWeight(currentUserRole) >= 3 && <button onClick={() => handleBulkUpdate('role', 'High Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">High Command</button>}
-                    {getRoleWeight(currentUserRole) >= 2 && <button onClick={() => handleBulkUpdate('role', 'Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Command</button>}
-                    {getRoleWeight(currentUserRole) >= 1 && <button onClick={() => handleBulkUpdate('role', 'HR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">HR</button>}
-                    <button onClick={() => handleBulkUpdate('role', 'Supervisor')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Supervisor</button>
-                    <button onClick={() => handleBulkUpdate('role', 'Patrol Officer')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Patrol Officer</button>
-                    <button onClick={() => handleBulkUpdate('role', 'Student')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Student</button>
-                  </div>
-                </div>
-
-                <div className="ml-auto flex items-end gap-2">
-                  <button onClick={() => setStagedEmployees([])} className="px-4 py-2 border border-rose-900/50 hover:bg-rose-900/20 text-rose-400 text-sm font-medium rounded transition-colors" disabled={isCommitting}>Cancel Preview</button>
-                  <button onClick={() => setShowConfirmModal(true)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50" disabled={selectedStagedIds.size === 0}>Commit {selectedStagedIds.size} Selected</button>
-                </div>
-              </div>
-
-              <div className="max-h-96 overflow-y-auto">
-                <table className="w-full text-left text-sm border-separate border-spacing-y-2">
-                  <thead className="border-b border-slate-800 text-slate-400 sticky top-0 bg-slate-900">
-                    <tr>
-                      <th className="p-2"><input type="checkbox" checked={selectedStagedIds.size === stagedEmployees.length && stagedEmployees.length > 0} onChange={e => handleToggleSelectAll(e.target.checked)} className="rounded border-slate-700 bg-slate-800" /></th>
-                      <th className="p-2">Name</th>
-                      <th className="p-2">Callsign</th>
-                      <th className="p-2">Rank</th>
-                      <th className="p-2">Role</th>
-                      <th className="p-2">Dept</th>
-                      <th className="p-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="group/table">
-                    {stagedEmployees.map(emp => (
-                      <tr key={emp._staged_id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
-                        <td className="p-2 rounded-l-lg"><input type="checkbox" checked={selectedStagedIds.has(emp._staged_id)} onChange={() => handleToggleStaged(emp._staged_id)} className="rounded border-slate-700 bg-slate-800" /></td>
-                        <td className="p-2 font-medium">
-                          <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
-                            {emp.name}
-                          </span>
-                        </td>
-                        <td className="p-2 text-slate-400">{emp.badge_number}</td>
-                        <td className="p-2 text-slate-400">{emp.rank}</td>
-                        <td className="p-2 text-amber-300">{emp.role}</td>
-                        <td className="p-2 text-blue-300">{emp.department}</td>
-                        <td className="p-2 font-medium rounded-r-lg">{emp._is_existing ? <span className="text-amber-500">UPDATE</span> : <span className="text-emerald-500">NEW</span>}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ROSTER MANAGEMENT TABLE */}
-        <Card className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2">
-              <Users className="w-5 h-5 text-slate-400" /> Database Roster & Access Control
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-separate border-spacing-y-2">
-                <thead className="border-b border-slate-800 text-slate-400">
-                  <tr>
-                    <th className="pb-3 font-medium">Officer</th>
-                    <th className="pb-3 font-medium">Rank</th>
-                    <th className="pb-3 font-medium">Role</th>
-                    <th className="pb-3 font-medium">Department</th>
-                    <th className="pb-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="group/table">
-                  {employees.map((emp) => {
-                    const canEdit = getRoleWeight(currentUserRole) >= getRoleWeight(emp.role || "");
-
-                    return (
-                      <tr key={emp.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
-                        <td className="py-3 px-3 font-medium text-white rounded-l-lg">
-                          <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
-                            {emp.name} <span className="text-slate-500 font-normal">({emp.badge_number})</span>
-                          </span>
-                        </td>
-                        <td className="py-3 text-slate-300">{emp.rank}</td>
-                        {editingId === emp.id ? (
-                          <>
-                            <td className="py-3">
-                              <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
-                                {getRoleWeight(currentUserRole) >= 4 && <option value="admin">admin</option>}
-                                {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
-                                {getRoleWeight(currentUserRole) >= 2 && <option value="Command">Command</option>}
-                                {getRoleWeight(currentUserRole) >= 1 && <option value="HR">HR</option>}
-                                <option value="Supervisor">Supervisor</option>
-                                <option value="Patrol Officer">Patrol Officer</option>
-                                <option value="Student">Student</option>
-                              </select>
-                            </td>
-                            <td className="py-3">
-                              <select value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
-                                <option value="SASP">SASP</option>
-                                <option value="LSPD">LSPD</option>
-                                <option value="BCSO">BCSO</option>
-                                <option value="SAPR">SAPR</option>
-                                <option value="SASP Academy">SASP Academy</option>
-                              </select>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="py-3 text-slate-400 text-sm">{emp.role || "Patrol Officer"}</td>
-                            <td className="py-3 text-slate-400 text-sm">{emp.department || "SASP"}</td>
-                          </>
-                        )}
-                        <td className="py-3 text-right rounded-r-lg">
-                          {editingId === emp.id ? (
-                            <div className="flex justify-end gap-2">
-                              <button onClick={() => handleSaveEdit(emp.id)} className="text-emerald-400 hover:text-emerald-300 text-xs font-medium">Save</button>
-                              <button onClick={handleCancelEdit} className="text-slate-500 hover:text-slate-400 text-xs font-medium">Cancel</button>
-                            </div>
-                          ) : (
-                            <div className="flex justify-end gap-3">
-                              {canEdit ? (
-                                <>
-                                  <button onClick={() => handleEditClick(emp)} className="text-slate-500 hover:text-blue-400 transition-colors text-xs font-medium uppercase tracking-wider" title="Edit Role/Dept">
-                                    Edit
-                                  </button>
-                                  {adminSafeMode && (
-                                    <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors" title="Delete Officer">
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-xs text-slate-600 font-medium italic">Restricted</span>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="flex-1 min-w-[160px] space-y-1">
+              <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Discord Tag</label>
+              <input type="text" value={newEmployee.discord_tag} onChange={e => setNewEmployee({ ...newEmployee, discord_tag: e.target.value })} className="w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 transition-colors" placeholder="e.g. username#1234" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-[130px] space-y-1">
+              <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Rank</label>
+              <input required type="text" value={newEmployee.rank} onChange={e => setNewEmployee({ ...newEmployee, rank: e.target.value })} className="w-full rounded-lg border border-slate-800 bg-slate-950/80 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 transition-colors" placeholder="e.g. Cadet" />
+            </div>
+            <button type="submit" className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-medium text-sm transition-all hover:shadow-lg hover:shadow-rose-600/20 flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Add
+            </button>
+          </form>
+        </div>
       </div>
 
+      {/* ─── ROSTER TABLE ─── */}
+      <div className="rounded-xl border border-slate-800/60 bg-slate-900/30 backdrop-blur-md overflow-hidden">
+        {/* Table Header with Search & Filters */}
+        <div className="px-5 py-3.5 border-b border-slate-800/60">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <Users className="w-4 h-4 text-slate-400" />
+              <h2 className="text-sm font-semibold text-white">Database Roster & Access Control</h2>
+              <span className="text-xs text-slate-600 font-medium ml-1">
+                {filteredEmployees.length === employees.length ? employees.length : `${filteredEmployees.length} / ${employees.length}`}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                <input
+                  type="text"
+                  value={rosterSearch}
+                  onChange={e => setRosterSearch(e.target.value)}
+                  placeholder="Search..."
+                  className="w-48 pl-8 pr-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-xs text-white focus:ring-1 focus:ring-brand/50 focus:border-brand/50 placeholder:text-slate-600 transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+          {/* Role Filter Pills */}
+          <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+            {["All", "admin", "High Command", "Command", "HR", "Supervisor", "Patrol Officer", "Student"].map(role => (
+              <button
+                key={role}
+                onClick={() => setRosterRoleFilter(role)}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-200 ${
+                  rosterRoleFilter === role
+                    ? "bg-brand/15 text-brand border border-brand/30 shadow-sm"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-transparent"
+                }`}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Table Body */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-800/60">
+                <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Officer</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Rank</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Role</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Department</th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/40">
+              {filteredEmployees.map((emp) => {
+                const canEdit = getRoleWeight(currentUserRole) >= getRoleWeight(emp.role || "");
+                const role = emp.role || 'Patrol Officer';
+                const dept = emp.department || 'SASP';
+
+                return (
+                  <tr key={emp.id} className="group hover:bg-slate-800/30 transition-colors duration-200">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase flex-shrink-0 group-hover:border-brand/30 transition-colors">
+                          {emp.name?.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white leading-tight">{emp.name}</p>
+                          <p className="text-[11px] text-slate-500 font-mono">{emp.badge_number}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-300">{emp.rank}</td>
+                    {editingId === emp.id ? (
+                      <>
+                        <td className="px-4 py-3">
+                          <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50">
+                            {getRoleWeight(currentUserRole) >= 4 && <option value="admin">admin</option>}
+                            {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
+                            {getRoleWeight(currentUserRole) >= 2 && <option value="Command">Command</option>}
+                            {getRoleWeight(currentUserRole) >= 1 && <option value="HR">HR</option>}
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="Patrol Officer">Patrol Officer</option>
+                            <option value="Student">Student</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50">
+                            <option value="SASP">SASP</option>
+                            <option value="LSPD">LSPD</option>
+                            <option value="BCSO">BCSO</option>
+                            <option value="SAPR">SAPR</option>
+                            <option value="SASP Academy">SASP Academy</option>
+                          </select>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${getRoleBadge(role)}`}>
+                            {role}
+                          </span>
+                        </td>
+                        <td className={`px-4 py-3 text-sm font-medium ${getDeptColor(dept)}`}>{dept}</td>
+                      </>
+                    )}
+                    <td className="px-5 py-3 text-right">
+                      {editingId === emp.id ? (
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleSaveEdit(emp.id)} className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-medium transition-colors">Save</button>
+                          <button onClick={handleCancelEdit} className="px-2.5 py-1 rounded-md bg-slate-800/60 text-slate-400 hover:bg-slate-700 text-xs font-medium transition-colors">Cancel</button>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          {canEdit ? (
+                            <>
+                              <button onClick={() => handleEditClick(emp)} className="p-1.5 rounded-md text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Edit Role/Dept">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              {adminSafeMode && (
+                                <button onClick={() => handleDeleteEmployee(emp.id)} className="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="Delete Officer">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-[10px] text-slate-600 font-medium italic px-2">Restricted</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredEmployees.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-5 py-12 text-center">
+                    <Search className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">No personnel found matching your criteria</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── MODALS ─── */}
+      <LOASyncModal 
+        isOpen={showLOASyncModal} 
+        onClose={() => setShowLOASyncModal(false)} 
+        onSuccess={() => {}} 
+      />
+
+      <DataSyncModal 
+        isOpen={showDataSyncModal} 
+        onClose={() => setShowDataSyncModal(false)} 
+        onSuccess={() => fetchEmployees()} 
+      />
+
       <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <DialogContent className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+        <DialogContent className="bg-slate-950 border-slate-800 shadow-2xl text-slate-200">
           <DialogHeader>
             <DialogTitle className="text-white">Confirm Database Sync</DialogTitle>
             <DialogDescription className="text-slate-400 mt-2">
@@ -831,14 +854,14 @@ export default function AdminPanel() {
           <DialogFooter className="mt-4 sm:space-x-2 space-y-2 sm:space-y-0 flex-col sm:flex-row">
             <button
               onClick={() => setShowConfirmModal(false)}
-              className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded transition-colors w-full sm:w-auto"
+              className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded-lg transition-colors w-full sm:w-auto"
               disabled={isCommitting}
             >
               Cancel
             </button>
             <button
               onClick={handleCommitStaged}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2 w-full sm:w-auto"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 w-full sm:w-auto"
               disabled={isCommitting}
             >
               {isCommitting ? (
