@@ -26,11 +26,11 @@ export default function RankManagement() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [authorName, setAuthorName] = useState("Command");
-  
+
   // NEW: Employee Search State
   const [employees, setEmployees] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
+
   // NEW: Search and Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -75,10 +75,10 @@ export default function RankManagement() {
   const getAvailableRanks = () => {
     const currentIndex = getRankIndex(newRecord.current_rank);
     if (currentIndex === 999) return []; // If unknown, maybe just return all or empty? Let's return all.
-    
+
     const deptIdx = getDeptIndex(newRecord.department);
     let availableRanks: string[] = [];
-    
+
     if (newRecord.action_type === "Promotion") {
       // Promotion = ranks ABOVE current rank (lower index)
       for (let i = 0; i < currentIndex; i++) {
@@ -132,7 +132,7 @@ export default function RankManagement() {
       .select('name, badge_number, is_admin, role')
       .eq('discord_tag', session.user.email.split('@')[0])
       .single();
-    
+
     if (data) {
       setAuthorName(`${data.name} (${data.badge_number})`);
       if (data.is_admin || ['High Command', 'HR'].includes(data.role)) setIsAdmin(true);
@@ -145,30 +145,30 @@ export default function RankManagement() {
       .from('promotions')
       .select('*')
       .order('created_at', { ascending: false });
-    
+
     if (error) console.error("Error fetching promotions:", error);
     else if (data) setRecords(data);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Format the requested rank with the action type and optional duration
     let formattedRank = `[${newRecord.action_type}] ${newRecord.requested_rank}`;
     if (newRecord.action_type === "Demotion" && newRecord.demotion_duration) {
       formattedRank += ` (Until: ${newRecord.demotion_duration})`;
     }
-    
+
     const { data, error } = await supabase
       .from('promotions')
-      .insert([{ 
+      .insert([{
         officer_name: newRecord.officer_name,
         current_rank: newRecord.current_rank,
         old_rank: newRecord.current_rank, // Satisfy the DB constraint
         requested_rank: formattedRank,
         new_rank: formattedRank, // Satisfy the DB constraint
         reason: newRecord.reason,
-        status: 'Pending Review', 
+        status: 'Pending Review',
         created_by: authorName,
         authorized_by: authorName // Satisfy the DB constraint
       }])
@@ -201,11 +201,11 @@ export default function RankManagement() {
       }
     } else {
       const newStatus = type === 'Approve' ? 'Approved' : 'Denied';
-      const { error } = await supabase.from('promotions').update({ 
+      const { error } = await supabase.from('promotions').update({
         status: newStatus,
         processed_by: authorName
       }).eq('id', id);
-      
+
       if (!error) {
         const rec = records.find(r => r.id === id);
         if (rec) logAuditAction("ROLE_DECISION", rec.officer_name, `${newStatus} rank request for ${rec.requested_rank}`, authorName);
@@ -229,7 +229,7 @@ export default function RankManagement() {
       alert(`Failed to bulk ${action.toLowerCase()} records: ` + error.message);
     } else {
       logAuditAction("ROLE_BULK_DECISION", "Multiple", `Bulk ${action} ${selectedRecords.length} rank requests`, authorName);
-      setRecords(records.map(r => 
+      setRecords(records.map(r =>
         selectedRecords.includes(r.id) ? { ...r, status: action, processed_by: authorName } : r
       ));
       setSelectedRecords([]);
@@ -239,8 +239,8 @@ export default function RankManagement() {
 
   // NEW: Filter and Search Logic
   const filteredRecords = records.filter(record => {
-    const matchesSearch = record.officer_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          record.reason.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = record.officer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.reason.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "All" || record.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -295,20 +295,20 @@ export default function RankManagement() {
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2 relative md:col-span-1">
                 <label className="text-xs font-medium text-slate-400">Officer Name</label>
-                <input 
-                  required 
-                  type="text" 
-                  value={newRecord.officer_name} 
+                <input
+                  required
+                  type="text"
+                  value={newRecord.officer_name}
                   onChange={e => {
-                    setNewRecord({...newRecord, officer_name: e.target.value});
+                    setNewRecord({ ...newRecord, officer_name: e.target.value });
                     setShowSuggestions(true);
-                  }} 
+                  }}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500" 
-                  placeholder="Type name or callsign..." 
+                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500"
+                  placeholder="Type name or callsign..."
                 />
-                
+
                 {/* Autocomplete Dropdown */}
                 {showSuggestions && newRecord.officer_name.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto animated-scrollbar bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
@@ -323,8 +323,8 @@ export default function RankManagement() {
                           key={idx}
                           className="px-3 py-2 hover:bg-slate-800 cursor-pointer text-sm flex justify-between items-center"
                           onClick={() => {
-                            setNewRecord({ 
-                              ...newRecord, 
+                            setNewRecord({
+                              ...newRecord,
                               officer_name: `${emp.name} (${emp.badge_number})`,
                               current_rank: emp.rank || "",
                               department: emp.department || ""
@@ -342,34 +342,34 @@ export default function RankManagement() {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-2 md:col-span-1">
                 <label className="text-xs font-medium text-slate-400">Department</label>
-                <input 
-                  readOnly 
-                  type="text" 
-                  value={newRecord.department} 
-                  className="w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed" 
-                  placeholder="Auto-filled" 
+                <input
+                  readOnly
+                  type="text"
+                  value={newRecord.department}
+                  className="w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
+                  placeholder="Auto-filled"
                 />
               </div>
 
               <div className="space-y-2 md:col-span-1">
                 <label className="text-xs font-medium text-slate-400">Current Rank</label>
-                <input 
-                  readOnly 
-                  type="text" 
-                  value={newRecord.current_rank} 
-                  className="w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed" 
-                  placeholder="Auto-filled" 
+                <input
+                  readOnly
+                  type="text"
+                  value={newRecord.current_rank}
+                  className="w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
+                  placeholder="Auto-filled"
                 />
               </div>
-              
+
               <div className="space-y-2 md:col-span-1">
                 <label className="text-xs font-medium text-slate-400">Action Type</label>
-                <select 
+                <select
                   value={newRecord.action_type}
-                  onChange={e => setNewRecord({...newRecord, action_type: e.target.value})}
+                  onChange={e => setNewRecord({ ...newRecord, action_type: e.target.value })}
                   className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500 appearance-none"
                 >
                   <option value="Promotion">Promotion</option>
@@ -381,12 +381,12 @@ export default function RankManagement() {
               <div className="space-y-2 md:col-span-1">
                 <label className="text-xs font-medium text-slate-400">Target Rank / Award</label>
                 {newRecord.action_type === 'Commendation' ? (
-                  <input required type="text" value={newRecord.requested_rank} onChange={e => setNewRecord({...newRecord, requested_rank: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500" placeholder="e.g. Medal of Valor" />
+                  <input required type="text" value={newRecord.requested_rank} onChange={e => setNewRecord({ ...newRecord, requested_rank: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500" placeholder="e.g. Medal of Valor" />
                 ) : (
-                  <select 
-                    required 
-                    value={newRecord.requested_rank} 
-                    onChange={e => setNewRecord({...newRecord, requested_rank: e.target.value})} 
+                  <select
+                    required
+                    value={newRecord.requested_rank}
+                    onChange={e => setNewRecord({ ...newRecord, requested_rank: e.target.value })}
                     className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500 appearance-none"
                   >
                     <option value="" disabled>Select a rank...</option>
@@ -400,21 +400,21 @@ export default function RankManagement() {
               {newRecord.action_type === 'Demotion' && (
                 <div className="space-y-2 md:col-span-1">
                   <label className="text-xs font-medium text-rose-400">Demoted Until (Optional)</label>
-                  <input 
-                    type="date" 
-                    value={newRecord.demotion_duration} 
-                    onChange={e => setNewRecord({...newRecord, demotion_duration: e.target.value})} 
+                  <input
+                    type="date"
+                    value={newRecord.demotion_duration}
+                    onChange={e => setNewRecord({ ...newRecord, demotion_duration: e.target.value })}
                     onClick={e => (e.target as HTMLInputElement).showPicker()}
-                    className="w-full rounded-md border border-rose-900/50 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-rose-500 cursor-pointer" 
+                    className="w-full rounded-md border border-rose-900/50 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-rose-500 cursor-pointer"
                   />
                 </div>
               )}
 
               <div className={`space-y-2 ${newRecord.action_type === 'Demotion' ? 'md:col-span-3' : 'md:col-span-4'}`}>
                 <label className="text-xs font-medium text-slate-400">Reasoning / Citation</label>
-                <input required type="text" value={newRecord.reason} onChange={e => setNewRecord({...newRecord, reason: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500" placeholder="Detail the reasoning for this request..." />
+                <input required type="text" value={newRecord.reason} onChange={e => setNewRecord({ ...newRecord, reason: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-amber-500" placeholder="Detail the reasoning for this request..." />
               </div>
-              
+
               <div className="md:col-span-4 flex justify-end">
                 <button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-md font-medium transition-colors text-sm">
                   Submit Request
@@ -430,14 +430,14 @@ export default function RankManagement() {
         <CardHeader className="border-b border-slate-800 pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle className="text-lg font-medium">Departmental Records</CardTitle>
-            
+
             {/* NEW: Search and Filter Controls */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-                <input 
-                  type="text" 
-                  placeholder="Search officers..." 
+                <input
+                  type="text"
+                  placeholder="Search officers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 w-full sm:w-64 rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -445,7 +445,7 @@ export default function RankManagement() {
               </div>
               <div className="relative">
                 <Filter className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-                <select 
+                <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="pl-9 w-full sm:w-48 rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500 appearance-none"
@@ -458,7 +458,7 @@ export default function RankManagement() {
               </div>
             </div>
           </div>
-          
+
           {/* BULK ACTIONS TOOLBAR */}
           {isAdmin && selectedRecords.length > 0 && (
             <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2">
@@ -466,14 +466,14 @@ export default function RankManagement() {
                 {selectedRecords.length} record{selectedRecords.length > 1 ? 's' : ''} selected
               </span>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => handleBulkAction('Approved')}
                   disabled={isProcessingBulk}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium rounded-md transition-colors"
                 >
                   {isProcessingBulk ? 'Processing...' : 'Approve Selected'}
                 </button>
-                <button 
+                <button
                   onClick={() => handleBulkAction('Denied')}
                   disabled={isProcessingBulk}
                   className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-medium rounded-md transition-colors"
@@ -486,13 +486,13 @@ export default function RankManagement() {
         </CardHeader>
         <CardContent className="pt-4">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm border-separate border-spacing-y-2">
               <thead className="border-b border-slate-800 text-slate-400">
                 <tr>
                   {isAdmin && (
                     <th className="pb-3 px-2 font-medium w-10">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={filteredRecords.length > 0 && selectedRecords.length === filteredRecords.length}
                         onChange={(e) => {
                           if (e.target.checked) {
@@ -514,20 +514,20 @@ export default function RankManagement() {
                   {isAdmin && <th className="pb-3 font-medium text-right">Actions</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? 8 : 6} className="py-8 text-center text-slate-500">
+                    <td colSpan={isAdmin ? 8 : 7} className="py-8 text-center text-slate-500 bg-slate-900/20 rounded-lg">
                       No records match your search criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredRecords.map((record) => (
-                    <tr key={record.id} className="hover:bg-brand/10 group transition-colors">
+                    <tr key={record.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(234,179,8,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(234,179,8,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                       {isAdmin && (
-                        <td className="py-3 px-2">
-                          <input 
-                            type="checkbox" 
+                        <td className="py-3 px-3 rounded-l-lg">
+                          <input
+                            type="checkbox"
                             checked={selectedRecords.includes(record.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -540,28 +540,27 @@ export default function RankManagement() {
                           />
                         </td>
                       )}
-                      <td className="py-3 text-slate-400">{new Date(record.created_at).toLocaleDateString()}</td>
-                      <td className="py-3 font-medium text-white">{record.officer_name}</td>
+                      <td className="py-3 px-3 text-slate-400">{new Date(record.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 px-3 font-medium text-white">{record.officer_name}</td>
                       <td className="py-3 text-amber-400 font-medium">{record.requested_rank || record.new_rank}</td>
-                      <td className="py-3 text-slate-300 max-w-[200px] truncate" title={record.reason}>{record.reason}</td>
-                      <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${
-                          record.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                          record.status === 'Denied' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                          'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                        }`}>
-                          {record.status === 'Approved' ? <CheckCircle className="w-3 h-3" /> : 
-                           record.status === 'Denied' ? <XCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                      <td className="py-3 px-3 text-slate-300 max-w-[200px] truncate" title={record.reason}>{record.reason}</td>
+                      <td className="py-3 px-3">
+                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${record.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            record.status === 'Denied' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                              'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}>
+                          {record.status === 'Approved' ? <CheckCircle className="w-3 h-3" /> :
+                            record.status === 'Denied' ? <XCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                           {record.status}
                         </span>
                       </td>
-                      <td className="py-3 text-slate-400 font-medium">
+                      <td className="py-3 px-3 text-slate-400 font-medium">
                         {record.processed_by || '—'}
                       </td>
-                      
+
                       {/* ADMIN ACTIONS */}
                       {isAdmin && (
-                        <td className="py-3 text-right">
+                        <td className="py-3 px-3 text-right rounded-r-lg">
                           <div className="flex items-center justify-end gap-2">
                             {record.status === 'Pending Review' && (
                               <>
@@ -590,34 +589,31 @@ export default function RankManagement() {
       {modalState.isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 shadow-2xl rounded-xl max-w-sm w-full p-6 relative overflow-hidden">
-            <div className={`absolute top-0 left-0 right-0 h-1.5 ${
-              modalState.type === 'Approve' ? 'bg-emerald-500' : 
-              modalState.type === 'Deny' ? 'bg-rose-500' : 'bg-red-700'
-            }`}></div>
-            
+            <div className={`absolute top-0 left-0 right-0 h-1.5 ${modalState.type === 'Approve' ? 'bg-emerald-500' :
+                modalState.type === 'Deny' ? 'bg-rose-500' : 'bg-red-700'
+              }`}></div>
+
             <h3 className="text-xl font-bold tracking-wider text-slate-200 mb-2 mt-2">Confirm Action</h3>
             <p className="text-sm text-slate-400 mb-6">
-              Are you sure you want to <strong className={`font-bold uppercase tracking-wider ${
-                modalState.type === 'Approve' ? 'text-emerald-500' : 
-                modalState.type === 'Deny' ? 'text-rose-500' : 'text-red-500'
-              }`}>{modalState.type}</strong> this request? 
+              Are you sure you want to <strong className={`font-bold uppercase tracking-wider ${modalState.type === 'Approve' ? 'text-emerald-500' :
+                  modalState.type === 'Deny' ? 'text-rose-500' : 'text-red-500'
+                }`}>{modalState.type}</strong> this request?
               {modalState.type === 'Delete' ? " This will permanently erase it." : " This action will log your name."}
             </p>
-            
+
             <div className="flex justify-end gap-3">
-              <button 
+              <button
                 onClick={() => setModalState({ isOpen: false, type: null, recordId: null })}
                 className="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium border border-slate-700"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleConfirmAction}
-                className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-colors border shadow-lg ${
-                  modalState.type === 'Approve' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500/50 shadow-emerald-500/20' : 
-                  modalState.type === 'Deny' ? 'bg-rose-600 hover:bg-rose-500 border-rose-500/50 shadow-rose-500/20' : 
-                  'bg-red-700 hover:bg-red-600 border-red-600/50 shadow-red-700/20'
-                }`}
+                className={`px-4 py-2 rounded-md text-white text-sm font-medium transition-colors border shadow-lg ${modalState.type === 'Approve' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500/50 shadow-emerald-500/20' :
+                    modalState.type === 'Deny' ? 'bg-rose-600 hover:bg-rose-500 border-rose-500/50 shadow-rose-500/20' :
+                      'bg-red-700 hover:bg-red-600 border-red-600/50 shadow-red-700/20'
+                  }`}
               >
                 Confirm {modalState.type}
               </button>

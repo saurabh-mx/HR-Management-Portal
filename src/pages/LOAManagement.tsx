@@ -25,7 +25,7 @@ export default function LOAManagement() {
   const [authorName, setAuthorName] = useState("");
   const [newRequest, setNewRequest] = useState({ start_date: "", end_date: "", reason: "" });
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
-  const [statusAction, setStatusAction] = useState<{id: string, newStatus: string, title: string, message: string} | null>(null);
+  const [statusAction, setStatusAction] = useState<{ id: string, newStatus: string, title: string, message: string } | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -64,7 +64,7 @@ export default function LOAManagement() {
       updates.ended_by = authorName;
       updates.ended_at = new Date().toISOString();
     }
-    
+
     const { error } = await supabase.from('loa_requests').update(updates).eq('id', id);
     if (!error) {
       const req = requests.find(r => r.id === id);
@@ -94,7 +94,7 @@ export default function LOAManagement() {
   const filteredRequests = requests.filter(req => {
     // Privacy filter: Normal users only see their own LOAs
     if (!isAdmin && req.officer_name !== authorName) return false;
-    
+
     // Search filter
     return req.officer_name.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -129,15 +129,15 @@ export default function LOAManagement() {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-400">Reason</label>
-              <input required type="text" value={newRequest.reason} onChange={e => setNewRequest({...newRequest, reason: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
+              <input required type="text" value={newRequest.reason} onChange={e => setNewRequest({ ...newRequest, reason: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-400">Start Date</label>
-              <input required type="date" value={newRequest.start_date} onChange={e => setNewRequest({...newRequest, start_date: e.target.value})} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-fuchsia-500 cursor-pointer" />
+              <input required type="date" value={newRequest.start_date} onChange={e => setNewRequest({ ...newRequest, start_date: e.target.value })} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-fuchsia-500 cursor-pointer" />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-400">End Date</label>
-              <input required type="date" value={newRequest.end_date} onChange={e => setNewRequest({...newRequest, end_date: e.target.value})} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-fuchsia-500 cursor-pointer" />
+              <input required type="date" value={newRequest.end_date} onChange={e => setNewRequest({ ...newRequest, end_date: e.target.value })} onClick={e => 'showPicker' in HTMLInputElement.prototype && e.currentTarget.showPicker()} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-fuchsia-500 cursor-pointer" />
             </div>
             <div className="md:col-span-2 flex justify-end"><button type="submit" className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-5 py-2 rounded-md font-medium text-sm">Submit Request</button></div>
           </form>
@@ -150,9 +150,9 @@ export default function LOAManagement() {
           {/* SEARCH BAR */}
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-            <input 
-              type="text" 
-              placeholder="Search officer..." 
+            <input
+              type="text"
+              placeholder="Search officer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-md text-sm text-white focus:outline-none focus:ring-1 focus:ring-fuchsia-500 w-64"
@@ -161,7 +161,7 @@ export default function LOAManagement() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm border-separate border-spacing-y-2">
               <thead className="border-b border-slate-800 text-slate-400">
                 <tr>
                   <th className="pb-3 font-medium">Officer</th>
@@ -172,26 +172,29 @@ export default function LOAManagement() {
                   <th className="pb-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="group/table">
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-brand/10 group">
-                    <td className="py-3 font-medium text-white">{req.officer_name}</td>
-                    <td className="py-3 text-slate-400">{req.start_date}</td>
-                    <td className="py-3 text-slate-400">{req.end_date}</td>
-                    <td className="py-3 text-slate-400">{req.reason}</td>
-                    <td className="py-3">
-                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${
-                        req.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                        req.status === 'Denied' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
-                        req.status === 'Ended' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' : 
-                        req.status === 'End Requested' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' :
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      }`}>
+                  <tr key={req.id} className="bg-slate-950/30 hover:bg-slate-900 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
+                    <td className="py-3 px-4 rounded-l-lg font-medium text-white">
+                      <span className="inline-block transition-transform duration-300 origin-left group-hover:text-brand">
+                        {req.officer_name}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-slate-400">{req.start_date}</td>
+                    <td className="py-3 px-4 text-slate-400">{req.end_date}</td>
+                    <td className="py-3 px-4 text-slate-400">{req.reason}</td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${req.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                          req.status === 'Denied' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                            req.status === 'Ended' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' :
+                              req.status === 'End Requested' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' :
+                                'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        }`}>
                         {req.status === 'Pending Review' ? <Clock className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />} {req.status}
                       </span>
                       {req.status === 'Ended' && req.ended_by && (
                         <div className="text-[10px] text-slate-500 mt-1">
-                          Ended by {req.ended_by}<br/>on {new Date(req.ended_at!).toLocaleDateString()}
+                          Ended by {req.ended_by}<br />on {new Date(req.ended_at!).toLocaleDateString()}
                         </div>
                       )}
                     </td>
@@ -200,7 +203,7 @@ export default function LOAManagement() {
                       {req.status === 'Approved' && req.officer_name === authorName && !isAdmin && (
                         <button onClick={() => setStatusAction({ id: req.id, newStatus: 'End Requested', title: 'Request End LOA', message: 'Are you sure you want to request to end your Leave of Absence early? Command will need to approve this return.' })} className="text-sky-400 hover:text-white text-xs px-2 py-1 bg-sky-500/10 hover:bg-sky-500/20 rounded transition-colors">Request End LOA</button>
                       )}
-                      
+
                       {/* Admin Actions */}
                       {isAdmin && (
                         <>
@@ -226,7 +229,7 @@ export default function LOAManagement() {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Delete Confirmation Modal */}
       {requestToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
@@ -240,17 +243,17 @@ export default function LOAManagement() {
                 <h3 className="text-lg font-bold text-white">Delete LOA Record</h3>
               </div>
               <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                Are you sure you want to delete this LOA record? This action is permanent and cannot be undone. 
+                Are you sure you want to delete this LOA record? This action is permanent and cannot be undone.
                 Normally, LOA records should be marked as "Ended" to retain history rather than deleted.
               </p>
               <div className="flex justify-end gap-3">
-                <button 
+                <button
                   onClick={() => setRequestToDelete(null)}
                   className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmDelete}
                   className="px-4 py-2 rounded-md text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-900/20"
                 >
@@ -266,26 +269,23 @@ export default function LOAManagement() {
       {statusAction && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
           <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
-            <div className={`absolute top-0 left-0 right-0 h-1 ${
-              statusAction.newStatus === 'Approved' ? 'bg-emerald-500' : 
-              statusAction.newStatus === 'Denied' ? 'bg-rose-500' :
-              statusAction.newStatus === 'End Requested' ? 'bg-sky-500' :
-              'bg-slate-500'
-            }`} />
+            <div className={`absolute top-0 left-0 right-0 h-1 ${statusAction.newStatus === 'Approved' ? 'bg-emerald-500' :
+                statusAction.newStatus === 'Denied' ? 'bg-rose-500' :
+                  statusAction.newStatus === 'End Requested' ? 'bg-sky-500' :
+                    'bg-slate-500'
+              }`} />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
-                  statusAction.newStatus === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/20' : 
-                  statusAction.newStatus === 'Denied' ? 'bg-rose-500/10 border-rose-500/20' :
-                  statusAction.newStatus === 'End Requested' ? 'bg-sky-500/10 border-sky-500/20' :
-                  'bg-slate-500/10 border-slate-500/20'
-                }`}>
-                  <CheckCircle className={`w-5 h-5 ${
-                    statusAction.newStatus === 'Approved' ? 'text-emerald-500' : 
-                    statusAction.newStatus === 'Denied' ? 'text-rose-500' :
-                    statusAction.newStatus === 'End Requested' ? 'text-sky-500' :
-                    'text-slate-500'
-                  }`} />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${statusAction.newStatus === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/20' :
+                    statusAction.newStatus === 'Denied' ? 'bg-rose-500/10 border-rose-500/20' :
+                      statusAction.newStatus === 'End Requested' ? 'bg-sky-500/10 border-sky-500/20' :
+                        'bg-slate-500/10 border-slate-500/20'
+                  }`}>
+                  <CheckCircle className={`w-5 h-5 ${statusAction.newStatus === 'Approved' ? 'text-emerald-500' :
+                      statusAction.newStatus === 'Denied' ? 'text-rose-500' :
+                        statusAction.newStatus === 'End Requested' ? 'text-sky-500' :
+                          'text-slate-500'
+                    }`} />
                 </div>
                 <h3 className="text-lg font-bold text-white">{statusAction.title}</h3>
               </div>
@@ -293,20 +293,19 @@ export default function LOAManagement() {
                 {statusAction.message}
               </p>
               <div className="flex justify-end gap-3">
-                <button 
+                <button
                   onClick={() => setStatusAction(null)}
                   className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmStatus}
-                  className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors shadow-lg ${
-                    statusAction.newStatus === 'Approved' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20' : 
-                    statusAction.newStatus === 'Denied' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-900/20' :
-                    statusAction.newStatus === 'End Requested' ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/20' :
-                    'bg-slate-600 hover:bg-slate-700 shadow-slate-900/20'
-                  }`}
+                  className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors shadow-lg ${statusAction.newStatus === 'Approved' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20' :
+                      statusAction.newStatus === 'Denied' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-900/20' :
+                        statusAction.newStatus === 'End Requested' ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/20' :
+                          'bg-slate-600 hover:bg-slate-700 shadow-slate-900/20'
+                    }`}
                 >
                   Confirm
                 </button>

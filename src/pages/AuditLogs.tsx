@@ -294,10 +294,10 @@ export default function AuditLogs() {
                 </tr>
               )}
             </thead>
-            <tbody className="divide-y divide-slate-800/40 text-sm">
+            <tbody className="text-sm group/table">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-500 font-medium">
+                  <td colSpan={5} className="p-8 text-center text-slate-500 font-medium bg-slate-900/20 rounded-lg">
                     No logs found matching your criteria.
                   </td>
                 </tr>
@@ -310,9 +310,11 @@ export default function AuditLogs() {
                     const realName = employeeMap[discordTag] || log.target_employee;
 
                     return (
-                      <tr key={log.id} className="hover:bg-slate-800/30 transition-colors duration-200">
-                        <td className="p-4 font-bold text-slate-200">
-                          {realName !== "System" && realName !== "Unknown" ? realName : (employeeMap[discordTag] || "—")}
+                      <tr key={log.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                        <td className="p-4 font-bold text-slate-200 rounded-l-lg">
+                          <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
+                            {realName !== "System" && realName !== "Unknown" ? realName : (employeeMap[discordTag] || "—")}
+                          </span>
                         </td>
                         <td className="p-4 font-medium text-slate-200">
                           <div className="flex items-center gap-3">
@@ -342,9 +344,11 @@ export default function AuditLogs() {
                   }
 
                   return (
-                    <tr key={log.id} className="hover:bg-slate-800/30 transition-colors duration-200">
-                      <td className="p-4 font-mono text-slate-300">
-                        {log.target_employee || "—"}
+                    <tr key={log.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                      <td className="p-4 font-mono text-slate-300 rounded-l-lg">
+                        <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
+                          {log.target_employee || "—"}
+                        </span>
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm ${config.bg} ${config.color} ${config.border}`}>
@@ -358,7 +362,7 @@ export default function AuditLogs() {
                       <td className="p-4 text-slate-400 max-w-md truncate" title={log.details}>
                         {log.details}
                       </td>
-                      <td className="p-4 font-medium text-slate-300">
+                      <td className="p-4 font-medium text-slate-300 rounded-r-lg">
                         {log.admin_email.split('@')[0]}
                       </td>
                     </tr>

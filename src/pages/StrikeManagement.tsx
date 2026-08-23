@@ -32,6 +32,7 @@ export default function StrikeManagement() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [strikeToRevoke, setStrikeToRevoke] = useState<string | null>(null);
+  const [strikeToDelete, setStrikeToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStrikes();
@@ -67,9 +68,9 @@ export default function StrikeManagement() {
   // Calculate cumulative strike points for an officer from active (approved) strikes
   const getOfficerStrikeTotal = (officerName: string) => {
     return strikes
-      .filter(s => 
-        s.name === officerName && 
-        s.action_type === 'Strike' && 
+      .filter(s =>
+        s.name === officerName &&
+        s.action_type === 'Strike' &&
         s.status !== 'revoked'
       )
       .reduce((total, s) => {
@@ -111,13 +112,20 @@ export default function StrikeManagement() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Remove this disciplinary action?")) return;
-    const { error } = await supabase.from('strikes').delete().eq('id', id);
+  const handleDelete = (id: string) => {
+    setStrikeToDelete(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!strikeToDelete) return;
+    const { error } = await supabase.from('strikes').delete().eq('id', strikeToDelete);
     if (!error) {
-      const strike = strikes.find(s => s.id === id);
+      const strike = strikes.find(s => s.id === strikeToDelete);
       if (strike) logAuditAction("STRIKE_REMOVED", strike.name, `Removed disciplinary action (${strike.action_type}) by Admin`, authorName);
-      setStrikes(strikes.filter(s => s.id !== id));
+      setStrikes(strikes.filter(s => s.id !== strikeToDelete));
+      setStrikeToDelete(null);
+    } else {
+      alert("Failed to delete: " + error.message);
     }
   };
 
@@ -129,7 +137,7 @@ export default function StrikeManagement() {
       revoked_by: authorName,
       revoked_at: now
     }).eq('id', strikeToRevoke);
-    
+
     if (!error) {
       const strike = strikes.find(s => s.id === strikeToRevoke);
       if (strike) logAuditAction("STRIKE_REVOKED", strike.name, `Revoked strike (${strike.action_type}) by Admin`, authorName);
@@ -274,13 +282,12 @@ export default function StrikeManagement() {
                           <option value="5/5">5/5</option>
                         </select>
                         {newStrike.name && (
-                          <div className={`text-xs px-2 py-1.5 rounded mt-1 ${
-                            cumulativeTotal >= 5 
-                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' 
+                          <div className={`text-xs px-2 py-1.5 rounded mt-1 ${cumulativeTotal >= 5
+                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                               : cumulativeTotal >= 3
                                 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                                 : 'bg-slate-800/50 text-slate-400 border border-slate-700/30'
-                          }`}>
+                            }`}>
                             Existing: <span className="font-bold">{existingTotal}/5</span> + This: <span className="font-bold">{currentLevel}/5</span> = Cumulative: <span className="font-bold">{cumulativeTotal}/5</span>
                             {cumulativeTotal >= 5 && <span className="ml-2 font-bold uppercase text-rose-500">⚠ TERMINATION THRESHOLD</span>}
                           </div>
@@ -296,11 +303,10 @@ export default function StrikeManagement() {
                 <input required type="text" value={newStrike.reason} onChange={e => setNewStrike({ ...newStrike, reason: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" />
               </div>
               <div className="md:col-span-2 flex justify-end">
-                <button type="submit" className={`px-5 py-2 rounded-md font-medium text-sm transition-colors ${
-                  isCommand && !isAdmin && actionType === 'Strike'
-                    ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+                <button type="submit" className={`px-5 py-2 rounded-md font-medium text-sm transition-colors ${isCommand && !isAdmin && actionType === 'Strike'
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
                     : 'bg-rose-600 hover:bg-rose-700 text-white'
-                }`}>
+                  }`}>
                   {isCommand && !isAdmin && actionType === 'Strike' ? "Submit Strike Request for Approval" : "Submit Record"}
                 </button>
               </div>
@@ -326,7 +332,7 @@ export default function StrikeManagement() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm border-separate border-spacing-y-2">
               <thead className="border-b border-slate-800 text-slate-400">
                 <tr>
                   <th className="pb-3 font-medium">Date</th>
@@ -339,7 +345,7 @@ export default function StrikeManagement() {
                   {(isAdmin || isCommand) && <th className="pb-3 font-medium text-right">Actions</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="">
                 {filteredStrikes.length === 0 ? (
                   <tr>
                     <td colSpan={(isAdmin || isCommand) ? 8 : 7} className="py-8 text-center text-slate-500">
@@ -348,22 +354,26 @@ export default function StrikeManagement() {
                   </tr>
                 ) : (
                   filteredStrikes.map((strike) => (
-                    <tr key={strike.id} className="hover:bg-brand/10 group">
-                      <td className="py-3 text-slate-400">{new Date(strike.created_at).toLocaleDateString()}</td>
-                      <td className="py-3 font-medium text-white">{strike.name}</td>
-                      <td className="py-3">
+                    <tr key={strike.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(244,63,94,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(244,63,94,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                      <td className="py-3 px-3 text-slate-400 rounded-l-lg">{new Date(strike.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 px-3 font-medium text-white">
+                        <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
+                          {strike.name}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
                         <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                          strike.action_type === 'Verbal Warning' ? 'bg-brand/20 text-brand border border-brand/30' :
+                          strike.action_type === 'Verbal Warning' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' :
                             'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                           }`}>
                           {strike.action_type || 'Warning'} {strike.action_type === 'Strike' && strike.strike_level ? `(${strike.strike_level})` : ''}
                         </span>
                       </td>
-                      <td className="py-3 text-slate-400">{strike.reason}</td>
-                      <td className="py-3 text-slate-500">
+                      <td className="py-3 px-3 text-slate-400">{strike.reason}</td>
+                      <td className="py-3 px-3 text-slate-500">
                         {strike.issued_by}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 px-3">
                         {strike.status === 'pending' ? (
                           <span className="px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider bg-amber-500/20 text-amber-500 border border-amber-500/30">Pending</span>
                         ) : strike.status === 'revoked' ? (
@@ -409,7 +419,7 @@ export default function StrikeManagement() {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Revoke Confirmation Modal */}
       {strikeToRevoke && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
@@ -426,17 +436,51 @@ export default function StrikeManagement() {
                 Are you sure you want to revoke this action? This will update the status to <span className="font-semibold text-slate-300">Revoked</span> and log your name as the revoking officer. This action cannot be easily undone.
               </p>
               <div className="flex justify-end gap-3">
-                <button 
+                <button
                   onClick={() => setStrikeToRevoke(null)}
                   className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmRevoke}
                   className="px-4 py-2 rounded-md text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-900/20"
                 >
                   Confirm Revoke
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {strikeToDelete && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-red-600" />
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                  <Trash2 className="w-5 h-5 text-red-500" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Delete Disciplinary Action</h3>
+              </div>
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                Are you absolutely sure you want to permanently delete this disciplinary action? This record will be entirely removed from the database and cannot be recovered. 
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setStrikeToDelete(null)}
+                  className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors shadow-lg shadow-red-900/20"
+                >
+                  Yes, Delete Action
                 </button>
               </div>
             </div>

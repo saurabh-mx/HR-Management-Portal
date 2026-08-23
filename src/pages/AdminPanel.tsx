@@ -47,7 +47,7 @@ export default function AdminPanel() {
     rank: "Cadet",
     discord_tag: ""
   });
-  
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ role: "Patrol Officer", department: "SASP" });
 
@@ -59,7 +59,7 @@ export default function AdminPanel() {
   const [isCommitting, setIsCommitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const [savedSyncs, setSavedSyncs] = useState<{id: string, name: string, url: string}[]>([]);
+  const [savedSyncs, setSavedSyncs] = useState<{ id: string, name: string, url: string }[]>([]);
   const [newSyncName, setNewSyncName] = useState("");
   const [newSyncUrl, setNewSyncUrl] = useState("");
   const [editingSyncId, setEditingSyncId] = useState<string | null>(null);
@@ -69,20 +69,20 @@ export default function AdminPanel() {
     try {
       const saved = localStorage.getItem("saved_sync_links");
       if (saved) setSavedSyncs(JSON.parse(saved));
-    } catch(e) {}
+    } catch (e) { }
   }, []);
 
   const handleSaveSyncLink = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSyncName || !newSyncUrl) return;
-    
+
     let updatedSyncs;
     if (editingSyncId) {
       updatedSyncs = savedSyncs.map(s => s.id === editingSyncId ? { ...s, name: newSyncName, url: newSyncUrl } : s);
     } else {
       updatedSyncs = [...savedSyncs, { id: Math.random().toString(36).substring(7), name: newSyncName, url: newSyncUrl }];
     }
-    
+
     setSavedSyncs(updatedSyncs);
     localStorage.setItem("saved_sync_links", JSON.stringify(updatedSyncs));
     setNewSyncName("");
@@ -97,7 +97,7 @@ export default function AdminPanel() {
     localStorage.setItem("saved_sync_links", JSON.stringify(updatedSyncs));
   };
 
-  const handleEditSyncLink = (sync: {id: string, name: string, url: string}) => {
+  const handleEditSyncLink = (sync: { id: string, name: string, url: string }) => {
     setEditingSyncId(sync.id);
     setNewSyncName(sync.name);
     setNewSyncUrl(sync.url);
@@ -126,7 +126,7 @@ export default function AdminPanel() {
       .select('is_admin, role')
       .eq('discord_tag', discordId)
       .single();
-    
+
     if (data?.is_admin) {
       setIsAdmin(true);
       setCurrentUserRole(data.role || "");
@@ -140,7 +140,7 @@ export default function AdminPanel() {
     const { data, error } = await supabase
       .from('employees')
       .select('*');
-    
+
     if (error) console.error("Error fetching roster:", error);
     else if (data) {
       const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
@@ -157,13 +157,13 @@ export default function AdminPanel() {
         ["Officer First Class", "deputy First Class", "ranger First Class"],
         ["Officer", "deputy", "ranger"]
       ];
-      
+
       const getDeptIndex = (dept?: string) => {
         if (!dept) return 999;
         const i = departmentOrder.indexOf(dept);
         return i === -1 ? 999 : i;
       };
-      
+
       const getRankIndex = (rank?: string) => {
         if (!rank) return 999;
         const lowerRank = rank.toLowerCase();
@@ -178,10 +178,10 @@ export default function AdminPanel() {
       const sorted = [...data].sort((a, b) => {
         const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
         if (deptDiff !== 0) return deptDiff;
-        
+
         const rankDiff = getRankIndex(a.rank) - getRankIndex(b.rank);
         if (rankDiff !== 0) return rankDiff;
-        
+
         return (a.badge_number || "").localeCompare(b.badge_number || "");
       });
       setEmployees(sorted);
@@ -190,10 +190,10 @@ export default function AdminPanel() {
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const isDuplicate = employees.some(
-      emp => emp.name.toLowerCase() === newEmployee.name.toLowerCase() || 
-             emp.badge_number === newEmployee.badge_number
+      emp => emp.name.toLowerCase() === newEmployee.name.toLowerCase() ||
+        emp.badge_number === newEmployee.badge_number
     );
 
     if (isDuplicate) {
@@ -203,14 +203,14 @@ export default function AdminPanel() {
 
     const defaultDiscordTag = newEmployee.name.toLowerCase().replace(/\s+/g, '.');
     const finalDiscordTag = newEmployee.discord_tag || defaultDiscordTag;
-    
+
     const { data, error } = await supabase
       .from('employees')
-      .insert([{ 
-        ...newEmployee, 
+      .insert([{
+        ...newEmployee,
         discord_tag: finalDiscordTag,
-        is_admin: false, 
-        role: 'Patrol Officer', 
+        is_admin: false,
+        role: 'Patrol Officer',
         department: 'SASP',
         status: 'ACTIVE'
       }])
@@ -274,7 +274,7 @@ export default function AdminPanel() {
     try {
       const response = await fetch(urlToUse);
       const csvText = await response.text();
-      
+
       Papa.parse(csvText, {
         header: false,
         skipEmptyLines: true,
@@ -338,21 +338,21 @@ export default function AdminPanel() {
 
           // Fetch current roster to compare
           const { data: currentRoster } = await supabase.from('employees').select('*');
-          
+
           // 3. Process data rows (start after subHeaderRow)
           const stagedData: any[] = [];
           for (let i = headerIdx + 2; i < rows.length; i++) {
             const row = rows[i];
-            
+
             const name = row[idxName]?.trim();
             const badge_number = row[idxBadge]?.trim();
-            
+
             if (!name || !badge_number) continue; // Skip invalid or blank rows
 
             const rank = idxRank !== -1 ? row[idxRank]?.trim() || "Cadet" : "Cadet";
             const discord_tag = idxDiscord !== -1 ? row[idxDiscord]?.trim() || null : null;
             const status = (idxStatus !== -1 && row[idxStatus]?.trim()) ? row[idxStatus].trim() : 'ACTIVE';
-            
+
             // Default Portal ID: name.lastname (e.g. kevin.johnson)
             const generatedDiscordTag = name.toLowerCase().replace(/\s+/g, '.');
             const final_discord_tag = discord_tag || generatedDiscordTag;
@@ -381,8 +381,8 @@ export default function AdminPanel() {
             const bBadge = safeString(badge_number);
             const bName = safeString(name);
 
-            const isMatch = (e: any) => 
-              safeString(e.badge_number) === bBadge || 
+            const isMatch = (e: any) =>
+              safeString(e.badge_number) === bBadge ||
               safeString(e.name) === bName;
 
             const hasDuplicateInStaged = stagedData.find(isMatch);
@@ -404,10 +404,10 @@ export default function AdminPanel() {
               role: r,
               department: existing ? existing.department : 'SASP'
             };
-            
+
             stagedData.push(payload);
           }
-          
+
           setStagedEmployees(stagedData);
           setIsSyncing(false);
           setCsvUrl("");
@@ -441,24 +441,24 @@ export default function AdminPanel() {
       setIsCommitting(false);
       return alert("Select at least one record to import.");
     }
-    
+
     let added = 0;
     let updated = 0;
-    
+
     for (const emp of selected) {
-       const { _staged_id, _is_existing, _db_id, ...dbPayload } = emp;
-       
-       if (_is_existing) {
-         const { error } = await supabase.from('employees').update(dbPayload).eq('id', _db_id);
-         if (!error) updated++;
-         else console.error("Update error for", emp.name, error);
-       } else {
-         const { error } = await supabase.from('employees').insert([dbPayload]);
-         if (!error) added++;
-         else console.error("Insert error for", emp.name, error);
-       }
+      const { _staged_id, _is_existing, _db_id, ...dbPayload } = emp;
+
+      if (_is_existing) {
+        const { error } = await supabase.from('employees').update(dbPayload).eq('id', _db_id);
+        if (!error) updated++;
+        else console.error("Update error for", emp.name, error);
+      } else {
+        const { error } = await supabase.from('employees').insert([dbPayload]);
+        if (!error) added++;
+        else console.error("Insert error for", emp.name, error);
+      }
     }
-    
+
     if (added > 0 || updated > 0) {
       logAuditAction("MASTER_SYNC", "Multiple", `Synced DB: ${added} added, ${updated} updated via CSV import`);
     }
@@ -539,19 +539,19 @@ export default function AdminPanel() {
             <form onSubmit={handleAddEmployee} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Full Name</label>
-                <input required type="text" value={newEmployee.name} onChange={e => setNewEmployee({...newEmployee, name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. John Doe" />
+                <input required type="text" value={newEmployee.name} onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. John Doe" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Badge Number</label>
-                <input required type="text" value={newEmployee.badge_number} onChange={e => setNewEmployee({...newEmployee, badge_number: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. X-200" />
+                <input required type="text" value={newEmployee.badge_number} onChange={e => setNewEmployee({ ...newEmployee, badge_number: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. X-200" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Discord Tag</label>
-                <input type="text" value={newEmployee.discord_tag} onChange={e => setNewEmployee({...newEmployee, discord_tag: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. username#1234" />
+                <input type="text" value={newEmployee.discord_tag} onChange={e => setNewEmployee({ ...newEmployee, discord_tag: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. username#1234" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Starting Rank</label>
-                <input required type="text" value={newEmployee.rank} onChange={e => setNewEmployee({...newEmployee, rank: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. Cadet" />
+                <input required type="text" value={newEmployee.rank} onChange={e => setNewEmployee({ ...newEmployee, rank: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="e.g. Cadet" />
               </div>
               <button type="submit" className="w-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md font-medium transition-colors mt-2">
                 Add to Database
@@ -573,15 +573,15 @@ export default function AdminPanel() {
                 Paste a public Google Sheets CSV URL. The sheet must have headers: <strong>Name, Callsign, Rank, Discord Tag</strong>.
               </p>
               <div className="space-y-2">
-                <input 
-                  type="text" 
-                  value={csvUrl} 
-                  onChange={e => setCsvUrl(e.target.value)} 
-                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-emerald-500" 
-                  placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" 
+                <input
+                  type="text"
+                  value={csvUrl}
+                  onChange={e => setCsvUrl(e.target.value)}
+                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-emerald-500"
+                  placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
                 />
               </div>
-              <button 
+              <button
                 onClick={handleSyncCSV}
                 disabled={isSyncing || !csvUrl}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
@@ -632,7 +632,7 @@ export default function AdminPanel() {
                   ))}
                 </ul>
               )}
-              
+
               <form onSubmit={handleSaveSyncLink} className="space-y-2 pt-2 border-t border-slate-800">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-slate-400">{editingSyncId ? "Edit Link" : "Add New Link"}</span>
@@ -654,70 +654,74 @@ export default function AdminPanel() {
 
         {stagedEmployees.length > 0 && (
           <Card className="bg-slate-900 border-amber-500/50 text-slate-200 lg:col-span-3">
-             <CardHeader>
-               <CardTitle className="text-amber-400">Review Pending Imports</CardTitle>
-             </CardHeader>
-             <CardContent>
-               <div className="mb-4 flex gap-4 flex-wrap">
-                  <div className="flex flex-col gap-2 p-2 border border-slate-800 rounded bg-slate-950">
-                    <span className="text-xs text-slate-500 font-medium">Bulk Set Department</span>
-                    <div className="flex gap-2">
-                       <button onClick={() => handleBulkUpdate('department', 'SASP')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP</button>
-                       <button onClick={() => handleBulkUpdate('department', 'LSPD')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">LSPD</button>
-                       <button onClick={() => handleBulkUpdate('department', 'BCSO')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">BCSO</button>
-                       <button onClick={() => handleBulkUpdate('department', 'SAPR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SAPR</button>
-                       <button onClick={() => handleBulkUpdate('department', 'SASP Academy')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP Academy</button>
-                    </div>
+            <CardHeader>
+              <CardTitle className="text-amber-400">Review Pending Imports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 flex gap-4 flex-wrap">
+                <div className="flex flex-col gap-2 p-2 border border-slate-800 rounded bg-slate-950">
+                  <span className="text-xs text-slate-500 font-medium">Bulk Set Department</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleBulkUpdate('department', 'SASP')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP</button>
+                    <button onClick={() => handleBulkUpdate('department', 'LSPD')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">LSPD</button>
+                    <button onClick={() => handleBulkUpdate('department', 'BCSO')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">BCSO</button>
+                    <button onClick={() => handleBulkUpdate('department', 'SAPR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SAPR</button>
+                    <button onClick={() => handleBulkUpdate('department', 'SASP Academy')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">SASP Academy</button>
                   </div>
-                  
-                  <div className="flex flex-col gap-2 p-2 border border-slate-800 rounded bg-slate-950">
-                    <span className="text-xs text-slate-500 font-medium">Bulk Set Role</span>
-                    <div className="flex gap-2">
-                       {getRoleWeight(currentUserRole) >= 4 && <button onClick={() => handleBulkUpdate('role', 'admin')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">admin</button>}
-                       {getRoleWeight(currentUserRole) >= 3 && <button onClick={() => handleBulkUpdate('role', 'High Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">High Command</button>}
-                       {getRoleWeight(currentUserRole) >= 2 && <button onClick={() => handleBulkUpdate('role', 'Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Command</button>}
-                       {getRoleWeight(currentUserRole) >= 1 && <button onClick={() => handleBulkUpdate('role', 'HR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">HR</button>}
-                       <button onClick={() => handleBulkUpdate('role', 'Supervisor')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Supervisor</button>
-                       <button onClick={() => handleBulkUpdate('role', 'Patrol Officer')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Patrol Officer</button>
-                       <button onClick={() => handleBulkUpdate('role', 'Student')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Student</button>
-                    </div>
+                </div>
+
+                <div className="flex flex-col gap-2 p-2 border border-slate-800 rounded bg-slate-950">
+                  <span className="text-xs text-slate-500 font-medium">Bulk Set Role</span>
+                  <div className="flex gap-2">
+                    {getRoleWeight(currentUserRole) >= 4 && <button onClick={() => handleBulkUpdate('role', 'admin')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">admin</button>}
+                    {getRoleWeight(currentUserRole) >= 3 && <button onClick={() => handleBulkUpdate('role', 'High Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">High Command</button>}
+                    {getRoleWeight(currentUserRole) >= 2 && <button onClick={() => handleBulkUpdate('role', 'Command')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Command</button>}
+                    {getRoleWeight(currentUserRole) >= 1 && <button onClick={() => handleBulkUpdate('role', 'HR')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">HR</button>}
+                    <button onClick={() => handleBulkUpdate('role', 'Supervisor')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Supervisor</button>
+                    <button onClick={() => handleBulkUpdate('role', 'Patrol Officer')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Patrol Officer</button>
+                    <button onClick={() => handleBulkUpdate('role', 'Student')} className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded">Student</button>
                   </div>
-                  
-                  <div className="ml-auto flex items-end gap-2">
-                     <button onClick={() => setStagedEmployees([])} className="px-4 py-2 border border-rose-900/50 hover:bg-rose-900/20 text-rose-400 text-sm font-medium rounded transition-colors" disabled={isCommitting}>Cancel Preview</button>
-                     <button onClick={() => setShowConfirmModal(true)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50" disabled={selectedStagedIds.size === 0}>Commit {selectedStagedIds.size} Selected</button>
-                  </div>
-               </div>
-               
-               <div className="max-h-96 overflow-y-auto">
-                 <table className="w-full text-left text-sm">
-                   <thead className="border-b border-slate-800 text-slate-400 sticky top-0 bg-slate-900">
-                     <tr>
-                       <th className="p-2"><input type="checkbox" checked={selectedStagedIds.size === stagedEmployees.length && stagedEmployees.length > 0} onChange={e => handleToggleSelectAll(e.target.checked)} className="rounded border-slate-700 bg-slate-800" /></th>
-                       <th className="p-2">Name</th>
-                       <th className="p-2">Callsign</th>
-                       <th className="p-2">Rank</th>
-                       <th className="p-2">Role</th>
-                       <th className="p-2">Dept</th>
-                       <th className="p-2">Status</th>
-                     </tr>
-                   </thead>
-                   <tbody className="divide-y divide-slate-800/60">
-                     {stagedEmployees.map(emp => (
-                       <tr key={emp._staged_id} className="hover:bg-brand/10 group">
-                         <td className="p-2"><input type="checkbox" checked={selectedStagedIds.has(emp._staged_id)} onChange={() => handleToggleStaged(emp._staged_id)} className="rounded border-slate-700 bg-slate-800" /></td>
-                         <td className="p-2 font-medium">{emp.name}</td>
-                         <td className="p-2 text-slate-400">{emp.badge_number}</td>
-                         <td className="p-2 text-slate-400">{emp.rank}</td>
-                         <td className="p-2 text-amber-300">{emp.role}</td>
-                         <td className="p-2 text-blue-300">{emp.department}</td>
-                         <td className="p-2 font-medium">{emp._is_existing ? <span className="text-amber-500">UPDATE</span> : <span className="text-emerald-500">NEW</span>}</td>
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
-             </CardContent>
+                </div>
+
+                <div className="ml-auto flex items-end gap-2">
+                  <button onClick={() => setStagedEmployees([])} className="px-4 py-2 border border-rose-900/50 hover:bg-rose-900/20 text-rose-400 text-sm font-medium rounded transition-colors" disabled={isCommitting}>Cancel Preview</button>
+                  <button onClick={() => setShowConfirmModal(true)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50" disabled={selectedStagedIds.size === 0}>Commit {selectedStagedIds.size} Selected</button>
+                </div>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                <table className="w-full text-left text-sm border-separate border-spacing-y-2">
+                  <thead className="border-b border-slate-800 text-slate-400 sticky top-0 bg-slate-900">
+                    <tr>
+                      <th className="p-2"><input type="checkbox" checked={selectedStagedIds.size === stagedEmployees.length && stagedEmployees.length > 0} onChange={e => handleToggleSelectAll(e.target.checked)} className="rounded border-slate-700 bg-slate-800" /></th>
+                      <th className="p-2">Name</th>
+                      <th className="p-2">Callsign</th>
+                      <th className="p-2">Rank</th>
+                      <th className="p-2">Role</th>
+                      <th className="p-2">Dept</th>
+                      <th className="p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="group/table">
+                    {stagedEmployees.map(emp => (
+                      <tr key={emp._staged_id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                        <td className="p-2 rounded-l-lg"><input type="checkbox" checked={selectedStagedIds.has(emp._staged_id)} onChange={() => handleToggleStaged(emp._staged_id)} className="rounded border-slate-700 bg-slate-800" /></td>
+                        <td className="p-2 font-medium">
+                          <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
+                            {emp.name}
+                          </span>
+                        </td>
+                        <td className="p-2 text-slate-400">{emp.badge_number}</td>
+                        <td className="p-2 text-slate-400">{emp.rank}</td>
+                        <td className="p-2 text-amber-300">{emp.role}</td>
+                        <td className="p-2 text-blue-300">{emp.department}</td>
+                        <td className="p-2 font-medium rounded-r-lg">{emp._is_existing ? <span className="text-amber-500">UPDATE</span> : <span className="text-emerald-500">NEW</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
           </Card>
         )}
 
@@ -730,7 +734,7 @@ export default function AdminPanel() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-left text-sm border-separate border-spacing-y-2">
                 <thead className="border-b border-slate-800 text-slate-400">
                   <tr>
                     <th className="pb-3 font-medium">Officer</th>
@@ -740,69 +744,73 @@ export default function AdminPanel() {
                     <th className="pb-3 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="group/table">
                   {employees.map((emp) => {
                     const canEdit = getRoleWeight(currentUserRole) >= getRoleWeight(emp.role || "");
 
                     return (
-                    <tr key={emp.id} className="hover:bg-brand/10 group">
-                      <td className="py-3 font-medium text-white">{emp.name} <span className="text-slate-500 font-normal">({emp.badge_number})</span></td>
-                      <td className="py-3 text-slate-300">{emp.rank}</td>
-                      {editingId === emp.id ? (
-                        <>
-                          <td className="py-3">
-                            <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
-                              {getRoleWeight(currentUserRole) >= 4 && <option value="admin">admin</option>}
-                              {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
-                              {getRoleWeight(currentUserRole) >= 2 && <option value="Command">Command</option>}
-                              {getRoleWeight(currentUserRole) >= 1 && <option value="HR">HR</option>}
-                              <option value="Supervisor">Supervisor</option>
-                              <option value="Patrol Officer">Patrol Officer</option>
-                              <option value="Student">Student</option>
-                            </select>
-                          </td>
-                          <td className="py-3">
-                            <select value={editForm.department} onChange={e => setEditForm({...editForm, department: e.target.value})} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
-                              <option value="SASP">SASP</option>
-                              <option value="LSPD">LSPD</option>
-                              <option value="BCSO">BCSO</option>
-                              <option value="SAPR">SAPR</option>
-                              <option value="SASP Academy">SASP Academy</option>
-                            </select>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="py-3 text-slate-400 text-sm">{emp.role || "Patrol Officer"}</td>
-                          <td className="py-3 text-slate-400 text-sm">{emp.department || "SASP"}</td>
-                        </>
-                      )}
-                      <td className="py-3 text-right">
+                      <tr key={emp.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                        <td className="py-3 px-3 font-medium text-white rounded-l-lg">
+                          <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
+                            {emp.name} <span className="text-slate-500 font-normal">({emp.badge_number})</span>
+                          </span>
+                        </td>
+                        <td className="py-3 text-slate-300">{emp.rank}</td>
                         {editingId === emp.id ? (
-                          <div className="flex justify-end gap-2">
-                            <button onClick={() => handleSaveEdit(emp.id)} className="text-emerald-400 hover:text-emerald-300 text-xs font-medium">Save</button>
-                            <button onClick={handleCancelEdit} className="text-slate-500 hover:text-slate-400 text-xs font-medium">Cancel</button>
-                          </div>
+                          <>
+                            <td className="py-3">
+                              <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
+                                {getRoleWeight(currentUserRole) >= 4 && <option value="admin">admin</option>}
+                                {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
+                                {getRoleWeight(currentUserRole) >= 2 && <option value="Command">Command</option>}
+                                {getRoleWeight(currentUserRole) >= 1 && <option value="HR">HR</option>}
+                                <option value="Supervisor">Supervisor</option>
+                                <option value="Patrol Officer">Patrol Officer</option>
+                                <option value="Student">Student</option>
+                              </select>
+                            </td>
+                            <td className="py-3">
+                              <select value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} className="bg-slate-950 border border-slate-700 rounded text-xs p-1 text-white">
+                                <option value="SASP">SASP</option>
+                                <option value="LSPD">LSPD</option>
+                                <option value="BCSO">BCSO</option>
+                                <option value="SAPR">SAPR</option>
+                                <option value="SASP Academy">SASP Academy</option>
+                              </select>
+                            </td>
+                          </>
                         ) : (
-                          <div className="flex justify-end gap-3">
-                            {canEdit ? (
-                              <>
-                                <button onClick={() => handleEditClick(emp)} className="text-slate-500 hover:text-blue-400 transition-colors text-xs font-medium uppercase tracking-wider" title="Edit Role/Dept">
-                                  Edit
-                                </button>
-                                {adminSafeMode && (
-                                  <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors" title="Delete Officer">
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-xs text-slate-600 font-medium italic">Restricted</span>
-                            )}
-                          </div>
+                          <>
+                            <td className="py-3 text-slate-400 text-sm">{emp.role || "Patrol Officer"}</td>
+                            <td className="py-3 text-slate-400 text-sm">{emp.department || "SASP"}</td>
+                          </>
                         )}
-                      </td>
-                    </tr>
+                        <td className="py-3 text-right rounded-r-lg">
+                          {editingId === emp.id ? (
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => handleSaveEdit(emp.id)} className="text-emerald-400 hover:text-emerald-300 text-xs font-medium">Save</button>
+                              <button onClick={handleCancelEdit} className="text-slate-500 hover:text-slate-400 text-xs font-medium">Cancel</button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end gap-3">
+                              {canEdit ? (
+                                <>
+                                  <button onClick={() => handleEditClick(emp)} className="text-slate-500 hover:text-blue-400 transition-colors text-xs font-medium uppercase tracking-wider" title="Edit Role/Dept">
+                                    Edit
+                                  </button>
+                                  {adminSafeMode && (
+                                    <button onClick={() => handleDeleteEmployee(emp.id)} className="text-slate-500 hover:text-rose-400 transition-colors" title="Delete Officer">
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-xs text-slate-600 font-medium italic">Restricted</span>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -821,15 +829,15 @@ export default function AdminPanel() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 sm:space-x-2 space-y-2 sm:space-y-0 flex-col sm:flex-row">
-            <button 
-              onClick={() => setShowConfirmModal(false)} 
+            <button
+              onClick={() => setShowConfirmModal(false)}
               className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium rounded transition-colors w-full sm:w-auto"
               disabled={isCommitting}
             >
               Cancel
             </button>
-            <button 
-              onClick={handleCommitStaged} 
+            <button
+              onClick={handleCommitStaged}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2 w-full sm:w-auto"
               disabled={isCommitting}
             >

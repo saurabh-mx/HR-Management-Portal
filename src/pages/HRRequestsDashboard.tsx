@@ -26,8 +26,8 @@ interface Comment {
 export default function HRRequestsDashboard() {
   const { adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<HRRequest[]>([]);
-  const [userProfile, setUserProfile] = useState<{name: string, email: string, isAdmin: boolean} | null>(null);
-  
+  const [userProfile, setUserProfile] = useState<{ name: string, email: string, isAdmin: boolean } | null>(null);
+
   // Tab State for filtering Active vs Resolved
   const [activeTab, setActiveTab] = useState<'Active' | 'Resolved'>('Active');
 
@@ -60,13 +60,13 @@ export default function HRRequestsDashboard() {
       .select('name, badge_number, is_admin, role')
       .eq('discord_tag', session.user.email.split('@')[0])
       .single();
-    
+
     const profile = {
       name: empData ? `${empData.name} (${empData.badge_number})` : session.user.email,
       email: session.user.email,
       isAdmin: empData?.is_admin || (empData?.role && ['High Command', 'HR'].includes(empData.role)) || false
     };
-    
+
     setUserProfile(profile);
 
     let query = supabase.from('hr_requests').select('*').order('created_at', { ascending: false });
@@ -114,7 +114,7 @@ export default function HRRequestsDashboard() {
       .select('*')
       .eq('request_id', ticket.id)
       .order('created_at', { ascending: true });
-    
+
     if (data) setComments(data);
   };
 
@@ -181,7 +181,7 @@ export default function HRRequestsDashboard() {
   };
 
   // Filter requests based on the selected tab
-  const displayedRequests = requests.filter(req => 
+  const displayedRequests = requests.filter(req =>
     activeTab === 'Active' ? req.status !== 'Resolved' : req.status === 'Resolved'
   );
 
@@ -202,9 +202,8 @@ export default function HRRequestsDashboard() {
                 <CardTitle className="text-xl font-bold text-white mb-1">{activeTicket.subject}</CardTitle>
                 <p className="text-sm text-slate-400">Filed by {activeTicket.officer_name} on {new Date(activeTicket.created_at).toLocaleString()}</p>
               </div>
-              <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold border ${
-                activeTicket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-              }`}>
+              <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold border ${activeTicket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                }`}>
                 {activeTicket.status === 'Resolved' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                 {activeTicket.status}
               </span>
@@ -228,10 +227,9 @@ export default function HRRequestsDashboard() {
               ) : (
                 comments.map(comment => (
                   <div key={comment.id} className={`flex flex-col ${comment.author_name.includes('Command') ? 'items-start' : 'items-end'}`}>
-                    <span className="text-[10px] text-slate-500 mb-1 px-1">{comment.author_name} • {new Date(comment.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                    <div className={`px-4 py-2 rounded-xl text-sm max-w-[85%] ${
-                      comment.author_name.includes('Command') ? 'bg-emerald-900/40 border border-emerald-500/20 text-emerald-100' : 'bg-slate-800 text-slate-200'
-                    }`}>
+                    <span className="text-[10px] text-slate-500 mb-1 px-1">{comment.author_name} • {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <div className={`px-4 py-2 rounded-xl text-sm max-w-[85%] ${comment.author_name.includes('Command') ? 'bg-emerald-900/40 border border-emerald-500/20 text-emerald-100' : 'bg-slate-800 text-slate-200'
+                      }`}>
                       {comment.message}
                     </div>
                   </div>
@@ -240,16 +238,16 @@ export default function HRRequestsDashboard() {
             </div>
 
             <form onSubmit={handleSendComment} className="flex gap-2 pt-4 border-t border-slate-800 mt-4">
-              <input 
-                type="text" 
-                value={newComment} 
-                onChange={e => setNewComment(e.target.value)} 
-                className="flex-1 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" 
-                placeholder="Type your secure message..." 
+              <input
+                type="text"
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                className="flex-1 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                placeholder="Type your secure message..."
                 disabled={activeTicket.status === 'Resolved'}
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={activeTicket.status === 'Resolved'}
                 className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-2 rounded-md transition-colors"
               >
@@ -288,13 +286,13 @@ export default function HRRequestsDashboard() {
                   Are you sure you want to mark this ticket as resolved? This will lock the thread and prevent further replies from the officer.
                 </p>
                 <div className="flex justify-end gap-3">
-                  <button 
+                  <button
                     onClick={() => setShowResolveConfirm(false)}
                     className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     onClick={handleConfirmResolve}
                     className="px-4 py-2 rounded-md text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-lg shadow-emerald-900/20"
                   >
@@ -344,17 +342,17 @@ export default function HRRequestsDashboard() {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-400">Category</label>
-              <select 
-                value={isCustomSubject ? 'Custom' : newRequest.subject} 
+              <select
+                value={isCustomSubject ? 'Custom' : newRequest.subject}
                 onChange={e => {
                   if (e.target.value === 'Custom') {
                     setIsCustomSubject(true);
-                    setNewRequest({...newRequest, subject: ''});
+                    setNewRequest({ ...newRequest, subject: '' });
                   } else {
                     setIsCustomSubject(false);
-                    setNewRequest({...newRequest, subject: e.target.value});
+                    setNewRequest({ ...newRequest, subject: e.target.value });
                   }
-                }} 
+                }}
                 className={`w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white ${isCustomSubject ? 'mb-2' : ''}`} required>
                 <option value="" disabled>Select a subject...</option>
                 <option value="Uniform Request">Uniform / Equipment Request</option>
@@ -364,19 +362,19 @@ export default function HRRequestsDashboard() {
                 <option value="Custom">Other (Custom)</option>
               </select>
               {isCustomSubject && (
-                <input 
-                  type="text" 
-                  value={newRequest.subject} 
-                  onChange={e => setNewRequest({...newRequest, subject: e.target.value})}
-                  className="w-full rounded-md border border-emerald-500/50 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 animate-in fade-in slide-in-from-top-1" 
-                  placeholder="Type your custom category..." 
-                  required 
+                <input
+                  type="text"
+                  value={newRequest.subject}
+                  onChange={e => setNewRequest({ ...newRequest, subject: e.target.value })}
+                  className="w-full rounded-md border border-emerald-500/50 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 animate-in fade-in slide-in-from-top-1"
+                  placeholder="Type your custom category..."
+                  required
                 />
               )}
             </div>
             <div className="space-y-2 md:col-span-2">
               <label className="text-xs font-medium text-slate-400">Description</label>
-              <textarea required rows={3} value={newRequest.description} onChange={e => setNewRequest({...newRequest, description: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Provide detailed information..." />
+              <textarea required rows={3} value={newRequest.description} onChange={e => setNewRequest({ ...newRequest, description: e.target.value })} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white" placeholder="Provide detailed information..." />
             </div>
             <div className="md:col-span-2 flex justify-end">
               <button type="submit" className="flex items-center gap-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 px-5 py-2 rounded-md font-medium transition-colors border border-emerald-500/20 text-sm">
@@ -392,22 +390,20 @@ export default function HRRequestsDashboard() {
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-2">
             <CardTitle className="text-lg font-medium">{userProfile?.isAdmin ? "Department Tickets" : "Your Tickets"}</CardTitle>
-            
+
             {/* TAB CONTROLS */}
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => setActiveTab('Active')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
-                }`}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
+                  }`}
               >
                 <Clock className="w-4 h-4 inline mr-1.5" /> Active
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('Resolved')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'Resolved' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
-                }`}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'Resolved' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
+                  }`}
               >
                 <History className="w-4 h-4 inline mr-1.5" /> Resolved History
               </button>
@@ -416,7 +412,7 @@ export default function HRRequestsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm border-separate border-spacing-y-2">
               <thead className="border-b border-slate-800 text-slate-400">
                 <tr>
                   <th className="pb-3 font-medium">Date</th>
@@ -426,28 +422,31 @@ export default function HRRequestsDashboard() {
                   <th className="pb-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="group/table">
                 {displayedRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-500">
+                    <td colSpan={5} className="py-8 text-center text-slate-500 bg-slate-900/20 rounded-lg">
                       No {activeTab.toLowerCase()} tickets found.
                     </td>
                   </tr>
                 ) : (
                   displayedRequests.map((request) => (
-                    <tr key={request.id} className="hover:bg-brand/10 group transition-colors">
-                      <td className="py-3 text-slate-400">{new Date(request.created_at).toLocaleDateString()}</td>
-                      <td className="py-3 font-medium text-white">{request.officer_name}</td>
+                    <tr key={request.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                      <td className="py-3 px-3 text-slate-400 rounded-l-lg">{new Date(request.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 px-3 font-medium text-white">
+                        <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
+                          {request.officer_name}
+                        </span>
+                      </td>
                       <td className="py-3 text-slate-300 font-medium">{request.subject}</td>
                       <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${
-                          request.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                        }`}>
+                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${request.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}>
                           {request.status === 'Resolved' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                           {request.status}
                         </span>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 px-3 text-right rounded-r-lg">
                         <div className="flex justify-end items-center gap-2">
                           <button onClick={() => handleOpenTicket(request)} className="text-sky-400 hover:text-sky-300 text-xs font-medium border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5">
                             <MessageSquare className="w-3 h-3" /> {activeTab === 'Resolved' ? 'View Log' : 'Open Thread'}
@@ -484,13 +483,13 @@ export default function HRRequestsDashboard() {
                 Are you sure you want to permanently delete this HR ticket? All associated messages and history will be completely erased. This action cannot be undone.
               </p>
               <div className="flex justify-end gap-3">
-                <button 
+                <button
                   onClick={() => setTicketToDelete(null)}
                   className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmDelete}
                   className="px-4 py-2 rounded-md text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-lg shadow-rose-900/20"
                 >
@@ -517,13 +516,13 @@ export default function HRRequestsDashboard() {
                 Are you ready to submit this request to High Command? All tickets are securely logged and officially bound to your badge number.
               </p>
               <div className="flex justify-end gap-3">
-                <button 
+                <button
                   onClick={() => setShowSubmitConfirm(false)}
                   className="px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmSubmit}
                   className="px-4 py-2 rounded-md text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-lg shadow-emerald-900/20"
                 >
@@ -549,13 +548,13 @@ export default function HRRequestsDashboard() {
                 Dispatch confirms your request has been securely routed to High Command. You will be notified of any updates in your Active Tickets tab.
               </p>
               <div className="flex gap-3 w-full">
-                <button 
+                <button
                   onClick={() => setShowSubmitSuccess(false)}
                   className="flex-1 px-4 py-2 rounded-md text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white transition-colors"
                 >
                   Dashboard
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setShowSubmitSuccess(false);
                     if (newlyCreatedTicket) handleOpenTicket(newlyCreatedTicket);
