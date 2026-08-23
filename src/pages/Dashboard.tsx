@@ -6,6 +6,33 @@ import { supabase } from "@/lib/supabaseClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from '@/context/AuthContext';
 
+const formatMessage = (text: string) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    const formattedLine = line
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+      .replace(/__(.*?)__/g, '<u class="underline-offset-2">$1</u>');
+      
+    if (line.startsWith('# ')) {
+      return (
+        <h3 key={i} className="text-lg font-bold text-white mt-3 mb-1" dangerouslySetInnerHTML={{ __html: formattedLine.substring(2) }} />
+      );
+    }
+    return (
+      <div key={i} className="min-h-[1.5em]" dangerouslySetInnerHTML={{ __html: formattedLine }} />
+    );
+  });
+};
+
+const stripFormatting = (text: string) => {
+  if (!text) return "";
+  return text.split('[IMAGE]=')[0]
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/^#\s+/gm, '');
+};
+
 export const Dashboard = () => {
   const { profile } = useAuth();
   const [stats, setStats] = useState({
@@ -429,7 +456,7 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
                           {bulletin.category}
                         </span>
                       </div>
-                      <p className={`text-xs line-clamp-3 leading-relaxed ${textClass}`}>{bulletin.message}</p>
+                      <p className={`text-xs line-clamp-3 leading-relaxed ${textClass}`}>{stripFormatting(bulletin.message)}</p>
                       <div className={`flex justify-between items-center mt-2 pt-2 border-t ${borderClass}`}>
                         <span className={`text-[10px] font-medium ${metaClass}`}>{bulletin.author}</span>
                         <span className={`text-[10px] font-medium ${metaClass}`}>{new Date(bulletin.created_at || bulletin.date).toLocaleDateString()}</span>
@@ -527,7 +554,21 @@ Join Date: ${profile.department_join_date ? new Date(profile.department_join_dat
               </div>
               
               <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800">
-                <p className="text-sm text-slate-300 leading-relaxed font-light whitespace-pre-wrap">{selectedAnnouncement.message}</p>
+                {(() => {
+                  const parts = selectedAnnouncement.message.split('[IMAGE]=');
+                  const text = parts[0];
+                  const imgUrl = parts[1]?.trim();
+                  return (
+                    <div className="space-y-4">
+                      <div className="text-sm text-slate-300 leading-relaxed font-light whitespace-pre-wrap space-y-1">{formatMessage(text)}</div>
+                      {imgUrl && (
+                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-800/80 shadow-lg bg-slate-900 flex justify-center">
+                          <img src={imgUrl} alt="Announcement Attachment" className="w-full h-auto object-contain max-h-[800px]" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}

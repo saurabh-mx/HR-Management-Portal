@@ -5,6 +5,7 @@ import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, CheckCircle2, C
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from "@/components/admin/DataSyncModal";
+import { StatCard } from "@/components/dashboard/StatCard";
 
 interface Employee {
   id: string;
@@ -34,6 +35,7 @@ interface Employee {
   cert_sop?: boolean;
   callsign?: string;
   is_admin?: boolean;
+  avatar_url?: string;
 }
 
 const getDepartmentColor = (dept: string) => {
@@ -234,6 +236,21 @@ export default function EmployeeDirectory() {
 
   const departmentEmployees = activeDepartment === "All" ? employees : employees.filter(e => e.department === activeDepartment);
 
+  const getDeptCount = (list: Employee[], dept: string) => list.filter(e => e.department === dept).length;
+  
+  const renderDeptBreakdown = (list: Employee[]) => (
+    <div className="space-y-2.5 h-full flex flex-col justify-center">
+      <h4 className="text-[10px] uppercase font-bold tracking-widest text-brand/80 mb-1 border-b border-brand/20 pb-1">Department Breakdown</h4>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP') }}>SASP</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP')}</span></div>
+        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('LSPD') }}><span className="font-bold" style={{ color: getDepartmentColor('LSPD') }}>LSPD</span><span className="font-bold text-slate-200">{getDeptCount(list, 'LSPD')}</span></div>
+        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('BCSO') }}><span className="font-bold" style={{ color: getDepartmentColor('BCSO') }}>BCSO</span><span className="font-bold text-slate-200">{getDeptCount(list, 'BCSO')}</span></div>
+        <div className="flex justify-between items-center bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SAPR') }}><span className="font-bold" style={{ color: getDepartmentColor('SAPR') }}>SAPR</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SAPR')}</span></div>
+        <div className="flex justify-between items-center col-span-2 bg-slate-900/50 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP Academy') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP Academy') }}>SASP Academy</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP Academy')}</span></div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-8 space-y-8 bg-transparent min-h-full">
       
@@ -339,48 +356,30 @@ export default function EmployeeDirectory() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Total Personnel</CardTitle>
-            <Users className="w-4 h-4 text-slate-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{departmentEmployees.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Active Duty</CardTitle>
-            <Shield className="w-4 h-4 text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {departmentEmployees.filter((e) => e.status === "Active").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">On LOA</CardTitle>
-            <CalendarOff className="w-4 h-4 text-fuchsia-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {departmentEmployees.filter((e) => e.status === "LOA").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Inactive</CardTitle>
-            <UserMinus className="w-4 h-4 text-rose-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {departmentEmployees.filter((e) => e.status === "Inactive").length}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Personnel"
+          value={departmentEmployees.length}
+          icon={Users}
+          hoverContent={renderDeptBreakdown(departmentEmployees)}
+        />
+        <StatCard
+          title="Active Duty"
+          value={departmentEmployees.filter(e => e.status === "Active").length}
+          icon={Shield}
+          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => e.status === "Active"))}
+        />
+        <StatCard
+          title="On LOA"
+          value={departmentEmployees.filter(e => e.status === "LOA").length}
+          icon={CalendarOff}
+          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => e.status === "LOA"))}
+        />
+        <StatCard
+          title="Inactive"
+          value={departmentEmployees.filter(e => e.status === "Inactive").length}
+          icon={UserMinus}
+          hoverContent={renderDeptBreakdown(departmentEmployees.filter(e => e.status === "Inactive"))}
+        />
       </div>
 
       <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 shadow-xl overflow-hidden">
@@ -467,13 +466,17 @@ export default function EmployeeDirectory() {
 
                 <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-6 flex-1 transform group-hover:scale-105 transition-transform duration-700 ease-out">
                   <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm shadow-[0_0_15px_rgba(var(--brand-main),0.2)]"
+                    className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-900/80 backdrop-blur-sm shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden"
                     style={{
                       borderColor: getDepartmentColor(selectedEmployee.department),
                       color: getDepartmentColor(selectedEmployee.department)
                     }}
                   >
-                    {selectedEmployee.name.charAt(0)}
+                    {selectedEmployee.avatar_url ? (
+                      <img src={selectedEmployee.avatar_url} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                    ) : (
+                      selectedEmployee.name.charAt(0)
+                    )}
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-white tracking-wide leading-tight">{selectedEmployee.name}</h2>

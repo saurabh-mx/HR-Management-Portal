@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Clock, Users, Trash2, PlusCircle, X, Video } from "lucide-react";
+import { CalendarDays, Clock, Users, Trash2, PlusCircle, X, Video, Edit2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
@@ -34,6 +34,7 @@ export default function MeetingsDashboard() {
   const [joinLink, setJoinLink] = useState("");
   const [joinLinkTitle, setJoinLinkTitle] = useState("");
   const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
+  const [meetingToEdit, setMeetingToEdit] = useState<string | null>(null);
   const [newMeeting, setNewMeeting] = useState({
     title: "",
     meeting_date: "",
@@ -80,22 +81,69 @@ export default function MeetingsDashboard() {
     if (joinLink) {
       finalDescription += `\n\n[LINK]=${joinLink}[TITLE]=${joinLinkTitle || 'Join Meeting'}`;
     }
-    const { data, error } = await supabase
-      .from('meetings')
-      .insert([{ ...newMeeting, description: finalDescription, created_by: authorName }])
-      .select();
 
-    if (error) {
-      alert("Failed to schedule meeting: " + error.message);
-    } else if (data) {
-      logAuditAction("MEETING_SCHEDULED", "Multiple", `Scheduled ${newMeeting.type} meeting: ${newMeeting.title} on ${newMeeting.meeting_date} at ${newMeeting.meeting_time}`, authorName);
-      // Re-fetch to ensure exact correct sorting by date/time
-      fetchMeetings();
-      setNewMeeting({ title: "", meeting_date: "", meeting_time: "", type: "Mandatory", description: "" });
-      setJoinLink("");
-      setJoinLinkTitle("");
-      setShowForm(false);
+    if (meetingToEdit) {
+      const { error } = await supabase
+        .from('meetings')
+        .update({ ...newMeeting, description: finalDescription })
+        .eq('id', meetingToEdit);
+        
+      if (error) {
+        alert("Failed to update meeting: " + error.message);
+      } else {
+        logAuditAction("MEETING_UPDATED", "Multiple", `Updated ${newMeeting.type} meeting: ${newMeeting.title} on ${newMeeting.meeting_date} at ${newMeeting.meeting_time}`, authorName);
+        fetchMeetings();
+        resetForm();
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('meetings')
+        .insert([{ ...newMeeting, description: finalDescription, created_by: authorName }])
+        .select();
+
+      if (error) {
+        alert("Failed to schedule meeting: " + error.message);
+      } else if (data) {
+        logAuditAction("MEETING_SCHEDULED", "Multiple", `Scheduled ${newMeeting.type} meeting: ${newMeeting.title} on ${newMeeting.meeting_date} at ${newMeeting.meeting_time}`, authorName);
+        fetchMeetings();
+        resetForm();
+      }
     }
+  };
+
+  const resetForm = () => {
+    setNewMeeting({ title: "", meeting_date: "", meeting_time: "", type: "Mandatory", description: "" });
+    setJoinLink("");
+    setJoinLinkTitle("");
+    setShowForm(false);
+    setMeetingToEdit(null);
+  };
+
+  const handleEditClick = (meeting: Meeting) => {
+    let text = meeting.description;
+    let link = "";
+    let linkTitle = "";
+    if (meeting.description.includes("[LINK]=")) {
+      const parts = meeting.description.split("[LINK]=");
+      text = parts[0].trim();
+      if (parts[1]) {
+        const titleSplit = parts[1].split("[TITLE]=");
+        link = titleSplit[0].trim();
+        if (titleSplit[1]) linkTitle = titleSplit[1].trim();
+      }
+    }
+    setNewMeeting({
+      title: meeting.title,
+      meeting_date: meeting.meeting_date,
+      meeting_time: meeting.meeting_time,
+      type: meeting.type,
+      description: text
+    });
+    setJoinLink(link);
+    setJoinLinkTitle(linkTitle);
+    setMeetingToEdit(meeting.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleConfirmDelete = async () => {
@@ -149,7 +197,13 @@ export default function MeetingsDashboard() {
           {isAdmin && (
             <div className="shrink-0 mt-4 md:mt-0">
               <button 
-                onClick={() => setShowForm(!showForm)} 
+                onClick={() => {
+                  if (showForm) {
+                    resetForm();
+                  } else {
+                    setShowForm(true);
+                  }
+                }} 
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-xl border ${
                   showForm 
                   ? 'bg-slate-900/80 text-white border-slate-700 hover:bg-slate-800 hover:border-slate-500 hover:shadow-slate-900/50' 
@@ -173,7 +227,7 @@ export default function MeetingsDashboard() {
           <CardHeader className="border-b border-slate-800/60 bg-slate-900/40 pb-4">
             <CardTitle className="text-xl font-semibold text-blue-400 flex items-center gap-3">
               <PlusCircle className="w-5 h-5 text-blue-500" /> 
-              Schedule New Meeting
+              {meetingToEdit ? "Update Meeting" : "Schedule New Meeting"}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -212,7 +266,7 @@ export default function MeetingsDashboard() {
               </div>
               <div className="lg:col-span-4 flex justify-end mt-4">
                 <button type="submit" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-8 py-3 rounded-lg font-bold tracking-wide transition-all duration-300 shadow-lg shadow-blue-900/20 hover:shadow-blue-500/30 hover:-translate-y-0.5 text-sm">
-                  SCHEDULE MEETING
+                  {meetingToEdit ? "UPDATE MEETING" : "SCHEDULE MEETING"}
                 </button>
               </div>
             </form>
@@ -262,11 +316,16 @@ export default function MeetingsDashboard() {
                             </div>
                             <CardTitle className="text-lg font-semibold text-white leading-tight mt-1">{meeting.title}</CardTitle>
                           </div>
-                          {/* ADMIN ONLY DELETE BUTTON */}
-                          {isAdmin && adminSafeMode && (
-                            <button onClick={() => setMeetingToDelete(meeting.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 -mt-1 -mr-1" title="Cancel Meeting">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {/* AUTHOR CAN EDIT/DELETE OR ADMIN IN SAFE MODE */}
+                          {(meeting.created_by === authorName || (isAdmin && adminSafeMode)) && (
+                            <div className="flex items-center gap-1 -mt-1 -mr-1">
+                              <button onClick={() => handleEditClick(meeting)} className="text-slate-500 hover:text-blue-400 transition-colors p-1" title="Edit Meeting">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setMeetingToDelete(meeting.id)} className="text-slate-500 hover:text-rose-400 transition-colors p-1" title="Cancel Meeting">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           )}
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col gap-3">
@@ -350,11 +409,16 @@ export default function MeetingsDashboard() {
                             </div>
                             <CardTitle className="text-base font-semibold text-slate-200 leading-tight mt-1">{meeting.title}</CardTitle>
                           </div>
-                          {/* ADMIN ONLY DELETE BUTTON */}
-                          {isAdmin && adminSafeMode && (
-                            <button onClick={() => setMeetingToDelete(meeting.id)} className="text-slate-600 hover:text-rose-400 transition-colors p-1 -mt-1 -mr-1" title="Cancel Meeting">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                          {/* AUTHOR CAN EDIT/DELETE OR ADMIN IN SAFE MODE */}
+                          {(meeting.created_by === authorName || (isAdmin && adminSafeMode)) && (
+                            <div className="flex items-center gap-1 -mt-1 -mr-1">
+                              <button onClick={() => handleEditClick(meeting)} className="text-slate-600 hover:text-blue-400 transition-colors p-1" title="Edit Meeting">
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => setMeetingToDelete(meeting.id)} className="text-slate-600 hover:text-rose-400 transition-colors p-1" title="Cancel Meeting">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           )}
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col gap-3">

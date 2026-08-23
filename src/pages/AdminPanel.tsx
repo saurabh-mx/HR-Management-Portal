@@ -725,26 +725,26 @@ export default function AdminPanel() {
         </div>
 
         {/* Table Body */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto px-5 pb-5 pt-2">
+          <table className="w-full text-left text-sm border-separate border-spacing-y-2">
             <thead>
-              <tr className="border-b border-slate-800/60">
-                <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Officer</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Rank</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Role</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Department</th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+              <tr>
+                <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Officer</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Rank</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Role</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Department</th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right border-b border-slate-800/60">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40">
+            <tbody>
               {filteredEmployees.map((emp) => {
                 const canEdit = getRoleWeight(currentUserRole) >= getRoleWeight(emp.role || "");
                 const role = emp.role || 'Patrol Officer';
                 const dept = emp.department || 'SASP';
 
                 return (
-                  <tr key={emp.id} className="group hover:bg-slate-800/30 transition-colors duration-200">
-                    <td className="px-5 py-3">
+                  <tr key={emp.id} className="bg-slate-900/30 hover:bg-slate-800/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                    <td className="px-5 py-3 rounded-l-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase flex-shrink-0 group-hover:border-brand/30 transition-colors">
                           {emp.name?.charAt(0)}
@@ -789,7 +789,7 @@ export default function AdminPanel() {
                         <td className={`px-4 py-3 text-sm font-medium ${getDeptColor(dept)}`}>{dept}</td>
                       </>
                     )}
-                    <td className="px-5 py-3 text-right">
+                    <td className="px-5 py-3 text-right rounded-r-lg">
                       {editingId === emp.id ? (
                         <div className="flex justify-end gap-2">
                           <button onClick={() => handleSaveEdit(emp.id)} className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-medium transition-colors">Save</button>

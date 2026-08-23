@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, Megaphone, AlertCircle, ShieldAlert, Trash2, Plus, X } from "lucide-react";
+import { Send, Megaphone, AlertCircle, ShieldAlert, Trash2, Plus, X, Edit2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,25 @@ interface Post {
   created_at: string;
 }
 
+const formatMessage = (text: string) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    const formattedLine = line
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+      .replace(/__(.*?)__/g, '<u class="underline-offset-2">$1</u>');
+      
+    if (line.startsWith('# ')) {
+      return (
+        <h3 key={i} className="text-lg font-bold text-white mt-3 mb-1" dangerouslySetInnerHTML={{ __html: formattedLine.substring(2) }} />
+      );
+    }
+    return (
+      <div key={i} className="min-h-[1.5em]" dangerouslySetInnerHTML={{ __html: formattedLine }} />
+    );
+  });
+};
+
 export default function CommunicationsFeed() {
   const { adminSafeMode } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -23,6 +42,7 @@ export default function CommunicationsFeed() {
   const [imageLink, setImageLink] = useState("");
   const [authorName, setAuthorName] = useState("Patrol Officer");
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const [postToEdit, setPostToEdit] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -61,21 +81,52 @@ export default function CommunicationsFeed() {
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalMessage = imageLink ? newPost.message + '\n\n[IMAGE]=' + imageLink : newPost.message;
-    const { data, error } = await supabase
-      .from('Announcements')
-      .insert([{ ...newPost, message: finalMessage, author: authorName }])
-      .select();
+    
+    if (postToEdit) {
+      const { error } = await supabase
+        .from('Announcements')
+        .update({ ...newPost, message: finalMessage })
+        .eq('id', postToEdit);
+        
+      if (error) {
+        console.error("Error updating post:", error);
+        alert("Failed to update broadcast.");
+      } else {
+        logAuditAction("BROADCAST_UPDATED", "Multiple", `Updated ${newPost.category}: ${newPost.title}`, authorName);
+        setPosts(posts.map(p => p.id === postToEdit ? { ...p, ...newPost, message: finalMessage } : p));
+        resetForm();
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('Announcements')
+        .insert([{ ...newPost, message: finalMessage, author: authorName }])
+        .select();
 
-    if (error) {
-      console.error("Error creating post:", error);
-      alert("Failed to broadcast message.");
-    } else if (data) {
-      logAuditAction("BROADCAST_CREATED", "Multiple", `Transmitted ${newPost.category}: ${newPost.title}`, authorName);
-      setPosts([data[0], ...posts]);
-      setNewPost({ title: "", message: "", category: "Announcement" });
-      setImageLink("");
-      setShowForm(false);
+      if (error) {
+        console.error("Error creating post:", error);
+        alert("Failed to broadcast message.");
+      } else if (data) {
+        logAuditAction("BROADCAST_CREATED", "Multiple", `Transmitted ${newPost.category}: ${newPost.title}`, authorName);
+        setPosts([data[0], ...posts]);
+        resetForm();
+      }
     }
+  };
+
+  const resetForm = () => {
+    setNewPost({ title: "", message: "", category: "Announcement" });
+    setImageLink("");
+    setShowForm(false);
+    setPostToEdit(null);
+  };
+
+  const handleEditClick = (post: Post) => {
+    const parts = post.message.split('[IMAGE]=');
+    setNewPost({ title: post.title, message: parts[0].trim(), category: post.category });
+    setImageLink(parts[1] ? parts[1].trim() : "");
+    setPostToEdit(post.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleConfirmDelete = async () => {
@@ -111,10 +162,17 @@ export default function CommunicationsFeed() {
               Official Announcements, Alerts, and Shift Briefings.
             </p>
           </div>
+          {/* ALWAYS SHOW CREATOR FORM TOGGLE TO ADMINS */}
           {isAdmin && (
             <div className="shrink-0 mt-4 md:mt-0">
               <button 
-                onClick={() => setShowForm(!showForm)} 
+                onClick={() => {
+                  if (showForm) {
+                    resetForm();
+                  } else {
+                    setShowForm(true);
+                  }
+                }} 
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-xl border ${
                   showForm 
                   ? 'bg-slate-900/80 text-white border-slate-700 hover:bg-slate-800 hover:border-slate-500 hover:shadow-slate-900/50' 
@@ -138,7 +196,7 @@ export default function CommunicationsFeed() {
           <CardHeader className="border-b border-slate-800/60 bg-slate-900/40 pb-4">
             <CardTitle className="text-xl font-semibold text-sky-400 flex items-center gap-3">
               <Megaphone className="w-5 h-5 text-sky-500" />
-              Transmit New Broadcast
+              {postToEdit ? "Update Broadcast" : "Transmit New Broadcast"}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -192,10 +250,9 @@ export default function CommunicationsFeed() {
               <div className="flex justify-end pt-2">
                 <button 
                   type="submit" 
-                  className="flex items-center gap-2 bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-white px-8 py-3 rounded-lg font-bold tracking-wide transition-all duration-300 shadow-lg shadow-sky-900/20 hover:shadow-sky-500/30 hover:-translate-y-0.5 text-sm"
+                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 px-6 py-2.5 rounded-lg font-bold tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] flex items-center gap-2 hover:-translate-y-0.5"
                 >
-                  <Send className="w-4 h-4" />
-                  TRANSMIT BROADCAST
+                  <Send className="w-4 h-4" /> {postToEdit ? "Update Transmission" : "Send Transmission"}
                 </button>
               </div>
             </form>
@@ -252,15 +309,24 @@ export default function CommunicationsFeed() {
                           }`}>
                             {post.category}
                           </span>
-                          {/* ONLY ADMINS CAN DELETE BROADCASTS */}
-                          {isAdmin && adminSafeMode && (
-                            <button 
-                              onClick={() => setPostToDelete(post.id)}
-                              className="text-slate-500 hover:text-rose-400 transition-colors p-1"
-                              title="Delete Broadcast"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {/* AUTHOR CAN EDIT/DELETE OR ADMIN IN SAFE MODE */}
+                          {(post.author === authorName || (isAdmin && adminSafeMode)) && (
+                            <div className="flex items-center gap-1">
+                              <button 
+                                onClick={() => handleEditClick(post)}
+                                className="text-slate-500 hover:text-sky-400 transition-colors p-1"
+                                title="Edit Broadcast"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => setPostToDelete(post.id)}
+                                className="text-slate-500 hover:text-rose-400 transition-colors p-1"
+                                title="Delete Broadcast"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           )}
                         </div>
                       </CardHeader>
@@ -271,10 +337,10 @@ export default function CommunicationsFeed() {
                           const imgUrl = parts[1]?.trim();
                           return (
                             <div className="space-y-4">
-                              <p className="text-sm text-slate-300 whitespace-pre-wrap">{text}</p>
+                              <div className="text-sm text-slate-300 whitespace-pre-wrap space-y-1">{formatMessage(text)}</div>
                               {imgUrl && (
-                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-700/50 shadow-lg">
-                                  <img src={imgUrl} alt="Broadcast Attachment" className="w-full h-auto object-cover max-h-96 hover:scale-[1.02] transition-transform duration-500" />
+                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-700/50 shadow-lg bg-slate-950/50 flex justify-center">
+                                  <img src={imgUrl} alt="Broadcast Attachment" className="w-full h-auto object-contain max-h-[800px] hover:scale-[1.01] transition-transform duration-500" />
                                 </div>
                               )}
                             </div>
@@ -326,15 +392,24 @@ export default function CommunicationsFeed() {
                           }`}>
                             {post.category}
                           </span>
-                          {/* ONLY ADMINS CAN DELETE BROADCASTS */}
-                          {isAdmin && adminSafeMode && (
-                            <button 
-                              onClick={() => setPostToDelete(post.id)}
-                              className="text-slate-600 hover:text-rose-400 transition-colors p-1"
-                              title="Delete Broadcast"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                          {/* AUTHOR CAN EDIT/DELETE OR ADMIN IN SAFE MODE */}
+                          {(post.author === authorName || (isAdmin && adminSafeMode)) && (
+                            <div className="flex items-center gap-1">
+                              <button 
+                                onClick={() => handleEditClick(post)}
+                                className="text-slate-600 hover:text-sky-400 transition-colors p-1"
+                                title="Edit Broadcast"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => setPostToDelete(post.id)}
+                                className="text-slate-600 hover:text-rose-400 transition-colors p-1"
+                                title="Delete Broadcast"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           )}
                         </div>
                       </CardHeader>
@@ -345,10 +420,10 @@ export default function CommunicationsFeed() {
                           const imgUrl = parts[1]?.trim();
                           return (
                             <div className="space-y-4">
-                              <p className="text-xs text-slate-400 whitespace-pre-wrap">{text}</p>
+                              <div className="text-xs text-slate-400 whitespace-pre-wrap space-y-1">{formatMessage(text)}</div>
                               {imgUrl && (
-                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-700/50 shadow-md">
-                                  <img src={imgUrl} alt="Broadcast Attachment" className="w-full h-auto object-cover max-h-64 opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-700/50 shadow-md bg-slate-950/50 flex justify-center">
+                                  <img src={imgUrl} alt="Broadcast Attachment" className="w-full h-auto object-contain max-h-[800px] opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
                                 </div>
                               )}
                             </div>

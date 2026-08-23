@@ -57,8 +57,12 @@ export default function MainLayout() {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded-md transition-colors border border-transparent hover:border-brand/30 group"
               >
-                <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center border border-brand/30 group-hover:border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.1)] transition-colors">
-                  <User className="w-5 h-5 text-brand" />
+                <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center border border-brand/30 group-hover:border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.1)] transition-colors overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5 text-brand" />
+                  )}
                 </div>
                 <div className="text-left hidden md:block">
                   <div className="text-sm font-bold tracking-wide text-slate-200 uppercase leading-tight">
