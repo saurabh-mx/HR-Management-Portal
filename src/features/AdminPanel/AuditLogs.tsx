@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { ClipboardList, Search, Clock, User, Activity, AlertTriangle, Shield, Filter, LogIn, ChevronDown } from "lucide-react";
+import { useAuth } from '@/auth/hooks/useAuth';
 
 interface AuditLog {
   id: string;
@@ -12,6 +13,7 @@ interface AuditLog {
 }
 
 export default function AuditLogs() {
+  const { adminSafeMode } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,35 +25,11 @@ export default function AuditLogs() {
 
   useEffect(() => {
     checkAdminStatus();
-  }, []);
+  }, [adminSafeMode]);
 
   async function checkAdminStatus() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) {
-      setIsAdmin(false);
-      setIsLoading(false);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('employees')
-      .select('is_admin, role')
-      .eq('discord_tag', session.user.email.split('@')[0])
-      .single();
-    
-    if (!error && data) {
-      const isAuthorized = data.is_admin;
-      if (isAuthorized) {
-        setIsAdmin(true);
-        fetchLogs();
-      } else {
-        setIsAdmin(false);
-        setIsLoading(false);
-      }
-    } else {
-      setIsAdmin(false);
-      setIsLoading(false);
-    }
+    setIsAdmin(true);
+    fetchLogs();
   }
 
   async function fetchLogs() {
@@ -87,7 +65,7 @@ export default function AuditLogs() {
 
   const getActionConfig = (type: string) => {
     const t = type.toUpperCase();
-    
+
     let icon = <Activity className="w-4 h-4" />;
     if (t.includes('STRIKE')) icon = <AlertTriangle className="w-4 h-4" />;
     else if (t.includes('LOA')) icon = <Clock className="w-4 h-4" />;
@@ -114,19 +92,19 @@ export default function AuditLogs() {
 
     // 2. Search & Action Filtering
     const query = searchQuery.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       log.admin_email.toLowerCase().includes(query) ||
       log.action_type.toLowerCase().includes(query) ||
       (log.target_employee && log.target_employee.toLowerCase().includes(query)) ||
       (log.details && log.details.toLowerCase().includes(query));
-      
+
     const matchesFilter = actionFilter === "All" || (
       actionFilter === "SUBMIT" ? !!log.action_type.match(/_(SUBMITTED|ADDED|CREATED|SCHEDULED|FILED|ISSUED)$/i) :
-      actionFilter === "UPDATE" ? !!log.action_type.match(/_(UPDATED|RESOLVED|EXPORTED|SYNC|REQUEST)$/i) :
-      actionFilter === "DELETE" ? !!log.action_type.match(/_(DELETED|REMOVED|CANCELED|DENIED)$/i) :
-      log.action_type === actionFilter
+        actionFilter === "UPDATE" ? !!log.action_type.match(/_(UPDATED|RESOLVED|EXPORTED|SYNC|REQUEST)$/i) :
+          actionFilter === "DELETE" ? !!log.action_type.match(/_(DELETED|REMOVED|CANCELED|DENIED)$/i) :
+            log.action_type === actionFilter
     );
-    
+
     return matchesSearch && matchesFilter;
   });
 
@@ -177,11 +155,11 @@ export default function AuditLogs() {
               System-wide administrative action tracking and history.
             </p>
           </div>
-          
+
           <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
             {activeTab === 'System' && (
               <div className="relative w-full md:w-56">
-                <button 
+                <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   className="w-full flex items-center justify-between bg-black/40 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-brand/50 transition-all backdrop-blur-md"
                 >
@@ -201,10 +179,10 @@ export default function AuditLogs() {
                   </div>
                   <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
                 </button>
-                
+
                 {isFilterOpen && (
                   <div className="absolute top-full mt-2 right-0 w-64 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl p-2 z-50 flex flex-col gap-1 max-h-[300px] overflow-y-auto custom-scrollbar">
-                    <button 
+                    <button
                       onClick={() => { setActionFilter("All"); setIsFilterOpen(false); }}
                       className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${actionFilter === 'All' ? 'bg-brand/20 text-brand font-bold' : 'text-slate-300 hover:bg-slate-800'}`}
                     >
@@ -217,11 +195,10 @@ export default function AuditLogs() {
                         <button
                           key={label}
                           onClick={() => { setActionFilter(label); setIsFilterOpen(false); }}
-                          className={`flex items-center gap-2 text-left px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
-                            isSelected 
-                              ? `${config.bg} ${config.color} border border-current shadow-sm` 
+                          className={`flex items-center gap-2 text-left px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${isSelected
+                              ? `${config.bg} ${config.color} border border-current shadow-sm`
                               : `hover:bg-slate-800 text-slate-400 border border-transparent hover:${config.border}`
-                          }`}
+                            }`}
                         >
                           <span className={isSelected ? '' : config.color}>{config.icon}</span>
                           {label}
@@ -232,12 +209,12 @@ export default function AuditLogs() {
                 )}
               </div>
             )}
-            
+
             <div className="relative w-full md:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search logs..." 
+              <input
+                type="text"
+                placeholder="Search logs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-black/40 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-slate-200 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/50 transition-all backdrop-blur-md"
@@ -251,21 +228,19 @@ export default function AuditLogs() {
       <div className="flex bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 p-1.5 rounded-xl border border-slate-800/60 backdrop-blur-xl w-fit mb-6">
         <button
           onClick={() => { setActiveTab('System'); setActionFilter('All'); }}
-          className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all flex items-center gap-2 ${
-            activeTab === 'System' 
-              ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]' 
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all flex items-center gap-2 ${activeTab === 'System'
+              ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+            }`}
         >
           <Shield className="w-4 h-4" /> Administrative Activity
         </button>
         <button
           onClick={() => { setActiveTab('Logins'); setActionFilter('All'); }}
-          className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all flex items-center gap-2 ${
-            activeTab === 'Logins' 
-              ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]' 
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-widest uppercase transition-all flex items-center gap-2 ${activeTab === 'Logins'
+              ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)]'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+            }`}
         >
           <LogIn className="w-4 h-4" /> Login Activity
         </button>
@@ -304,7 +279,7 @@ export default function AuditLogs() {
               ) : (
                 filteredLogs.map((log) => {
                   const config = getActionConfig(log.action_type);
-                  
+
                   if (activeTab === 'Logins') {
                     const discordTag = log.admin_email.split('@')[0].toLowerCase();
                     const realName = employeeMap[discordTag] || log.target_employee;
