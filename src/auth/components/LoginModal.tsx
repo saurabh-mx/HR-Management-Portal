@@ -18,27 +18,27 @@ export default function LoginModal({ children }: LoginModalProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      
+
       <DialogContent className="max-w-md w-[95vw] p-0 bg-transparent border-none outline-none shadow-2xl">
         {/* Animated glowing border wrapper */}
         <div className="relative group rounded-3xl overflow-hidden p-[1px]">
           {/* Animated gradient border */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-slate-800 to-indigo-500/30 opacity-50 group-hover:opacity-100 transition-opacity duration-700 animate-slow-spin" style={{ animationDuration: '8s' }}></div>
-          
+
           {/* Inner Card */}
           <div className="relative bg-slate-950/90 backdrop-blur-3xl rounded-[23px] overflow-hidden flex flex-col items-center p-8 sm:p-10 shadow-[inset_0_0_80px_rgba(0,0,0,0.8)]">
-            
+
             {/* Background Details */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
-            
+
             {/* Header / Logo */}
             <div className="relative z-10 flex flex-col items-center text-center mb-10 w-full">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative group-hover:border-emerald-500/30 transition-colors duration-500">
                 <div className="absolute inset-0 bg-emerald-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <Shield className="w-8 h-8 text-emerald-400 relative z-10" />
               </div>
-              
+
               <h2 className="text-2xl font-bold tracking-tight text-white mb-2">
                 Secure Access
               </h2>
@@ -56,9 +56,9 @@ export default function LoginModal({ children }: LoginModalProps) {
             </div>
 
             <div className="w-full space-y-6 relative z-10">
-              
+
               {/* Security Verification Toggle */}
-              <div 
+              <div
                 onClick={() => setIsHuman(!isHuman)}
                 className="w-full bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between cursor-pointer group/toggle hover:bg-slate-800/50 hover:border-slate-700 transition-all duration-300"
               >
@@ -71,7 +71,7 @@ export default function LoginModal({ children }: LoginModalProps) {
                     <span className="text-xs font-light text-slate-500">Verify human presence</span>
                   </div>
                 </div>
-                
+
                 <div className="relative">
                   <div className={`w-12 h-6 rounded-full transition-colors duration-300 border ${isHuman ? 'bg-emerald-500 border-emerald-400' : 'bg-slate-950 border-slate-700'}`}></div>
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-md ${isHuman ? 'left-7' : 'left-1'}`}></div>
@@ -79,8 +79,8 @@ export default function LoginModal({ children }: LoginModalProps) {
               </div>
 
               {/* Discord Login Button */}
-              <button 
-                disabled={loading} 
+              <button
+                disabled={loading}
                 onClick={async () => {
                   setLoading(true);
                   setError("");
@@ -93,9 +93,9 @@ export default function LoginModal({ children }: LoginModalProps) {
                     const { error } = await supabase.auth.signInWithOAuth({
                       provider: 'discord',
                       options: {
-                       redirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
-                          }
-                        });
+                        redirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL
+                      }
+                    });
 
                     if (error) throw error;
                   } catch (err: any) {
@@ -104,7 +104,7 @@ export default function LoginModal({ children }: LoginModalProps) {
                     setLoading(false);
                   }
                 }}
-                type="button" 
+                type="button"
                 className="w-full relative overflow-hidden bg-[#5865F2] hover:bg-[#4752C4] text-white px-6 py-4 rounded-xl font-bold text-sm tracking-widest uppercase transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group/btn shadow-[0_0_20px_rgba(88,101,242,0.15)] hover:shadow-[0_0_30px_rgba(88,101,242,0.3)] hover:-translate-y-0.5"
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -119,7 +119,7 @@ export default function LoginModal({ children }: LoginModalProps) {
                 </span>
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] z-0"></div>
               </button>
-              
+
             </div>
 
             {/* Footer */}
