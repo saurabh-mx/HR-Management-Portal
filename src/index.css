@@ -136,4 +136,54 @@
   .rotate-y-180 {
     transform: rotateY(180deg);
   }
+
+  @keyframes flipInGallery {
+    0% {
+      transform: perspective(1000px) rotateY(-90deg) scale(0.9);
+      opacity: 0.2;
+    }
+    100% {
+      transform: perspective(1000px) rotateY(0deg) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-flip-gallery {
+    animation: flipInGallery 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  /* Advanced Image Masks */
+  .mask-radial-faded {
+    mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+  }
+  
+  .mask-linear-faded-l {
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  }
+
+  .mask-linear-faded-b {
+    mask-image: linear-gradient(to bottom, black 50%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent);
+  }
+
+  /* Scroll reveal animations */
+  .reveal-hidden {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .delay-100 { transition-delay: 100ms; }
+  .delay-200 { transition-delay: 200ms; }
+  .delay-300 { transition-delay: 300ms; }
+  .delay-400 { transition-delay: 400ms; }
+  .delay-500 { transition-delay: 500ms; }
 }
+

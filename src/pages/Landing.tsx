@@ -1,175 +1,331 @@
-import { Shield, ChevronRight, Scale, ShieldCheck, Crosshair, ArrowRight } from "lucide-react";
+import { Shield, ChevronRight, ArrowRight, ShieldCheck } from "lucide-react";
 import LoginModal from "@/components/auth/LoginModal";
+import { landingData } from "@/data/landingData";
+import { useState, useEffect, useRef } from "react";
+import type { ReactNode } from "react";
+import { imageService } from "@/lib/imageService";
+
+// --- Scroll Reveal Component ---
+function Reveal({ children, className = "", delay = "" }: { children: ReactNode; className?: string; delay?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1, rootMargin: "50px" }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={`reveal-hidden ${isVisible ? 'reveal-visible' : ''} ${delay} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// Fallback array if database is empty
+const FALLBACK_IMAGES = [
+  '/landing-bg-1.jpg',
+  '/landing-bg-2.jpg',
+  '/landing-bg-3.jpg',
+  '/landing-bg-4.jpg',
+  '/group-photo.jpg'
+];
 
 export default function Landing() {
-  return (
-    <div
-      className="min-h-screen flex flex-col font-sans text-slate-300 relative overflow-hidden bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500"
-      style={{
-        backgroundImage: "url('/sasp-tall-bg.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "top center",
-        backgroundRepeat: "no-repeat"
-      }}
-    >
-      {/* Global Background Overlay for better readability (Grey) */}
-      <div className="fixed inset-0 z-0 bg-slate-950/60 pointer-events-none"></div>
+  const [scrolled, setScrolled] = useState(false);
+  const [communityImgIdx, setCommunityImgIdx] = useState(0);
+  const [galleryImages, setGalleryImages] = useState<string[]>(FALLBACK_IMAGES);
 
-      {/* Navigation Header */}
-      <header className="absolute top-0 w-full flex items-center justify-between px-6 py-6 z-50">
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    
+    // Fetch dynamic gallery images
+    const fetchImages = async () => {
+      try {
+        const data = await imageService.getActiveImages('gallery');
+        if (data && data.length > 0) {
+          setGalleryImages(data.map(img => img.url));
+        }
+      } catch (err) {
+        console.error("Failed to fetch gallery images", err);
+      }
+    };
+    fetchImages();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col font-sans text-slate-300 relative bg-slate-950 overflow-x-hidden">
+      
+      {/* ─── DYNAMIC NAVIGATION HEADER ─── */}
+      <header className={`fixed top-0 w-full flex items-center justify-between px-6 py-4 z-50 transition-all duration-500 ${scrolled ? 'bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 shadow-2xl py-3' : 'bg-transparent py-6'}`}>
         <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-7 h-7 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 rounded-sm border border-brand shadow-[0_0_10px_hsl(var(--brand-main)/0.4)] backdrop-blur-md rotate-45">
+          <div className="flex items-center justify-center w-8 h-8 bg-slate-950/60 rounded-sm border border-brand shadow-[0_0_15px_hsl(var(--brand-main)/0.5)] backdrop-blur-md rotate-45">
             <Shield className="w-5 h-5 text-brand -rotate-45" />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md">
             SASP <span className="font-light text-brand">PORTAL</span>
           </h1>
         </div>
-        <nav className="hidden md:flex items-center space-x-10 font-medium text-sm tracking-widest text-slate-400">
+        <nav className="hidden md:flex items-center space-x-10 font-medium text-[13px] tracking-[0.2em] text-slate-400">
           <a href="#" className="text-brand hover:text-brand/70 transition-colors hover:shadow-[0_0_10px_hsl(var(--brand-main)/0.5)]">HOME</a>
-          <a href="#about" className="hover:text-blue-400 transition-colors">ABOUT</a>
+          <a href="#intro" className="hover:text-blue-400 transition-colors">ABOUT</a>
           <a href="#community" className="hover:text-emerald-400 transition-colors">COMMUNITY</a>
           <a href="#recruitment" className="hover:text-brand transition-colors">RECRUITMENT</a>
           <LoginModal>
-            <button className="px-6 py-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 text-emerald-500 border border-emerald-600/50 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] backdrop-blur-sm tracking-widest uppercase text-xs">
+            <button className="px-6 py-2.5 bg-slate-950/60 border border-emerald-600/40 hover:bg-emerald-900/40 hover:border-emerald-500 text-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] backdrop-blur-md tracking-widest uppercase text-xs font-bold rounded-sm">
               PORTAL LOGIN
             </button>
           </LoginModal>
         </nav>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20">
-        {/* Hero Content */}
-        <div className="relative z-20 px-6 w-full max-w-5xl mx-auto text-center mt-12">
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-widest mb-4 uppercase drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)] text-slate-200">
-            San Andreas <br /><span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand/70 via-brand to-brand">State Police</span>
-          </h2>
-          <div className="w-24 h-px bg-brand mx-auto my-8 shadow-[0_0_10px_hsl(var(--brand-main)/0.8)]"></div>
-          <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto font-light tracking-wide drop-shadow-md bg-slate-950/40 p-2 rounded-lg backdrop-blur-sm border border-slate-800">
-            Upholding Law. <span className="text-emerald-500 font-medium">Preserving Order.</span> Protecting the Community.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <a href="#recruitment" className="w-full sm:w-auto px-8 py-3 bg-brand/20 hover:bg-brand/40 text-brand border border-brand/50 font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_hsl(var(--brand-main)/0.2)] hover:shadow-[0_0_30px_hsl(var(--brand-main)/0.4)] flex items-center justify-center group backdrop-blur-md">
-              Join the Force
-              <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
-            <a href="#community" className="w-full sm:w-auto px-8 py-3 bg-blue-900/30 hover:bg-blue-800/40 text-blue-400 border border-blue-500/50 font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] flex items-center justify-center backdrop-blur-md">
-              Community Resources
-            </a>
-          </div>
+      {/* ─── 1. HERO SECTION ─── */}
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-20">
+        <div 
+          className="absolute inset-0 z-0 mask-linear-faded-b"
+          style={{
+            backgroundImage: "url('/landing-bg-1.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "top center",
+            backgroundRepeat: "no-repeat"
+          }}
+        >
+          <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-[2px]"></div>
         </div>
-      </section>
 
-      {/* Introduction Section */}
-      <section className="relative z-10 py-20 px-6 border-b border-slate-800/50">
-        <div className="max-w-4xl mx-auto text-center relative z-20">
-          <div className="inline-block p-4 border border-blue-900/50 bg-slate-950/60 backdrop-blur-md rotate-45 mb-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-            <Shield className="w-6 h-6 text-blue-500 -rotate-45 opacity-80" />
-          </div>
-          <p className="text-lg md:text-xl leading-loose font-light text-slate-300 bg-slate-950/60 p-8 rounded-xl backdrop-blur-sm border border-slate-800/50 shadow-xl">
-            Welcome to the official portal of the San Andreas State Police (SASP). We give the utmost importance to law and order, standing as the frontline of defense across the state. Our commitment is unwavering, and our mission is clear: <br /><br /><span className="text-emerald-500 font-medium text-2xl tracking-widest uppercase">“To protect and to serve!”</span>
-          </p>
-        </div>
-      </section>
-
-      {/* About Us / Mission Section */}
-      <section id="about" className="relative z-10 py-24 px-6 border-b border-slate-800/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20 bg-slate-950/60 p-8 rounded-xl backdrop-blur-sm border border-slate-800/50 inline-block w-full">
-            <h3 className="text-sm font-bold tracking-[0.2em] text-blue-500 uppercase mb-4">Our Mission</h3>
-            <h2 className="text-3xl md:text-5xl font-light tracking-wide text-slate-100 drop-shadow-lg">Our <span className="font-bold text-brand">Prime Objective</span></h2>
-            <p className="mt-8 text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
-              Every individual in the SASP department works towards one unified goal: to provide elite, professional Law Enforcement to the entire community within our jurisdiction. We believe that justice, integrity, and rapid response are the cornerstones of a safe society.
+        <Reveal className="relative z-20 px-6 w-full max-w-5xl mx-auto text-center mt-12">
+          <div className="inline-block bg-slate-950/40 p-10 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl">
+            <h2 className="text-4xl md:text-7xl font-extralight tracking-widest mb-2 uppercase drop-shadow-[0_5px_15px_rgba(0,0,0,1)] text-slate-100">
+              {landingData.hero.titleTop} 
+            </h2>
+            <h2 className="text-4xl md:text-7xl font-black tracking-widest mb-6 uppercase drop-shadow-[0_5px_15px_rgba(0,0,0,1)] text-transparent bg-clip-text bg-gradient-to-br from-brand via-brand/90 to-brand/60">
+              {landingData.hero.titleBottom}
+            </h2>
+            <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-brand to-transparent mx-auto my-8 opacity-70"></div>
+            
+            <p className="text-lg md:text-xl text-slate-300 mb-12 max-w-2xl mx-auto font-light tracking-[0.1em] drop-shadow-md">
+              {landingData.hero.subtitle.split('. ').map((part, i, arr) => (
+                <span key={i} className={i === 1 ? "text-emerald-400 font-semibold" : ""}>
+                  {part}{i !== arr.length - 1 ? '. ' : ''}
+                </span>
+              ))}
             </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <a href="#recruitment" className="w-full sm:w-auto px-8 py-3.5 bg-brand hover:bg-brand/90 text-slate-950 border border-brand/50 font-bold tracking-widest text-xs uppercase transition-all shadow-[0_0_25px_hsl(var(--brand-main)/0.4)] hover:shadow-[0_0_40px_hsl(var(--brand-main)/0.6)] flex items-center justify-center group rounded-sm">
+                {landingData.hero.btnPrimary}
+                <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </a>
+              <a href="#community" className="w-full sm:w-auto px-8 py-3.5 bg-slate-900/50 hover:bg-slate-800/80 text-slate-300 border border-slate-700/50 hover:border-slate-500 font-bold tracking-widest text-xs uppercase transition-all flex items-center justify-center backdrop-blur-md rounded-sm">
+                {landingData.hero.btnSecondary}
+              </a>
+            </div>
           </div>
+        </Reveal>
+      </section>
+
+      {/* ─── 2. INTRODUCTION (SPLIT LAYOUT) ─── */}
+      <section id="intro" className="relative z-10 py-32 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
+          <Reveal className="md:w-1/2" delay="delay-100">
+            <div className="inline-block p-4 border border-blue-900/40 bg-blue-950/30 backdrop-blur-md rotate-45 mb-8 shadow-[0_0_20px_rgba(59,130,246,0.15)] rounded-lg">
+              <Shield className="w-8 h-8 text-blue-500 -rotate-45" />
+            </div>
+            <h3 className="text-3xl md:text-4xl font-light mb-6 text-slate-200">The Frontline of Defense</h3>
+            <p className="text-lg leading-relaxed font-light text-slate-400 mb-8">
+              {landingData.intro.description}
+            </p>
+            <div className="pl-6 border-l-2 border-emerald-500/50 py-2">
+              <span className="text-emerald-400 font-medium text-2xl tracking-widest uppercase">
+                {landingData.intro.quote}
+              </span>
+            </div>
+          </Reveal>
+          
+          <Reveal className="md:w-1/2 w-full h-[500px] relative" delay="delay-300">
+            {/* Floating Image with soft mask */}
+            <div 
+              className="absolute inset-0 rounded-2xl mask-radial-faded opacity-90 shadow-2xl"
+              style={{
+                backgroundImage: "url('/landing-bg-4.jpg')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            ></div>
+            {/* Decorative elements */}
+            <div className="absolute top-10 -left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-10 -right-10 w-40 h-40 bg-brand/10 rounded-full blur-3xl pointer-events-none"></div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ─── 3. ABOUT US (BENTO BOX) ─── */}
+      <section id="about" className="relative z-10 py-32 px-6 bg-slate-900/20 border-y border-slate-800/30">
+        {/* Subtle Background */}
+        <div 
+          className="absolute inset-0 z-0 opacity-20 mask-linear-faded-b grayscale"
+          style={{ backgroundImage: "url('/landing-bg-2.jpg')", backgroundSize: "cover", backgroundPosition: "top", backgroundAttachment: "fixed" }}
+        ></div>
+
+        <div className="max-w-7xl mx-auto relative z-20">
+          <Reveal className="text-center mb-24 max-w-3xl mx-auto">
+            <h3 className="text-xs font-bold tracking-[0.3em] text-brand/80 uppercase mb-4">{landingData.about.label}</h3>
+            <h2 className="text-4xl md:text-5xl font-extralight tracking-wide text-slate-100 mb-8">
+              {landingData.about.title.split(' ')[0]} <span className="font-bold text-brand">{landingData.about.title.split(' ').slice(1).join(' ')}</span>
+            </h2>
+            <p className="text-lg text-slate-400 leading-relaxed font-light">
+              {landingData.about.description}
+            </p>
+          </Reveal>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 (Blue) */}
-            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-blue-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
-              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-blue-500 transition-colors"></div>
-              <Scale className="w-7 h-7 text-slate-500 group-hover:text-blue-500 transition-colors mb-6" />
-              <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Statewide Jurisdiction</h4>
-              <p className="text-sm text-slate-400 leading-relaxed font-light">
-                From city streets to county highways, our troopers are equipped to handle complex emergencies and maintain peace across all of San Andreas.
-              </p>
-            </div>
-
-            {/* Feature 2 (Green) */}
-            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-emerald-600/50 transition-colors shadow-xl overflow-hidden rounded-lg">
-              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-emerald-500 transition-colors"></div>
-              <ShieldCheck className="w-7 h-7 text-slate-500 group-hover:text-emerald-500 transition-colors mb-6" />
-              <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Unwavering Integrity</h4>
-              <p className="text-sm text-slate-400 leading-relaxed font-light">
-                We hold our officers to the highest ethical standards, ensuring transparent and fair treatment for all citizens we are sworn to protect.
-              </p>
-            </div>
-
-            {/* Feature 3 (Gold) */}
-            <div className="relative group bg-slate-950/80 backdrop-blur-md p-8 border border-slate-800/50 hover:border-brand/50 transition-colors shadow-xl overflow-hidden rounded-lg">
-              <div className="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-brand transition-colors"></div>
-              <Crosshair className="w-7 h-7 text-slate-500 group-hover:text-brand transition-colors mb-6" />
-              <h4 className="text-lg font-bold mb-3 tracking-wider text-slate-200 uppercase drop-shadow-md">Tactical Excellence</h4>
-              <p className="text-sm text-slate-400 leading-relaxed font-light">
-                Highly trained units stand ready to intercept and investigate criminal activity to keep our streets safe from advanced threats.
-              </p>
-            </div>
+            {landingData.about.features.map((feature, idx) => {
+              const Icon = feature.icon || ShieldCheck;
+              const themeColor = feature.theme === 'blue' ? 'text-blue-400 border-blue-500/20 group-hover:border-blue-500/50 shadow-blue-500/5' : 
+                                 feature.theme === 'emerald' ? 'text-emerald-400 border-emerald-500/20 group-hover:border-emerald-500/50 shadow-emerald-500/5' : 
+                                 'text-brand border-brand/20 group-hover:border-brand/50 shadow-brand/5';
+              return (
+                <Reveal key={idx} delay={`delay-${(idx + 1) * 100}`} className={`relative group bg-slate-950/60 backdrop-blur-xl p-10 border transition-all duration-500 shadow-2xl hover:-translate-y-2 rounded-2xl ${themeColor}`}>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className={`p-4 rounded-xl bg-slate-900 inline-block mb-8 border border-white/5`}>
+                    <Icon className={`w-8 h-8 ${themeColor.split(' ')[0]}`} />
+                  </div>
+                  <h4 className="text-xl font-bold mb-4 tracking-wide text-slate-100 uppercase">{feature.title}</h4>
+                  <p className="text-sm text-slate-400 leading-relaxed font-light">
+                    {feature.description}
+                  </p>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Community Outreach Section */}
-      <section id="community" className="relative z-10 py-24 px-6 border-b border-slate-800/50">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
-          <div className="md:w-1/2 relative">
-            <div className="w-full h-[300px] border-2 border-emerald-600/30 bg-emerald-900/10 backdrop-blur-sm rounded-lg flex items-center justify-center p-8 text-center text-emerald-500/50 border-dashed">
-              <span className="tracking-widest uppercase text-xs">Community Engagement</span>
+      {/* ─── 4. COMMUNITY OUTREACH (SPLIT REVERSE) ─── */}
+      <section id="community" className="relative z-10 py-32 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row-reverse items-center gap-16">
+          <Reveal className="md:w-1/2" delay="delay-100">
+            <h3 className="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase mb-4">{landingData.community.label}</h3>
+            <h2 className="text-4xl md:text-5xl font-extralight mb-8 text-slate-200 leading-tight">
+              {landingData.community.title.split(': ')[0]}: <br />
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">
+                {landingData.community.title.split(': ')[1]}
+              </span>
+            </h2>
+            <div className="space-y-6 text-slate-400 font-light leading-relaxed text-lg">
+              {landingData.community.paragraphs.map((para, idx) => (
+                <p key={idx}>{para}</p>
+              ))}
             </div>
-          </div>
-
-          <div className="md:w-1/2 bg-slate-950/70 p-8 rounded-xl backdrop-blur-md border border-slate-800/50 shadow-2xl">
-            <h3 className="text-sm font-bold tracking-[0.2em] text-emerald-500 uppercase mb-2 drop-shadow-md">Community Outreach</h3>
-            <h2 className="text-3xl md:text-5xl font-light mb-8 text-slate-200 drop-shadow-lg">Beyond the Badge: <br /><span className="font-bold text-blue-500">Community First</span></h2>
-            <div className="space-y-6 text-slate-300 font-light leading-relaxed">
-              <p>
-                Law enforcement is only one side of the coin; prevention is the other. Alternatively, we don't just react to crime—we actively work to stop it before it starts.
-              </p>
-              <p>
-                The SASP regularly organizes awareness programs and law/order campaigns designed to keep the city out of future crimes. By engaging directly with the citizens we protect, we build the mutual trust and education necessary for a thriving, secure community.
-              </p>
+          </Reveal>
+          
+          <Reveal className="md:w-1/2 w-full h-[600px] relative cursor-pointer group" delay="delay-300">
+            {/* Cinematic Image Panel */}
+            <div className="absolute inset-0 bg-slate-900/50 rounded-3xl transform -rotate-3 border border-emerald-500/10 backdrop-blur-sm group-hover:-rotate-1 transition-transform duration-500"></div>
+            <div 
+              key={communityImgIdx}
+              onClick={() => setCommunityImgIdx(prev => (prev + 1) % galleryImages.length)}
+              className="absolute inset-0 rounded-3xl shadow-2xl transform rotate-2 group-hover:rotate-0 hover:scale-[1.02] transition-all duration-700 ease-out border border-white/10 animate-flip-gallery"
+              style={{
+                backgroundImage: `url('${galleryImages[communityImgIdx] || FALLBACK_IMAGES[0]}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              {/* Overlay Hint */}
+              <div className="absolute bottom-6 right-6 bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-[10px] font-bold tracking-widest text-emerald-400 shadow-2xl pointer-events-none flex items-center gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
+                <span>CLICK TO SWAP</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Recruitment / Call to Action */}
-      <section id="recruitment" className="relative z-10 py-40 px-6">
-        <div className="max-w-4xl mx-auto text-center relative z-20 bg-slate-950/80 p-12 rounded-2xl backdrop-blur-md border border-brand/20 shadow-2xl">
-          <h2 className="text-3xl md:text-5xl font-light mb-6 tracking-wide text-slate-200 uppercase drop-shadow-lg">
-            Step Up. Stand Out. <span className="font-bold text-brand block mt-2">Join SASP.</span>
-          </h2>
-          <p className="text-lg text-slate-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-            Are you ready to make a difference? We are looking for dedicated individuals with a strong moral compass and a drive for public service. As a State Police Trooper, you will receive rigorous training, dynamic career advancement opportunities, and the chance to serve on the frontlines of justice.
-          </p>
-          <a href="https://saspftd.web.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-10 py-5 bg-brand hover:bg-brand text-slate-950 font-extrabold tracking-widest uppercase text-sm transition-all shadow-[0_0_20px_hsl(var(--brand-main)/0.4)] hover:shadow-[0_0_40px_hsl(var(--brand-main)/0.6)] group rounded-sm">
-            Apply to the Academy
-            <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
-          </a>
+      {/* ─── 5. RECRUITMENT CALL TO ACTION ─── */}
+      <section id="recruitment" className="relative z-10 py-48 px-6 overflow-hidden">
+        {/* Background Image Masked heavily */}
+        <div 
+          className="absolute inset-0 z-0 opacity-40 mix-blend-luminosity"
+          style={{
+            backgroundImage: "url('/group-photo.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed"
+          }}
+        ></div>
+        {/* Darkening Gradients */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950"></div>
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-slate-950 via-transparent to-slate-950"></div>
+
+        <Reveal className="max-w-4xl mx-auto text-center relative z-20">
+          <div className="inline-block p-16 rounded-[3rem] bg-slate-950/40 backdrop-blur-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <h2 className="text-4xl md:text-6xl font-light mb-6 tracking-wide text-slate-200 uppercase drop-shadow-lg">
+              {landingData.recruitment.title.split('Join')[0]} 
+              <span className="font-black text-brand block mt-4 text-5xl md:text-7xl">Join {landingData.recruitment.title.split('Join')[1]}</span>
+            </h2>
+            <div className="w-16 h-[2px] bg-brand mx-auto my-10"></div>
+            <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+              {landingData.recruitment.description}
+            </p>
+            <a href={landingData.recruitment.link} target="_blank" rel="noopener noreferrer" className="relative inline-flex items-center justify-center px-12 py-5 bg-brand text-slate-950 font-extrabold tracking-[0.2em] uppercase text-sm transition-all group overflow-hidden rounded-sm">
+              <div className="absolute inset-0 w-0 bg-white/20 group-hover:w-full transition-all duration-300 ease-out"></div>
+              <span className="relative z-10 flex items-center shadow-none">
+                {landingData.recruitment.btnText}
+                <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
+              </span>
+            </a>
+            {/* Pulsing glow behind button */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-64 h-20 bg-brand/30 blur-[50px] -z-10 rounded-full"></div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ─── LOGO STRIP ─── */}
+      <section className="relative z-20 bg-slate-950/90 py-16 px-6 border-t border-slate-900">
+        <h4 className="text-center text-[10px] font-bold tracking-[0.3em] text-slate-500 uppercase mb-8">Partner Agencies & Divisions</h4>
+        <div className="max-w-5xl mx-auto flex flex-wrap justify-center items-center gap-12 md:gap-20">
+          {[
+            { src: '/logos/sasp.png', alt: 'SASP' },
+            { src: '/logos/lspd.png', alt: 'LSPD' },
+            { src: '/logos/bcso.png', alt: 'BCSO' },
+            { src: '/logos/sapr.jpg', alt: 'SAPR', rounded: true },
+            { src: '/logos/pau.jpg', alt: 'PAU', rounded: true }
+          ].map((logo, idx) => (
+            <img 
+              key={idx} 
+              src={logo.src} 
+              alt={logo.alt} 
+              className={`h-16 md:h-20 w-auto object-contain opacity-50 grayscale hover:opacity-100 hover:grayscale-0 hover:scale-110 transition-all duration-500 cursor-pointer ${logo.rounded ? 'rounded-full border border-slate-800' : ''}`} 
+            />
+          ))}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 bg-slate-950/90 py-12 px-6 border-t border-slate-900 text-slate-500 text-xs tracking-widest uppercase backdrop-blur-md">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* ─── FOOTER ─── */}
+      <footer className="relative z-20 bg-slate-950 py-12 px-6 border-t border-slate-900 text-slate-500 text-xs tracking-widest uppercase">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center space-x-3">
-            <Shield className="w-4 h-4 text-blue-500/50" />
-            <span className="font-semibold text-slate-400">SASP</span>
+            <Shield className="w-5 h-5 text-slate-700" />
+            <span className="font-semibold text-slate-400">San Andreas State Police</span>
           </div>
-          <p>© {new Date().getFullYear()} SASP. All rights reserved. "To protect and to serve"</p>
-          <div className="flex space-x-6">
-            <a href="#" className="hover:text-brand transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-emerald-500 transition-colors">Terms of Service</a>
+          <p className="opacity-70">© {new Date().getFullYear()} SASP. "To protect and to serve"</p>
+          <div className="flex space-x-8 font-medium">
+            <a href="#" className="hover:text-brand transition-colors">Privacy</a>
+            <a href="#" className="hover:text-emerald-500 transition-colors">Terms</a>
             <a href="#" className="hover:text-blue-500 transition-colors">Contact</a>
           </div>
         </div>

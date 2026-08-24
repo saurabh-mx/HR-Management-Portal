@@ -15,10 +15,17 @@ export default function LoginModal({ children }: LoginModalProps) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isHuman, setIsHuman] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
+    if (!isHuman) {
+      setError("Please check the 'I am human' box to verify you are not a bot.");
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -56,7 +63,12 @@ export default function LoginModal({ children }: LoginModalProps) {
       }
       
       if (authError) {
-        setError(authError.message);
+        // Intercept raw Supabase password requirement error for a more professional UI experience
+        if (authError.message.includes("Password should contain at least one character of each")) {
+          setError("Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.");
+        } else {
+          setError(authError.message);
+        }
       } else {
         // Upon successful login, the parent AuthProvider state will change
         // and redirect away from the landing page.
@@ -103,6 +115,20 @@ export default function LoginModal({ children }: LoginModalProps) {
                 <label className="text-sm font-medium text-slate-400">Password</label>
                 <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="••••••••" />
               </div>
+              
+              <div className="flex items-center space-x-3 bg-slate-950/50 p-3 rounded-md border border-slate-800/50">
+                <input 
+                  type="checkbox" 
+                  id="human-check"
+                  checked={isHuman}
+                  onChange={(e) => setIsHuman(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-950 cursor-pointer"
+                />
+                <label htmlFor="human-check" className="text-sm font-medium text-slate-400 cursor-pointer select-none">
+                  I am human (Anti-Bot Verification)
+                </label>
+              </div>
+
               <button disabled={loading} type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-2 rounded-md font-medium transition-colors">
                 {loading ? "Authenticating..." : (isSignUp ? "Set Password & Login" : "Secure Login")}
               </button>

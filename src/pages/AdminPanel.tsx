@@ -10,7 +10,9 @@ import { logAuditAction } from "@/lib/auditLogger";
 import LOASyncModal from "@/components/admin/LOASyncModal";
 import DataSyncModal from "@/components/admin/DataSyncModal";
 import PenalCodeSyncModal from "@/components/admin/PenalCodeSyncModal";
-import { CalendarOff, Download } from "lucide-react";
+import DisciplinarySyncModal from "@/components/admin/DisciplinarySyncModal";
+import ImageManagementPanel from "@/components/admin/ImageManagementPanel";
+import { CalendarOff, Download, ImageIcon } from "lucide-react";
 
 interface Employee {
   id: string;
@@ -67,6 +69,8 @@ export default function AdminPanel() {
   const [showLOASyncModal, setShowLOASyncModal] = useState(false);
   const [showDataSyncModal, setShowDataSyncModal] = useState(false);
   const [showPenalCodeSyncModal, setShowPenalCodeSyncModal] = useState(false);
+  const [showDisciplinarySyncModal, setShowDisciplinarySyncModal] = useState(false);
+  const [showImageManagementModal, setShowImageManagementModal] = useState(false);
 
   const [rosterSearch, setRosterSearch] = useState("");
   const [rosterRoleFilter, setRosterRoleFilter] = useState("All");
@@ -634,6 +638,24 @@ export default function AdminPanel() {
           </div>
         </button>
 
+        {/* Disciplinary Sync */}
+        <button
+          onClick={() => setShowDisciplinarySyncModal(true)}
+          disabled={showDisciplinarySyncModal}
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-rose-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.15)] disabled:opacity-60"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+          <div className="relative flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition-colors">
+              <ShieldAlert className="w-5 h-5 text-rose-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-0.5">Sync Disciplinary</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Import strikes from Sheets</p>
+            </div>
+          </div>
+        </button>
+
         {/* Penal Code Sync */}
         <button
           onClick={() => setShowPenalCodeSyncModal(true)}
@@ -648,6 +670,24 @@ export default function AdminPanel() {
             <div>
               <h3 className="text-sm font-semibold text-white mb-0.5">Penal Code Import</h3>
               <p className="text-xs text-slate-500 leading-relaxed">Sync criminal charges from Sheets</p>
+            </div>
+          </div>
+        </button>
+
+        {/* Image Management */}
+        <button
+          onClick={() => setShowImageManagementModal(true)}
+          disabled={showImageManagementModal}
+          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-amber-500/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] disabled:opacity-60"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+          <div className="relative flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
+              <ImageIcon className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-0.5">Image Management</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Manage dynamic landing & app imagery</p>
             </div>
           </div>
         </button>
@@ -670,6 +710,13 @@ export default function AdminPanel() {
           </div>
         </div>
       </div>
+
+      {/* ─── IMAGE MANAGEMENT MODAL ─── */}
+      <Dialog open={showImageManagementModal} onOpenChange={setShowImageManagementModal}>
+        <DialogContent className="max-w-6xl bg-slate-950 border border-slate-800/60 text-slate-200 h-[85vh] overflow-y-auto p-6 rounded-xl shadow-2xl">
+          <ImageManagementPanel />
+        </DialogContent>
+      </Dialog>
 
       {/* ─── ONBOARD RECRUIT ─── */}
       <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 backdrop-blur-md overflow-hidden">
@@ -866,6 +913,12 @@ export default function AdminPanel() {
       <PenalCodeSyncModal
         isOpen={showPenalCodeSyncModal}
         onClose={() => setShowPenalCodeSyncModal(false)}
+        onSuccess={() => {}}
+      />
+
+      <DisciplinarySyncModal
+        isOpen={showDisciplinarySyncModal}
+        onClose={() => setShowDisciplinarySyncModal(false)}
         onSuccess={() => {}}
       />
 

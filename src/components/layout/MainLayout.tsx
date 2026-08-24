@@ -4,12 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import { LogOut, User, ChevronDown, ShieldCheck, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getDepartmentColor, hexToRgba } from "@/lib/theme";
+import { imageService } from "@/lib/imageService";
 
 export default function MainLayout() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [bgImages, setBgImages] = useState<string[]>(["/landing-bg-4.jpg"]);
+  const [bgIndex, setBgIndex] = useState(0);
   
   const { profile, logout } = useAuth();
   const deptColor = getDepartmentColor(profile?.department || '');
@@ -22,8 +25,26 @@ export default function MainLayout() {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
+    
+    // Fetch dynamic background image
+    imageService.getActiveImages('background').then(data => {
+      if (data && data.length > 0) {
+        setBgImages(data.map(img => img.url));
+      }
+    }).catch(console.error);
+
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (bgImages.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setBgIndex(prev => (prev + 1) % bgImages.length);
+    }, 10000); // Rotate every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [bgImages.length]);
 
   useEffect(() => {
     // Global mouse tracker for the premium glow effect
@@ -46,17 +67,20 @@ export default function MainLayout() {
 
   return (
     <div ref={containerRef} className="flex h-screen bg-[#020617] text-foreground overflow-hidden relative">
-      {/* Premium Glassmorphic Grid Background */}
-      <div 
-        className="absolute inset-0 z-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px'
-        }}
-      />
+      {/* Dynamic Background Slideshow */}
+      {bgImages.map((imgUrl, idx) => (
+        <div 
+          key={imgUrl}
+          className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-[2000ms] ease-in-out ${idx === bgIndex ? 'opacity-25' : 'opacity-0'}`}
+          style={{
+            backgroundImage: `url('${imgUrl}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            filter: "grayscale(50%)"
+          }}
+        />
+      ))}
       
       {/* Global Mouse Tracker Glow */}
       <div 
