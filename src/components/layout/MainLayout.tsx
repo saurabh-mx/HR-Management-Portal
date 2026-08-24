@@ -2,8 +2,8 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useState, useEffect, useRef } from "react";
 import { LogOut, User, ChevronDown, ShieldCheck, Shield } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { getDepartmentColor, hexToRgba } from "@/lib/theme";
+import { useAuth } from '@/auth/hooks/useAuth';
+import { getDepartmentColor, hexToRgba } from '@/styles/theme';
 import { imageService } from "@/lib/imageService";
 
 export default function MainLayout() {

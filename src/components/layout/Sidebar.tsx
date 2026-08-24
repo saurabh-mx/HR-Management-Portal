@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  BookOpen, 
-  LayoutDashboard, 
-  Users, 
-  Megaphone, 
-  MapPin, 
-  CalendarOff, 
-  ShieldAlert, 
-  Award, 
+import {
+  BookOpen,
+  LayoutDashboard,
+  Users,
+  Megaphone,
+  MapPin,
+  CalendarOff,
+  ShieldAlert,
+  Award,
   FileText,
   ClipboardList,
   Database,
@@ -16,67 +16,50 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/context/AuthContext';
-import { getDepartmentColor, hexToRgba } from '@/lib/theme';
+import { useAuth } from '@/auth/hooks/useAuth';
+import { getDepartmentColor, } from '@/styles/theme';
+import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
 
-const NavButton = ({ item, isActive, isCollapsed, index, deptColor }: any) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const isHighlighted = isActive || isHovered;
+
+const NavButton = ({ item, isActive, isCollapsed, deptColor }: any) => {
   const Icon = item.icon;
 
   return (
     <Link
       to={item.path as string}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "group relative flex items-center rounded-2xl text-xs font-bold tracking-[0.1em] uppercase transition-all duration-300 ease-out overflow-visible",
-        isCollapsed ? "justify-center p-3" : "gap-4 px-4 py-3.5"
+        "group relative flex items-center rounded-xl text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]",
+        isCollapsed ? "justify-center p-3 my-1" : "gap-3 px-3 py-2.5 my-0.5",
+        isActive
+          ? "bg-white/5 text-white"
+          : "text-slate-400 hover:text-white hover:bg-white/5"
       )}
-      style={{ 
-        animationDelay: `${index * 0.05}s`,
-        backgroundColor: isActive ? hexToRgba(deptColor, 0.15) : (isHovered ? hexToRgba(deptColor, 0.05) : 'transparent'),
-        backdropFilter: isHighlighted ? 'blur(8px)' : 'none',
-        boxShadow: isActive
-          ? `inset 4px 0 0 0 ${deptColor}, inset 0 0 20px ${hexToRgba(deptColor, 0.15)}, 0 10px 30px -10px rgba(0,0,0,0.5)`
-          : isHovered
-          ? `inset 4px 0 0 0 ${deptColor}, inset 0 0 10px ${hexToRgba(deptColor, 0.05)}`
-          : `inset 2px 0 0 0 transparent`,
-        transform: isHovered && !isActive ? 'scale(1.02) translateY(-1px)' : 'scale(1) translateY(0)',
-        zIndex: isHighlighted ? 20 : 1,
-        color: isHighlighted ? deptColor : '#94a3b8'
-      }}
     >
-      <div 
-        className="relative z-10 flex items-center justify-center p-1.5 rounded-lg shadow-inner transition-colors"
-        style={{
-          backgroundColor: isHighlighted ? hexToRgba(deptColor, 0.2) : 'rgba(15, 23, 42, 0.5)',
-          color: isHighlighted ? deptColor : '#64748b'
-        }}
-      >
-        <Icon className={cn(
-          "transition-all duration-300 drop-shadow-lg", 
-          isCollapsed ? "w-5 h-5" : "w-4 h-4",
-          isActive ? "scale-110 animate-pulse" : ""
-        )} />
-      </div>
-      
+      {/* Active Indicator Line */}
+      {isActive && (
+        <div
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full shadow-[0_0_10px_currentColor]"
+          style={{ backgroundColor: deptColor, color: deptColor }}
+        />
+      )}
+
+      <Icon
+        strokeWidth={isActive ? 2 : 1.5}
+        className={cn(
+          "transition-all duration-300 shrink-0",
+          isCollapsed ? "w-5 h-5" : "w-[18px] h-[18px]",
+          isActive ? "opacity-100 scale-105" : "opacity-70 group-hover:opacity-100"
+        )}
+        style={{ color: isActive ? deptColor : 'inherit' }}
+      />
+
       {!isCollapsed && (
-        <span 
-          className="relative z-10 whitespace-nowrap overflow-hidden transition-all duration-300 origin-left"
-          style={{
-            textShadow: isHighlighted ? `0 0 15px ${hexToRgba(deptColor, 0.8)}` : 'none',
-            transform: isHovered && !isActive ? 'scale(1.05) translateX(2px)' : 'scale(1) translateX(0)',
-          }}
-        >
-          {item.name}
-        </span>
+        <span className="truncate tracking-wide">{item.name}</span>
       )}
 
       {isCollapsed && (
-        <div className="sidebar-tooltip absolute left-[88px] top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold whitespace-nowrap shadow-xl z-50">
+        <div className="sidebar-tooltip absolute left-[80px] top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-md text-white text-xs font-medium whitespace-nowrap shadow-2xl z-50">
           {item.name}
-          <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-900 border-l border-b border-slate-700 rotate-45"></div>
         </div>
       )}
     </Link>
@@ -89,7 +72,7 @@ export const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const deptColor = getDepartmentColor(profile?.department || '');
 
-  const isAdminOrCommand = profile?.is_admin || ['High Command', 'HR'].includes(profile?.role || '');
+  const is_AdminOrHighCommand = isHighCommandOrHR(profile);
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -98,7 +81,7 @@ export const Sidebar = () => {
     { name: 'Meetings', path: '/meetings', icon: MapPin },
     { name: 'LOA Requests', path: '/loa', icon: CalendarOff },
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },
-    ...(isAdminOrCommand ? [{ name: 'Rank Management', path: '/promotions', icon: Award }] : []),
+    ...(is_AdminOrHighCommand ? [{ name: 'Rank Management', path: '/promotions', icon: Award }] : []),
     { name: 'HR Requests', path: '/hr-requests', icon: FileText },
     { name: 'Documents', path: '/documents', icon: BookOpen },
     ...(profile?.is_admin ? [
@@ -109,20 +92,15 @@ export const Sidebar = () => {
 
   return (
     <div className={cn(
-      "h-full bg-[#0a0f18]/95 backdrop-blur-3xl border-r border-slate-800/80 flex flex-col shadow-[15px_0_40px_rgba(0,0,0,0.6)] z-50 relative transition-all duration-400 cubic-bezier(0.4, 0, 0.2, 1)",
-      isCollapsed ? "w-[88px]" : "w-[280px]"
+      "h-full bg-slate-950/95 backdrop-blur-3xl border-r border-white/5 flex flex-col shadow-2xl z-50 relative transition-all duration-[400ms] ease-[cubic-bezier(0.25,1,0.5,1)]",
+      isCollapsed ? "w-[80px]" : "w-[260px]"
     )}>
-      {/* Custom Animation Styles */}
       <style>{`
-        @keyframes popInOut {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
         .sidebar-tooltip {
           visibility: hidden;
           opacity: 0;
           transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
-          transform: translateX(-10px);
+          transform: translateX(-5px);
         }
         .group:hover .sidebar-tooltip {
           visibility: visible;
@@ -130,47 +108,36 @@ export const Sidebar = () => {
           transform: translateX(0);
         }
       `}</style>
-      
+
       {/* Sidebar Header & Toggle */}
-      <div className={cn("h-20 flex items-center border-b border-slate-800/60 bg-transparent relative transition-all duration-300", isCollapsed ? "justify-center px-0" : "px-6 justify-between")}>
+      <div className={cn("h-16 flex items-center border-b border-white/5 bg-transparent transition-all duration-300", isCollapsed ? "justify-center px-0" : "px-5 justify-between")}>
         {!isCollapsed && (
-          <h2 className="text-lg font-extrabold tracking-widest uppercase flex items-center gap-2 drop-shadow-md overflow-hidden whitespace-nowrap">
-            <span 
-              className="inline-block"
-              style={{ 
-                animation: 'popInOut 2.5s ease-in-out infinite',
-                color: deptColor
-              }}
-            >
+          <h2 className="text-sm font-bold tracking-[0.2em] uppercase flex items-center gap-2 overflow-hidden whitespace-nowrap">
+            <span style={{ color: deptColor }}>
               {profile?.department || 'SASP'}
             </span>
           </h2>
         )}
-        
-        <button 
+
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={cn(
-            "p-2 rounded-lg text-slate-400 hover:bg-slate-800/80 transition-all duration-300 z-50 focus:outline-none",
-            isCollapsed && "mt-1"
-          )}
-          style={{ color: isCollapsed ? '#94a3b8' : deptColor }}
+          className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all duration-300 focus:outline-none"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
-          {isCollapsed ? <PanelLeftOpen className="w-5 h-5 hover:text-white" /> : <PanelLeftClose className="w-5 h-5 hover:text-white" />}
+          {isCollapsed ? <PanelLeftOpen className="w-[18px] h-[18px]" /> : <PanelLeftClose className="w-[18px] h-[18px]" />}
         </button>
       </div>
 
       {/* Navigation Links */}
-      <nav className={cn("flex-1 overflow-y-auto py-6 space-y-2 relative no-scrollbar", isCollapsed ? "px-3" : "px-4")}>
-        {navItems.map((item, index) => {
+      <nav className={cn("flex-1 overflow-y-auto py-4 space-y-1 relative no-scrollbar", isCollapsed ? "px-2" : "px-3")}>
+        {navItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path as string);
           return (
-            <NavButton 
+            <NavButton
               key={item.path}
               item={item}
               isActive={isActive}
               isCollapsed={isCollapsed}
-              index={index}
               deptColor={deptColor}
             />
           );
@@ -178,40 +145,43 @@ export const Sidebar = () => {
       </nav>
 
       {/* User Profile Snippet (Bottom) */}
-      <Link to="/profile" className={cn("block border-t border-slate-800/60 bg-[#0a0f18] hover:bg-slate-900 transition-all duration-300 group cursor-pointer relative", isCollapsed ? "p-3 flex justify-center" : "p-5")}>
-        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-4 px-2")}>
-          <div className={cn(
-            "rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center text-brand font-bold text-sm border border-slate-700/50 shadow-lg group-hover:shadow-[0_0_15px_rgba(var(--brand-main),0.4)] transition-all duration-300 group-hover:scale-105 overflow-hidden shrink-0",
-            isCollapsed ? "w-10 h-10" : "w-11 h-11"
-          )}>
+      <div className="p-3 border-t border-white/5 mt-auto">
+        <Link
+          to="/profile"
+          className={cn(
+            "flex items-center gap-3 p-2 rounded-xl border border-transparent hover:bg-white/5 hover:border-white/5 transition-all duration-300 cursor-pointer group relative",
+            isCollapsed && "justify-center"
+          )}
+        >
+          <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center border border-slate-700/50 shadow-inner overflow-hidden shrink-0 group-hover:border-slate-500 transition-colors">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <span>{profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'HR'}</span>
+              <span className="text-xs font-bold text-slate-300" style={{ color: deptColor }}>
+                {profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'HR'}
+              </span>
             )}
           </div>
-          
+
           {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden ml-1 whitespace-nowrap">
-              <span className="text-sm font-extrabold tracking-widest text-slate-200 uppercase truncate group-hover:text-white transition-colors">
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-medium text-slate-200 truncate group-hover:text-white transition-colors">
                 {profile ? profile.name : "Loading..."}
               </span>
-              <span className="text-[10px] text-brand/80 tracking-widest uppercase truncate mt-0.5">
+              <span className="text-xs text-slate-500 truncate mt-0.5">
                 {profile ? profile.role : "Connecting..."}
               </span>
             </div>
           )}
 
-          {/* Tooltip for collapsed state */}
           {isCollapsed && (
-            <div className="sidebar-tooltip absolute left-[88px] top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs font-bold whitespace-nowrap shadow-xl z-50 flex flex-col">
-              <span className="text-slate-200 uppercase">{profile?.name}</span>
-              <span className="text-brand/80 uppercase text-[10px] mt-1">{profile?.role}</span>
-              <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-900 border-l border-b border-slate-700 rotate-45"></div>
+            <div className="sidebar-tooltip absolute left-[80px] bottom-0 px-3 py-2 bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-md text-white text-xs font-medium whitespace-nowrap shadow-2xl z-50 flex flex-col">
+              <span>{profile?.name}</span>
+              <span className="text-slate-400 mt-0.5">{profile?.role}</span>
             </div>
           )}
-        </div>
-      </Link>
+        </Link>
+      </div>
     </div>
   );
 };
