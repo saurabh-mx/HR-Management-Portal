@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       discordId = userMetaData.preferred_username || userMetaData.name;
     } else if (email) {
       // Fallback for legacy email login
-      discordId = email.split('@')[0];
+      discordId = userMetaData.preferred_username || userMetaData.name.split('#')[0];
     }
 
     if (!discordId) {
