@@ -92,8 +92,11 @@ export default function LoginModal({ children }: LoginModalProps) {
                   try {
                     const { error } = await supabase.auth.signInWithOAuth({
                       provider: 'discord',
-                      options: { redirectTo: window.location.origin }
-                    });
+                      options: {
+                       redirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+                          }
+                        });
+
                     if (error) throw error;
                   } catch (err: any) {
                     console.error(err);
