@@ -13,7 +13,7 @@ interface AuditLog {
 }
 
 export default function AuditLogs() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,11 +25,28 @@ export default function AuditLogs() {
 
   useEffect(() => {
     checkAdminStatus();
-  }, [adminSafeMode]);
+  }, [profile]);
 
   async function checkAdminStatus() {
-    setIsAdmin(true);
-    fetchLogs();
+    if (adminSafeMode) {
+      setIsAdmin(true);
+      fetchLogs();
+      return;
+    }
+
+    if (!profile) {
+      setIsAdmin(false);
+      setIsLoading(false);
+      return;
+    }
+
+    if (profile.is_admin) {
+      setIsAdmin(true);
+      fetchLogs();
+    } else {
+      setIsAdmin(false);
+      setIsLoading(false);
+    }
   }
 
   async function fetchLogs() {

@@ -26,10 +26,10 @@ interface Comment {
 }
 
 export default function HRRequestsDashboard() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<HRRequest[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [userProfile, setUserProfile] = useState<{ name: string, email: string, isAdmin: boolean } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ name: string, email: string, isAdmin: boolean, isTrueAdmin: boolean } | null>(null);
 
   // Tab State for filtering Active vs Resolved
   const [activeTab, setActiveTab] = useState<'Active' | 'Resolved'>('Active');
@@ -52,34 +52,31 @@ export default function HRRequestsDashboard() {
 
   useEffect(() => {
     loadUserDataAndRequests();
-  }, []);
+  }, [profile]);
 
   async function loadUserDataAndRequests() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.email) return;
 
-    const { data: empData } = await supabase
-      .from('employees')
-      .select('name, badge_number, is_admin, role')
-      .eq('discord_tag', session.user.email.split('@')[0])
-      .single();
-
-    const profile = {
-      name: empData ? `${empData.name} (${empData.badge_number})` : session.user.email,
-      email: session.user.email,
-      isAdmin: isHighCommandOrHR(empData) || false
-    };
-
-    setUserProfile(profile);
-
-    let query = supabase.from('hr_requests').select('*').order('created_at', { ascending: false });
-    if (!profile.isAdmin) {
-      query = query.eq('officer_email', profile.email);
+    if (profile) {
+      setUserProfile({
+        name: profile.name ? `${profile.name} (${profile.badge_number})` : session.user.email,
+        email: session.user.email,
+        isAdmin: isHighCommandOrHR(profile) || false,
+        isTrueAdmin: profile.is_admin || false
+      });
+      
+      let query = supabase.from('hr_requests').select('*').order('created_at', { ascending: false });
+      if (!isHighCommandOrHR(profile)) {
+        query = query.eq('officer_email', session.user.email);
+      }
+  
+      const { data: reqData, error } = await query;
+      if (error) console.error("Error fetching requests:", error);
+      else if (reqData) setRequests(reqData);
     }
 
-    const { data: reqData, error } = await query;
-    if (error) console.error("Error fetching requests:", error);
-    else if (reqData) setRequests(reqData);
+
   }
 
   const handlePreSubmit = (e: React.FormEvent) => {
@@ -470,7 +467,7 @@ export default function HRRequestsDashboard() {
                           <button onClick={() => handleOpenTicket(request)} className="text-sky-400 hover:text-sky-300 text-xs font-medium border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5">
                             <MessageSquare className="w-3 h-3" /> {activeTab === 'Resolved' ? 'View Log' : 'Open Thread'}
                           </button>
-                          {userProfile?.isAdmin && adminSafeMode && (
+                          {userProfile?.isTrueAdmin && adminSafeMode && (
                             <button onClick={() => setTicketToDelete(request.id)} className="text-slate-500 hover:text-rose-400 p-1.5 rounded hover:bg-rose-500/10 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>

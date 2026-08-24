@@ -214,7 +214,16 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
             
             sheetDepartments.add(dept.toUpperCase());
 
-            const derivedIsAdmin = ['admin', 'High Command', 'Command', 'HR'].includes(r);
+            let derivedIsAdmin = false;
+            if (r === 'admin') {
+              derivedIsAdmin = true;
+            } else if (existing) {
+              if (existing.role === 'admin') {
+                derivedIsAdmin = false; // Demoted from admin
+              } else {
+                derivedIsAdmin = !!existing.is_admin; // Preserve manual DB setting
+              }
+            }
 
             const payload = {
               _staged_id: Math.random().toString(36).substring(7),

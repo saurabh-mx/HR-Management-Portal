@@ -44,7 +44,7 @@ interface Employee {
 }
 
 export default function AdminPanel() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -82,11 +82,15 @@ export default function AdminPanel() {
 
   useEffect(() => {
     checkAdminAccess();
+    loadSavedSyncLinks();
+  }, [profile]);
+
+  const loadSavedSyncLinks = () => {
     try {
       const saved = localStorage.getItem("saved_sync_links");
       if (saved) setSavedSyncs(JSON.parse(saved));
     } catch (e) { }
-  }, [adminSafeMode]);
+  };
 
   const _handleSaveSyncLink = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,9 +125,32 @@ export default function AdminPanel() {
 
   // SECURITY CHECK: Verify High Command clearance
   async function checkAdminAccess() {
-    setIsAdmin(true);
-    setCurrentUserRole("admin");
-    fetchEmployees();
+    if (adminSafeMode) {
+      setIsAdmin(true);
+      setCurrentUserRole("admin");
+      fetchEmployees();
+      return;
+    }
+
+    if (!profile) {
+      // Check if DB is empty to allow bootstrap
+      const { count } = await supabase.from('employees').select('*', { count: 'exact', head: true });
+      if (count === 0) {
+        setIsAdmin(true);
+        fetchEmployees();
+      } else {
+        setIsAdmin(false);
+      }
+      return;
+    }
+
+    if (profile.is_admin || adminSafeMode) {
+      setIsAdmin(true);
+      setCurrentUserRole(profile.role || "");
+      fetchEmployees(); // Only fetch roster if they are authorized
+    } else {
+      setIsAdmin(false);
+    }
   }
 
   async function fetchEmployees() {

@@ -20,8 +20,8 @@ interface Strike {
   revoked_at?: string;
 }
 
-export default function StrikeManagement() {
-  const { adminSafeMode } = useAuth();
+export default function DisciplinarySystem() {
+  const { profile, adminSafeMode } = useAuth();
   const [strikes, setStrikes] = useState<Strike[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -38,33 +38,38 @@ export default function StrikeManagement() {
   const [strikeToDelete, setStrikeToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStrikes();
-    checkAdminStatus();
+    if (profile) {
+      setAuthorName(`${profile.name} (${profile.badge_number})`);
+      if (profile.is_admin) setIsTrueAdmin(true);
+      if (isHighCommandOrHR(profile)) {
+        setIsAdmin(true);
+      } else if (profile.role === 'Command') {
+        setIsCommand(true);
+      }
+      fetchStrikes(profile, profile.name);
+    } else {
+      fetchStrikes(null, "");
+    }
     fetchEmployees();
-  }, []);
+  }, [profile]);
 
   async function fetchEmployees() {
     const { data } = await supabase.from('employees').select('name, badge_number, department');
     if (data) setEmployees(data);
   }
 
-  async function checkAdminStatus() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
-    const { data } = await supabase.from('employees').select('name, badge_number, is_admin, role').eq('discord_tag', session.user.email.split('@')[0]).single();
-    if (data) {
-      setAuthorName(`${data.name} (${data.badge_number})`);
-      if (data.is_admin) setIsTrueAdmin(true);
-      if (isHighCommandOrHR(data)) {
-        setIsAdmin(true);
-      } else if (data.role === 'Command') {
-        setIsCommand(true);
-      }
+  async function fetchStrikes(userObj?: any, userName?: string) {
+    let query = supabase.from('strikes').select('*').order('created_at', { ascending: false });
+    
+    // Normal users ONLY see their own strikes
+    if (userObj && !isHighCommandOrHR(userObj) && userObj.role !== 'Command' && !userObj.is_admin) {
+      query = query.eq('name', userName || "");
+    } else if (!userObj) {
+      // If user not found in DB, show nothing
+      query = query.eq('id', '00000000-0000-0000-0000-000000000000');
     }
-  }
 
-  async function fetchStrikes() {
-    const { data } = await supabase.from('strikes').select('*').order('created_at', { ascending: false });
+    const { data } = await query;
     if (data) setStrikes(data);
   }
 
@@ -120,7 +125,7 @@ export default function StrikeManagement() {
       setNewStrike({ name: "", reason: "" });
       setActionType("Warning");
       setStrikeLevel("1/5");
-      fetchStrikes();
+      fetchStrikes(profile, profile?.name);
       setShowForm(false);
     }
   };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, Shield, CheckCircle2, XCircle, Trash2, Search, Plus, X, Filter, Clock } from "lucide-react";
+import { Award, Shield, CheckCircle2, XCircle, Trash2, Search, Plus, X, Filter, Clock, ShieldAlert } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from '@/auth/hooks/useAuth';
@@ -23,9 +23,10 @@ interface PromotionRecord {
 }
 
 export default function RankManagement() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [records, setRecords] = useState<PromotionRecord[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isTrueAdmin, setIsTrueAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [authorName, setAuthorName] = useState("Command");
@@ -116,38 +117,41 @@ export default function RankManagement() {
   });
 
   useEffect(() => {
-    fetchRecords();
-    checkAdminStatus();
+    if (profile) {
+      setAuthorName(`${profile.name} (${profile.badge_number})`);
+      if (isHighCommandOrHR(profile)) setIsAdmin(true);
+      if (profile.is_admin) setIsTrueAdmin(true);
+      fetchRecords(profile, profile.name);
+      setIsCheckingAuth(false);
+    } else {
+      // If profile hasn't loaded yet, we keep isCheckingAuth true 
+      // or if there is no profile, we can fetch empty records.
+      // Wait, let's just fetch empty if profile is null.
+      const timer = setTimeout(() => {
+        setIsCheckingAuth(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
     fetchEmployees();
-  }, []);
+  }, [profile]);
 
   async function fetchEmployees() {
     const { data } = await supabase.from('employees').select('name, badge_number, rank, department');
     if (data) setEmployees(data);
   }
 
-  async function checkAdminStatus() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
 
-    const { data } = await supabase
-      .from('employees')
-      .select('name, badge_number, is_admin, role')
-      .eq('discord_tag', session.user.email.split('@')[0])
-      .single();
 
-    if (data) {
-      setAuthorName(`${data.name} (${data.badge_number})`);
-      if (isHighCommandOrHR(data)) setIsAdmin(true);
+  async function fetchRecords(userObj?: any, userName?: string) {
+    let query = supabase.from('promotions').select('*').order('created_at', { ascending: false });
+
+    if (userObj && !isHighCommandOrHR(userObj) && !userObj.is_admin) {
+      query = query.eq('officer_name', userName || "");
+    } else if (!userObj) {
+      query = query.eq('id', '00000000-0000-0000-0000-000000000000');
     }
-    setIsCheckingAuth(false);
-  }
 
-  async function fetchRecords() {
-    const { data, error } = await supabase
-      .from('promotions')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await query;
 
     if (error) console.error("Error fetching promotions:", error);
     else if (data) setRecords(data);
@@ -257,18 +261,26 @@ export default function RankManagement() {
     );
   }
 
-  if (!isAdmin) {
+  // 🔒 RESTRICTED AREA CHECK
+  if (!isCheckingAuth && !isAdmin && !adminSafeMode) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-full space-y-4">
-        <Shield className="w-16 h-16 text-rose-500 opacity-50" />
-        <h2 className="text-2xl font-bold tracking-widest text-slate-200 uppercase">Access Denied</h2>
-        <p className="text-slate-400 font-light">You do not have clearance to view this module.</p>
+      <div className="p-8 h-full flex flex-col items-center justify-center text-center space-y-6">
+        <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center border border-rose-500/20 mb-4 shadow-[0_0_50px_rgba(225,29,72,0.2)]">
+          <ShieldAlert className="w-12 h-12 text-rose-500" />
+        </div>
+        <h1 className="text-4xl font-black tracking-widest text-white uppercase drop-shadow-[0_0_15px_rgba(225,29,72,0.5)]">
+          Restricted Area
+        </h1>
+        <p className="text-slate-400 max-w-md text-lg leading-relaxed">
+          You do not have the required clearance to access Rank Management. This section is strictly for High Command and Human Resources personnel.
+        </p>
+        <div className="w-24 h-1 bg-rose-500/50 rounded-full mt-8"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-8 bg-transparent min-h-full">
+    <div className="p-8 space-y-8 bg-transparent min-h-[90vh]">
       {/* Sleek Glassmorphic Header */}
       <div className="relative mb-8">
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -589,7 +601,7 @@ export default function RankManagement() {
                                 <button onClick={() => openModal(record.id, 'Deny')} className="text-rose-500 hover:text-rose-400 text-xs font-medium border border-rose-500/30 bg-rose-500/10 px-2 py-1 rounded transition-colors">Deny</button>
                               </>
                             )}
-                            {adminSafeMode && (
+                            {isTrueAdmin && adminSafeMode && (
                               <button onClick={() => openModal(record.id, 'Delete')} className="text-slate-500 hover:text-rose-400 transition-colors p-1 ml-2">
                                 <Trash2 className="w-4 h-4" />
                               </button>

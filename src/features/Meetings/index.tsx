@@ -28,7 +28,7 @@ const getTimeStatusColor = (dateStr: string, timeStr: string) => {
 };
 
 export default function MeetingsDashboard() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -47,24 +47,11 @@ export default function MeetingsDashboard() {
 
   useEffect(() => {
     fetchMeetings();
-    checkAccessAndProfile();
-  }, []);
-
-  async function checkAccessAndProfile() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
-
-    const { data } = await supabase
-      .from('employees')
-      .select('name, badge_number, is_admin, role')
-      .eq('discord_tag', session.user.email.split('@')[0])
-      .single();
-
-    if (data) {
-      setAuthorName(`${data.name} (${data.badge_number})`);
-      if (isHighCommandOrHR(data)) setIsAdmin(true);
+    if (profile) {
+      setAuthorName(`${profile.name} (${profile.badge_number})`);
+      if (isHighCommandOrHR(profile)) setIsAdmin(true);
     }
-  }
+  }, [profile]);
 
   async function fetchMeetings() {
     const { data, error } = await supabase

@@ -21,7 +21,7 @@ interface LOARequest {
 }
 
 export default function LOAManagement() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [requests, setRequests] = useState<LOARequest[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -37,16 +37,13 @@ export default function LOAManagement() {
   useEffect(() => {
     fetchRequests();
     checkAdminStatus();
-  }, []);
+  }, [profile]);
 
   async function checkAdminStatus() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
-    const { data } = await supabase.from('employees').select('name, badge_number, is_admin, role').eq('discord_tag', session.user.email.split('@')[0]).single();
-    if (data) {
-      setAuthorName(`${data.name} (${data.badge_number})`);
-      if (data.is_admin) setIsTrueAdmin(true);
-      if (isHighCommandOrHR(data)) setIsAdmin(true);
+    if (profile) {
+      setAuthorName(`${profile.name} (${profile.badge_number})`);
+      if (profile.is_admin) setIsTrueAdmin(true);
+      if (isHighCommandOrHR(profile)) setIsAdmin(true);
     }
   }
 
@@ -115,9 +112,6 @@ export default function LOAManagement() {
 
   // 🔍 FILTER LOGIC
   const filteredRequests = requests.filter(req => {
-    // Privacy filter: Normal users only see their own LOAs
-    if (!isAdmin && req.officer_name !== authorName) return false;
-
     // Status filter
     if (statusFilter !== "All" && req.status !== statusFilter) return false;
 

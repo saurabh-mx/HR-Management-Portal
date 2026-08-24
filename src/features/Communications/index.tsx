@@ -36,7 +36,7 @@ const formatMessage = (text: string) => {
 };
 
 export default function CommunicationsFeed() {
-  const { adminSafeMode } = useAuth();
+  const { profile, adminSafeMode } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -48,8 +48,11 @@ export default function CommunicationsFeed() {
 
   useEffect(() => {
     fetchPosts();
-    fetchCurrentUser();
-  }, []);
+    if (profile) {
+      setAuthorName(`${profile.name} (${profile.badge_number})`);
+      if (isHighCommandOrHR(profile)) setIsAdmin(true);
+    }
+  }, [profile]);
 
   async function fetchPosts() {
     const { data, error } = await supabase
@@ -59,25 +62,6 @@ export default function CommunicationsFeed() {
     
     if (error) console.error("Error fetching posts:", error);
     else if (data) setPosts(data);
-  }
-
-  async function fetchCurrentUser() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
-
-    // Grab their real officer name and admin status from the employees table
-    const { data } = await supabase
-      .from('employees')
-      .select('name, badge_number, is_admin, role')
-      .eq('discord_tag', session.user.email.split('@')[0])
-      .single();
-    
-    if (data) {
-      setAuthorName(`${data.name} (${data.badge_number})`);
-      if (isHighCommandOrHR(data)) setIsAdmin(true); // Set admin status here
-    } else {
-      setAuthorName(session.user.email);
-    }
   }
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -395,7 +379,7 @@ export default function CommunicationsFeed() {
                             {post.category}
                           </span>
                           {/* AUTHOR CAN EDIT/DELETE OR ADMIN IN SAFE MODE */}
-                          {(post.author === authorName || (isAdmin && adminSafeMode)) && (
+                          {isAdmin && (
                             <div className="flex items-center gap-1">
                               <button 
                                 onClick={() => handleEditClick(post)}
