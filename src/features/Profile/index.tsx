@@ -1,11 +1,28 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
-import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Phone, Mail, Camera, LinkIcon, X } from "lucide-react";
+import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Camera, X, Barcode, Cpu } from "lucide-react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import { canToggleAdminSafeMode } from '@/auth/roles/roleMatrix';
+
+const getDepartmentColor = (dept?: string) => {
+    if (!dept) return '#10b981';
+    if (dept.includes('BCSO')) return '#eab308';
+    if (dept.includes('LSPD')) return '#3b82f6';
+    if (dept.includes('SAPR')) return '#22c55e';
+    if (dept.includes('Academy') || dept.includes('PAU')) return '#f97316';
+    if (dept.includes('SASP')) return '#64748b';
+    return '#10b981';
+};
+
+const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 export default function Profile() {
   const { profile, adminSafeMode, toggleAdminSafeMode } = useAuth();
@@ -19,6 +36,41 @@ export default function Profile() {
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
   const [avatarInput, setAvatarInput] = useState("");
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [totalStrikes, setTotalStrikes] = useState(0);
+  const [totalWarnings, setTotalWarnings] = useState(0);
+  const [totalVerbalWarnings, setTotalVerbalWarnings] = useState(0);
+
+  useEffect(() => {
+    async function fetchUserStrikes() {
+      if (!profile?.name) return;
+      const { data } = await supabase
+        .from('strikes')
+        .select('*')
+        .eq('name', profile.name)
+        .neq('status', 'revoked');
+      
+      if (data) {
+        let strikes = 0;
+        let warnings = 0;
+        let verbals = 0;
+
+        data.forEach(curr => {
+          if (curr.action_type === 'Strike') {
+            strikes += parseInt(curr.strike_level?.split('/')[0] || '1');
+          } else if (curr.action_type === 'Warning') {
+            warnings += 1;
+          } else if (curr.action_type === 'Verbal Warning') {
+            verbals += 1;
+          }
+        });
+        
+        setTotalStrikes(strikes);
+        setTotalWarnings(warnings);
+        setTotalVerbalWarnings(verbals);
+      }
+    }
+    fetchUserStrikes();
+  }, [profile?.name]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "—";
@@ -53,15 +105,26 @@ export default function Profile() {
 
   const downloadIdImage = async () => {
     if (!idCardRef.current) return;
+    const toastId = toast.loading("Generating Secure ID Card...");
     try {
-      const dataUrl = await toPng(idCardRef.current, { backgroundColor: '#020617', pixelRatio: 2 });
+      const dataUrl = await toPng(idCardRef.current, { 
+        backgroundColor: '#020617', 
+        pixelRatio: 2, 
+        cacheBust: true,
+        style: { transform: 'scale(1)' } 
+      });
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `${profile?.name?.replace(/ /g, '_') || 'Personnel'}_ID_Card.png`;
       a.click();
       logAuditAction("ID_EXPORTED", profile?.name || "Unknown", "Exported Digital ID Card as PNG", profile?.name);
+      toast.success("ID Card generated successfully", { id: toastId });
     } catch (error: any) {
-      alert("Failed to generate image.");
+      console.error("Export Error: ", error);
+      toast.error("Failed to generate image.", { 
+        id: toastId, 
+        description: "This is often caused by external avatar URLs preventing export due to strict CORS policies. Try using Imgur or removing your avatar temporarily." 
+      });
     }
   };
 
@@ -84,6 +147,7 @@ Join Date: ${formatDate(profile.department_join_date)}
     a.click();
     URL.revokeObjectURL(url);
     logAuditAction("ID_EXPORTED", profile.name || "Unknown", "Exported Digital ID Card as Text", profile.name);
+    toast.success("Dossier text exported");
   };
 
   const handleSaveAvatar = async () => {
@@ -127,7 +191,7 @@ Join Date: ${formatDate(profile.department_join_date)}
     setIsSavingAvatar(false);
   };
 
-  if (!profile) return <div className="p-8 text-slate-400 animate-pulse">Loading Profile...</div>;
+  if (!profile) return <div className="p-8 text-slate-400 animate-pulse flex justify-center items-center h-full">Loading Profile...</div>;
 
   const getDeptLogo = (dept: string) => {
     if (!dept) return '/logos/sasp.png';
@@ -141,18 +205,30 @@ Join Date: ${formatDate(profile.department_join_date)}
   const deptLogo = getDeptLogo(profile.department || '');
 
   return (
-    <div className="relative p-6 md:p-10 min-h-full max-w-7xl mx-auto overflow-hidden">
+    <div className="relative p-4 md:p-8 min-h-full max-w-7xl mx-auto">
+      
+      {/* Background Decorators */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-brand/5 rounded-full blur-[100px] pointer-events-none" />
+      
+      {/* Huge Department Watermark */}
+      <div 
+        className="fixed top-20 right-0 w-[600px] h-[600px] bg-no-repeat bg-right-top opacity-[0.04] pointer-events-none mix-blend-luminosity -z-10"
+        style={{ backgroundImage: `url(${deptLogo})`, backgroundSize: 'contain' }}
+      />
 
-      <div className="relative z-10 space-y-8">
+      <div className="relative z-10 space-y-10">
 
-        {/* HERO HEADER */}
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl glass-panel border border-brand/20 animate-fade-in">
-          <div className="absolute top-0 right-0 p-6 flex flex-col items-end z-20">
+        {/* HERO SECTION */}
+        <div className="relative overflow-hidden rounded-[2rem] bg-slate-900/40 backdrop-blur-2xl border border-white/5 shadow-2xl">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand to-transparent opacity-50" />
+          
+          <div className="absolute top-6 right-6 flex items-end z-20">
             {canToggleAdmin && (
-              <div className="flex items-center gap-4 bg-slate-950/80 backdrop-blur-md border border-slate-700/50 px-4 py-2 rounded-xl shadow-lg">
+              <div className="flex items-center gap-3 bg-slate-950/80 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg">
                 <div className="flex flex-col text-right">
-                  <span className="text-sm font-bold tracking-widest text-slate-200 uppercase">Admin Mode</span>
-                  <span className="text-[10px] text-slate-400 font-medium uppercase">{adminSafeMode ? 'Active' : 'Hidden'}</span>
+                  <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Admin Safe Mode</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${adminSafeMode ? 'text-brand' : 'text-slate-500'}`}>{adminSafeMode ? 'Active' : 'Disabled'}</span>
                 </div>
                 <button
                   onClick={handleToggleAdmin}
@@ -164,271 +240,342 @@ Join Date: ${formatDate(profile.department_join_date)}
             )}
           </div>
 
-          <div className="p-8 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 z-10">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-xl border border-brand/50 shadow-[0_0_30px_rgba(var(--brand-main),0.15)] flex flex-col items-center justify-center bg-slate-950 overflow-hidden relative group cursor-pointer" onClick={() => { setIsEditingAvatar(true); setAvatarInput(avatarUrl); }}>
-              <div className="absolute inset-0 bg-brand/5 group-hover:bg-brand/10 transition-colors"></div>
+          <div className="p-8 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 z-10">
+            <div 
+              className="w-36 h-36 md:w-44 md:h-44 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center justify-center bg-slate-950 overflow-hidden relative group cursor-pointer ring-4 ring-slate-900/50" 
+              onClick={() => { setIsEditingAvatar(true); setAvatarInput(avatarUrl); }}
+            >
               {avatarUrl ? (
-                <img src={avatarUrl} alt={profile.name} className="w-full h-full object-cover" onError={() => setAvatarUrl("")} />
+                <img src={avatarUrl} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               ) : (
-                <span className="text-5xl md:text-6xl font-light text-slate-300 group-hover:text-white transition-colors">{profile.name?.substring(0, 2).toUpperCase()}</span>
+                <span className="text-6xl font-light text-slate-300 group-hover:text-white transition-colors">{profile.name?.substring(0, 2).toUpperCase()}</span>
               )}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="w-6 h-6 text-white" />
+              <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                <Camera className="w-8 h-8 text-white scale-75 group-hover:scale-100 transition-transform duration-300" />
               </div>
             </div>
 
-            <div className="flex-1 text-center md:text-left mt-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-bold uppercase tracking-widest mb-4">
+            <div className="flex-1 text-center md:text-left mt-2 flex flex-col justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-4 w-fit mx-auto md:mx-0">
                 <CheckCircle2 className="w-3 h-3" /> {profile.status || "Active Duty"}
               </div>
-              <h1 className="text-3xl font-light tracking-wider text-white uppercase drop-shadow-lg mb-2">
+              <h1 className="text-4xl md:text-5xl font-black tracking-wider text-white uppercase drop-shadow-lg mb-3">
                 {profile.name}
               </h1>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-400 font-medium tracking-wide">
-                <span className="flex items-center gap-2"><Badge className="w-4 h-4 text-brand" /> {profile.rank || "Officer"}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
-                <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-brand" /> {profile.department}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
-                <span className="flex items-center gap-2"><Hash className="w-4 h-4 text-brand" /> {profile.badge_number}</span>
+                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><Badge className="w-3.5 h-3.5 text-brand" /> {profile.rank || "Officer"}</span>
+                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><MapPin className="w-3.5 h-3.5 text-brand" /> {profile.department}</span>
+                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><Hash className="w-3.5 h-3.5 text-brand" /> {profile.badge_number}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* MAIN LAYOUT: LEFT SIDEBAR (ID CARD) + RIGHT CONTENT (DOSSIER) */}
+        {/* TWO COLUMN LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* LEFT COLUMN: ID CARD & ACTIONS */}
-          <div className="col-span-1 lg:col-span-4 space-y-6">
-            <div className="glass-panel p-6 rounded-2xl shadow-2xl flex flex-col items-center animate-slide-up">
-              <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 w-full border-b border-brand/30 pb-2 flex items-center gap-2">
-                <Shield className="w-4 h-4" /> Digital Credentials
-              </h3>
+          {/* LEFT: ID CARD */}
+          <div className="col-span-1 lg:col-span-4 flex flex-col gap-6">
+            
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-xl relative">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-bold tracking-widest uppercase text-slate-300 flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-brand" /> Digital Identity
+                </h3>
+              </div>
 
-              <div ref={idCardRef} className="w-full p-6 rounded-xl shadow-2xl bg-slate-950 border border-brand/50 flex flex-col relative overflow-hidden group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(var(--brand-main),0.3)] glow-border">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-brand z-10" />
-                <div
-                  className="absolute inset-0 z-0 opacity-10 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-110 group-hover:scale-100 transition-transform duration-700"
-                  style={{ backgroundImage: `url(${deptLogo})`, backgroundSize: '80%' }}
+              {/* ID CARD COMPONENT */}
+              <div 
+                ref={idCardRef} 
+                className="w-full max-w-[320px] mx-auto aspect-[6/9] rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] bg-slate-900 border border-slate-700/50 flex flex-col relative overflow-hidden group transition-all duration-500"
+              >
+                {/* Lanyard Hole Punch */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-3 rounded-full bg-slate-950 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] border border-white/5 z-20"></div>
+
+                {/* Hologram Effect */}
+                <div 
+                  className="absolute inset-0 opacity-40 mix-blend-color-dodge pointer-events-none transition-transform duration-1000 ease-out group-hover:scale-110 z-20"
+                  style={{
+                    background: `linear-gradient(125deg, transparent 20%, ${hexToRgba(getDepartmentColor(profile.department), 0.4)} 40%, rgba(255,255,255,0.8) 50%, ${hexToRgba(getDepartmentColor(profile.department), 0.4)} 60%, transparent 80%)`,
+                    backgroundSize: '200% 200%',
+                    animation: 'shimmer 8s linear infinite'
+                  }}
                 />
-                <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-4 transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-sm border-brand text-brand shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden">
+                
+                <style>{`
+                  @keyframes shimmer {
+                    0% { background-position: 200% center; }
+                    100% { background-position: -200% center; }
+                  }
+                `}</style>
+
+                {/* Top Banner / Department color */}
+                <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-brand/40 to-transparent z-10 pointer-events-none" />
+
+                {/* Background Watermark */}
+                <div
+                  className="absolute inset-0 z-0 opacity-15 mix-blend-luminosity bg-center bg-no-repeat pointer-events-none transition-transform duration-700 ease-out scale-110 group-hover:scale-[1.25]"
+                  style={{ backgroundImage: `url(${deptLogo})`, backgroundSize: '90%' }}
+                />
+
+                <div className="flex flex-col items-center flex-1 z-10 relative pt-12 px-6 pb-6 transition-transform duration-500 ease-out group-hover:scale-[1.03] group-hover:-translate-y-1">
+                  {/* Microchip */}
+                  <div className="absolute top-10 left-6 text-yellow-600/60 opacity-80">
+                    <Cpu className="w-8 h-8" />
+                  </div>
+
+                  {/* Avatar */}
+                  <div className="w-28 h-28 rounded-2xl flex items-center justify-center text-3xl font-bold bg-slate-950 border border-slate-700/80 shadow-2xl overflow-hidden mt-6 relative z-10 ring-4 ring-slate-950">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+                      <img 
+                        src={avatarUrl} 
+                        alt={profile.name} 
+                        className="w-full h-full object-cover" 
+                      />
                     ) : (
-                      profile.name?.charAt(0) || "U"
+                      <User className="w-10 h-10 text-slate-700" />
                     )}
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-white tracking-wide leading-tight">{profile.name}</h2>
-                    <p className="text-brand font-mono mt-1 text-sm tracking-widest">{profile.badge_number}</p>
+
+                  {/* Identity */}
+                  <div className="mt-5 text-center">
+                    <h2 className="text-2xl font-black text-white tracking-widest uppercase leading-none drop-shadow-md">{profile.name}</h2>
+                    <p className="text-brand font-mono font-bold mt-2 tracking-[0.2em]">{profile.badge_number}</p>
                   </div>
-                  <div className="w-full h-px bg-slate-800/60 my-2" />
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-6 w-full text-left">
+
+                  {/* Grid Data */}
+                  <div className="w-full mt-6 grid grid-cols-2 gap-y-4 gap-x-4 bg-slate-950/50 rounded-xl p-4 border border-white/5 backdrop-blur-sm">
                     <div>
-                      <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Department</p>
-                      <p className="text-xs font-bold text-brand tracking-wide truncate">{profile.department || "—"}</p>
+                      <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Department</p>
+                      <p className="text-[10px] font-bold text-brand uppercase tracking-wider truncate">{profile.department || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Rank</p>
-                      <p className="text-xs font-medium text-slate-200 truncate">{profile.rank || "—"}</p>
+                      <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rank</p>
+                      <p className="text-[10px] font-bold text-slate-200 uppercase tracking-wider truncate">{profile.rank || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Status</p>
-                      <p className="text-xs font-medium text-emerald-400 truncate">{profile.status || "Active"}</p>
+                      <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Clearance Role</p>
+                      <p className="text-[10px] font-bold text-slate-300 uppercase tracking-wider truncate">{profile.role || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Role</p>
-                      <p className="text-xs font-medium text-slate-300 truncate">{profile.role || "—"}</p>
+                      <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
+                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider truncate">{profile.status || "Active"}</p>
                     </div>
                   </div>
-                  <div className="w-full pt-4 mt-2 border-t border-slate-800/60">
-                    <p className="text-[8px] tracking-[0.2em] text-slate-500 uppercase text-center">
-                      San Andreas State Property
-                    </p>
+                  
+                  {/* Endorsements (Certs) */}
+                  <div className="mt-3 flex flex-wrap justify-center gap-1.5 px-2">
+                    {profile.cert_fto && <span title="FTO" className="text-[14px] drop-shadow-md">🎓</span>}
+                    {profile.cert_asd && <span title="ASD" className="text-[14px] drop-shadow-md">🚁</span>}
+                    {profile.cert_heat && <span title="HEAT" className="text-[14px] drop-shadow-md">🏎️</span>}
+                    {profile.cert_swat && <span title="SWAT" className="text-[14px] drop-shadow-md">🛡️</span>}
+                    {profile.cert_cid && <span title="CID" className="text-[14px] drop-shadow-md">🕵️</span>}
+                    {profile.cert_meu && <span title="MEU" className="text-[14px] drop-shadow-md">🛥️</span>}
+                    {profile.cert_k9 && <span title="K9" className="text-[14px] drop-shadow-md">🐕</span>}
+                    {profile.cert_sop && <span title="SOP" className="text-[14px] drop-shadow-md">📋</span>}
+                  </div>
+
+                  <div className="mt-auto pt-4 w-full flex flex-col items-center">
+                    <Barcode className="w-full h-8 text-slate-600/50" />
+                    <p className="text-[6px] tracking-[0.3em] text-slate-600 uppercase mt-2 font-bold">Property of San Andreas</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 mt-6 w-full">
-                <button onClick={downloadIdImage} className="w-full bg-brand/10 hover:bg-brand/20 text-brand border border-brand/30 px-4 py-2.5 rounded-md font-bold tracking-widest text-[10px] uppercase transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-3.5 h-3.5" /> Export as Image
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <button onClick={downloadIdImage} className="bg-brand hover:bg-brand/90 text-white shadow-[0_0_20px_rgba(var(--brand-main),0.3)] px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
+                  <Download className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" /> Save Image
                 </button>
-                <button onClick={downloadIdText} className="w-full bg-slate-800/40 backdrop-blur-sm border border-white/5 shadow-lg hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/60 transition-all duration-300 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2.5 rounded-md font-bold tracking-widest text-[10px] uppercase transition-colors flex items-center justify-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> Export Details
+                <button onClick={downloadIdText} className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
+                  <FileText className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" /> Copy Text
                 </button>
               </div>
             </div>
 
-            {/* Security Settings Panel */}
-            <div className="glass-panel p-6 rounded-2xl shadow-xl animate-slide-up delay-100">
-              <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
-                <Key className="w-4 h-4" /> Security Settings
+            {/* SECURITY BOX */}
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-xl">
+              <h3 className="text-xs font-bold tracking-widest uppercase text-slate-300 mb-6 flex items-center gap-2">
+                <Key className="w-4 h-4 text-brand" /> Access Control
               </h3>
               <form onSubmit={handlePasswordUpdate} className="space-y-4">
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">New Password</p>
+                <div className="space-y-3">
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-all"
-                    placeholder="Enter new password"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-all placeholder:text-slate-600"
+                    placeholder="New Password"
                     required
                   />
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Confirm Password</p>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-all"
-                    placeholder="Confirm new password"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-all placeholder:text-slate-600"
+                    placeholder="Confirm Password"
                     required
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isUpdatingPassword}
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-4 py-2.5 rounded-md font-bold tracking-widest text-[10px] uppercase transition-colors disabled:opacity-50"
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-colors disabled:opacity-50"
                 >
-                  {isUpdatingPassword ? "Updating..." : "Update Password"}
+                  {isUpdatingPassword ? "Updating Keys..." : "Change Password"}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: DETAILED DOSSIER */}
-          <div className="col-span-1 lg:col-span-8 space-y-6">
+          {/* RIGHT: BENTO BOX GRID */}
+          <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
+            
+            {/* Dossier Grid Row 1 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
+                  <Fingerprint className="w-4 h-4 text-brand" /> Personal Details
+                </h3>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Citizen ID</span>
+                    <span className="text-sm font-medium text-slate-200 font-mono">{profile.citizen_id || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phone</span>
+                    <span className="text-sm font-medium text-slate-200 font-mono">{profile.phone_number || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Discord</span>
+                    <span className="text-sm font-medium text-slate-200">{profile.discord_tag || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* Identity & Contact */}
-            <div className="glass-panel p-8 rounded-2xl shadow-xl animate-slide-up delay-200">
-              <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
-                <Fingerprint className="w-4 h-4" /> Personal Dossier
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><User className="w-3 h-3" /> Full Name</p>
-                  <p className="text-sm font-medium text-slate-200 border-b border-slate-800 pb-1">{profile.name}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Hash className="w-3 h-3" /> Citizen ID</p>
-                  <p className="text-sm font-medium text-slate-300 border-b border-slate-800 pb-1 font-mono">{profile.citizen_id || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Phone className="w-3 h-3" /> Phone Number</p>
-                  <p className="text-sm font-medium text-slate-300 border-b border-slate-800 pb-1 font-mono">{profile.phone_number || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Mail className="w-3 h-3" /> Discord Communication</p>
-                  <p className="text-sm font-medium text-slate-300 border-b border-slate-800 pb-1">{profile.discord_tag || "N/A"}</p>
+              <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-brand" /> Department Info
+                </h3>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sub-Dept</span>
+                    <span className="text-sm font-medium text-slate-200">{profile.sub_department || "—"}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Titles</span>
+                    <span className="text-sm font-medium text-slate-200">{profile.titles || "—"}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time in Svc</span>
+                    <span className="text-sm font-medium text-brand">{profile.duration_in_department || "—"}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Strikes</span>
+                    <span className={`text-sm font-bold ${totalStrikes > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{totalStrikes}/5</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Warnings</span>
+                    <span className={`text-sm font-bold ${totalWarnings > 0 ? 'text-amber-500' : 'text-slate-400'}`}>{totalWarnings}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verbal Warnings</span>
+                    <span className={`text-sm font-bold ${totalVerbalWarnings > 0 ? 'text-indigo-400' : 'text-slate-400'}`}>{totalVerbalWarnings}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Service Record */}
-            <div className="glass-panel p-8 rounded-2xl shadow-xl animate-slide-up delay-300">
-              <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
-                <ClipboardList className="w-4 h-4" /> Service Record
+            {/* Dossier Grid Row 2 (Timeline) */}
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl">
+              <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-brand" /> Service Timeline
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Sub-Department</p>
-                  <p className="text-sm font-medium text-slate-200 bg-slate-950 p-2.5 rounded-md border border-slate-800/50">{profile.sub_department || "—"}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-brand" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Department Entry</p>
+                    <p className="text-sm font-medium text-slate-200">{formatDate(profile.department_join_date)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Assigned Titles</p>
-                  <p className="text-sm font-medium text-slate-200 bg-slate-950 p-2.5 rounded-md border border-slate-800/50">{profile.titles || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Department Entry</p>
-                  <p className="text-sm font-medium text-slate-300 bg-slate-950 p-2.5 rounded-md border border-slate-800/50 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-brand/70" /> {formatDate(profile.department_join_date)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Time in Service</p>
-                  <p className="text-sm font-medium text-slate-300 bg-slate-950 p-2.5 rounded-md border border-slate-800/50">{profile.duration_in_department || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Last Promotion</p>
-                  <p className="text-sm font-medium text-slate-300 bg-slate-950 p-2.5 rounded-md border border-slate-800/50 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-brand/70" /> {formatDate(profile.last_promotion_date)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Time in Current Rank</p>
-                  <p className="text-sm font-medium text-slate-300 bg-slate-950 p-2.5 rounded-md border border-slate-800/50">{profile.days_since_last_promoted !== undefined ? `${profile.days_since_last_promoted} Days` : "—"}</p>
-                </div>
-                <div className="col-span-1 md:col-span-2">
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Service Notes</p>
-                  <p className="text-sm font-medium text-slate-400 bg-slate-950/50 p-3 rounded-md border border-slate-800/30 min-h-[80px] whitespace-pre-wrap italic">
-                    {profile.notes || "No additional service notes recorded."}
-                  </p>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                    <Medal className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Last Promotion</p>
+                    <p className="text-sm font-medium text-slate-200">
+                      {formatDate(profile.last_promotion_date)} 
+                      <span className="text-slate-500 text-xs ml-2">({profile.days_since_last_promoted !== undefined ? `${profile.days_since_last_promoted} days ago` : ""})</span>
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {profile.notes && (
+                <div className="mt-8 pt-6 border-t border-slate-800/60">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Service Notes</p>
+                  <div className="bg-slate-950/50 rounded-xl p-4 border border-white/5 text-sm text-slate-300 italic whitespace-pre-wrap">
+                    {profile.notes}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Certifications */}
-            <div className="glass-panel p-8 rounded-2xl shadow-xl animate-slide-up delay-400">
-              <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
-                <Medal className="w-4 h-4" /> Certifications & Qualifications
+            {/* Certifications (Tags) */}
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl">
+              <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
+                <Medal className="w-4 h-4 text-brand" /> Active Certifications
               </h3>
 
               <div className="flex flex-wrap gap-3">
                 {profile.cert_fto && (
-                  <div className="flex items-center gap-2.5 bg-indigo-950/40 border border-indigo-500/30 px-4 py-2.5 rounded-lg">
-                    <Medal className="w-4 h-4 text-indigo-400" />
-                    <span className="text-sm font-bold tracking-wider text-indigo-200">FTO</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-indigo-950/40 border border-indigo-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-indigo-300">
+                    <span className="text-base">🎓</span> FTO
+                  </span>
                 )}
                 {profile.cert_asd && (
-                  <div className="flex items-center gap-2.5 bg-sky-950/40 border border-sky-500/30 px-4 py-2.5 rounded-lg">
-                    <Medal className="w-4 h-4 text-sky-400" />
-                    <span className="text-sm font-bold tracking-wider text-sky-200">ASD</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-sky-950/40 border border-sky-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-sky-300">
+                    <span className="text-base">🚁</span> ASD
+                  </span>
                 )}
                 {profile.cert_heat && (
-                  <div className="flex items-center gap-2.5 bg-rose-950/40 border border-rose-500/30 px-4 py-2.5 rounded-lg">
-                    <Medal className="w-4 h-4 text-rose-400" />
-                    <span className="text-sm font-bold tracking-wider text-rose-200">H.E.A.T</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-rose-950/40 border border-rose-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-rose-300">
+                    <span className="text-base">🏎️</span> H.E.A.T
+                  </span>
                 )}
                 {profile.cert_swat && (
-                  <div className="flex items-center gap-2.5 bg-slate-800/80 border border-slate-600 px-4 py-2.5 rounded-lg">
-                    <Shield className="w-4 h-4 text-slate-300" />
-                    <span className="text-sm font-bold tracking-wider text-slate-200">S.W.A.T</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-slate-300">
+                    <span className="text-base">🛡️</span> S.W.A.T
+                  </span>
                 )}
                 {profile.cert_cid && (
-                  <div className="flex items-center gap-2.5 bg-amber-950/40 border border-amber-500/30 px-4 py-2.5 rounded-lg">
-                    <User className="w-4 h-4 text-amber-400" />
-                    <span className="text-sm font-bold tracking-wider text-amber-200">C.I.D</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-amber-950/40 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-amber-300">
+                    <span className="text-base">🕵️</span> C.I.D
+                  </span>
                 )}
                 {profile.cert_meu && (
-                  <div className="flex items-center gap-2.5 bg-teal-950/40 border border-teal-500/30 px-4 py-2.5 rounded-lg">
-                    <Medal className="w-4 h-4 text-teal-400" />
-                    <span className="text-sm font-bold tracking-wider text-teal-200">M.E.U</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-teal-950/40 border border-teal-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-teal-300">
+                    <span className="text-base">🛥️</span> M.E.U
+                  </span>
                 )}
                 {profile.cert_k9 && (
-                  <div className="flex items-center gap-2.5 bg-orange-950/40 border border-orange-500/30 px-4 py-2.5 rounded-lg">
-                    <Medal className="w-4 h-4 text-orange-400" />
-                    <span className="text-sm font-bold tracking-wider text-orange-200">K-9 Unit</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-orange-950/40 border border-orange-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-orange-300">
+                    <span className="text-base">🐕</span> K-9 Unit
+                  </span>
                 )}
                 {profile.cert_sop && (
-                  <div className="flex items-center gap-2.5 bg-emerald-950/40 border border-emerald-500/30 px-4 py-2.5 rounded-lg">
-                    <FileText className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm font-bold tracking-wider text-emerald-200">S.O.P Reader</span>
-                  </div>
+                  <span className="inline-flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-emerald-300">
+                    <span className="text-base">📋</span> S.O.P
+                  </span>
                 )}
 
                 {!profile.cert_fto && !profile.cert_asd && !profile.cert_heat && !profile.cert_swat && !profile.cert_cid && !profile.cert_meu && !profile.cert_k9 && !profile.cert_sop && (
-                  <div className="w-full text-center py-8 border border-dashed border-slate-800 rounded-xl bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/20">
-                    <p className="text-sm text-slate-500 font-medium italic">No specialized certifications recorded in dossier.</p>
+                  <div className="w-full text-center py-6">
+                    <p className="text-sm text-slate-600 font-medium italic">No specialized certifications logged in database.</p>
                   </div>
                 )}
               </div>
@@ -438,54 +585,49 @@ Join Date: ${formatDate(profile.department_join_date)}
         </div>
       </div>
 
-      {/* Avatar URL Modal */}
+      {/* Avatar Modal */}
       {isEditingAvatar && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md" onClick={() => setIsEditingAvatar(false)}>
-          <div className="w-full max-w-md bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-5" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md" onClick={() => setIsEditingAvatar(false)}>
+          <div className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-[2rem] shadow-2xl p-8 space-y-6 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Camera className="w-5 h-5 text-brand" /> Profile Picture
+              <h3 className="text-sm font-bold tracking-widest uppercase text-white flex items-center gap-2">
+                <Camera className="w-4 h-4 text-brand" /> Avatar Setup
               </h3>
-              <button onClick={() => setIsEditingAvatar(false)} className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-colors">
-                <X className="w-4 h-4" />
+              <button onClick={() => setIsEditingAvatar(false)} className="text-slate-500 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Preview */}
             <div className="flex justify-center">
-              <div className="w-28 h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 flex items-center justify-center overflow-hidden">
+              <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-950 flex items-center justify-center overflow-hidden relative group">
                 {avatarInput ? (
                   <img src={avatarInput} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : avatarUrl ? (
                   <img src={avatarUrl} alt="Current" className="w-full h-full object-cover" />
                 ) : (
-                  <Camera className="w-8 h-8 text-slate-600" />
+                  <User className="w-10 h-10 text-slate-700" />
                 )}
               </div>
             </div>
 
-            {/* URL Input */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                <LinkIcon className="w-3 h-3" /> Image URL
-              </label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Image URL</label>
               <input
                 type="url"
                 value={avatarInput}
                 onChange={e => setAvatarInput(e.target.value)}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-brand/50 focus:border-brand/50 transition-colors"
-                placeholder="https://i.imgur.com/your-image.png"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-brand transition-colors"
+                placeholder="https://imgur.com/..."
                 autoFocus
               />
-              <p className="text-[10px] text-slate-600">Paste a direct link to your image (imgur, discord CDN, etc.)</p>
+              <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Direct image links only. Note: Some hosts (like Discord) block exports. Imgur is recommended.</p>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-3 pt-2">
               <button
                 onClick={handleSaveAvatar}
                 disabled={isSavingAvatar || !avatarInput.trim()}
-                className="flex-1 bg-brand hover:bg-brand/90 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-brand hover:bg-brand/90 text-white px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all disabled:opacity-50"
               >
                 {isSavingAvatar ? "Saving..." : "Save Picture"}
               </button>
@@ -493,9 +635,9 @@ Join Date: ${formatDate(profile.department_join_date)}
                 <button
                   onClick={handleRemoveAvatar}
                   disabled={isSavingAvatar}
-                  className="px-4 py-2.5 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-sm font-medium transition-colors disabled:opacity-50"
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-rose-400 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all disabled:opacity-50"
                 >
-                  Remove
+                  Remove Picture
                 </button>
               )}
             </div>

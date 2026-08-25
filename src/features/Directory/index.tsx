@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, CheckCircle2, Circle, Database, Edit } from "lucide-react";
+import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, Database, Edit, Cpu, ScanLine, Key, Activity } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
@@ -446,27 +446,48 @@ export default function EmployeeDirectory() {
       {/* Flash Card Modal */}
       {selectedEmployee && (
         <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md transition-opacity perspective-1000"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity perspective-1000"
           onClick={() => setSelectedEmployee(null)}
         >
           <div 
-            className="animate-toss relative w-full max-w-md h-[550px] cursor-pointer group"
+            className="animate-toss relative w-full max-w-[380px] h-[600px] cursor-pointer group/card"
             onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}
           >
-            <div className={`w-full h-full relative transition-transform duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+            <div className={`w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] preserve-3d shadow-2xl ${isFlipped ? 'rotate-y-180' : ''}`}>
               
-              {/* FRONT OF CARD */}
+              {/* FRONT OF CARD - SMART SECURITY BADGE */}
               <div 
-                className="absolute inset-0 w-full h-full p-6 rounded-2xl shadow-2xl bg-slate-950 border border-slate-800 flex flex-col relative overflow-hidden backface-hidden group"
+                className="absolute inset-0 w-full h-full rounded-[24px] bg-slate-900 flex flex-col overflow-hidden backface-hidden"
                 style={{
-                  boxShadow: `0 25px 50px -12px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.25)}, inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1)}`
+                  boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.2)}`
                 }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1.5 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
-                
-                {/* Background Logo */}
+                {/* Holographic Overlay Layer */}
                 <div 
-                  className="absolute inset-0 z-0 opacity-10 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-110 group-hover:scale-100 transition-transform duration-700"
+                  className="absolute inset-0 opacity-40 mix-blend-color-dodge pointer-events-none transition-transform duration-1000 ease-out group-hover/card:scale-110"
+                  style={{
+                    background: `linear-gradient(125deg, transparent 20%, ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.4)} 40%, rgba(255,255,255,0.8) 50%, ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.4)} 60%, transparent 80%)`,
+                    backgroundSize: '200% 200%',
+                    animation: 'shimmer 8s linear infinite'
+                  }}
+                />
+                
+                <style>{`
+                  @keyframes shimmer {
+                    0% { background-position: 200% center; }
+                    100% { background-position: -200% center; }
+                  }
+                `}</style>
+
+                {/* Top Border Accent */}
+                <div className="absolute top-0 left-0 right-0 h-2 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                
+                {/* Lanyard Hole */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-4 bg-black/60 rounded-full border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] z-20" />
+
+                {/* Background Logo Watermark */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-15 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-110"
                   style={{
                     backgroundImage: `url(${(() => {
                       const dept = selectedEmployee.department || '';
@@ -476,77 +497,126 @@ export default function EmployeeDirectory() {
                       if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
                       return '/logos/sasp.png';
                     })()})`,
-                    backgroundSize: '80%'
+                    backgroundSize: '120%'
                   }}
                 />
-                
 
+                <div className="flex flex-col z-10 relative mt-12 px-8 flex-1 h-full">
+                  {/* Header Row: Dept & Microchip */}
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={(() => {
+                          const dept = selectedEmployee.department || '';
+                          if (dept.includes('BCSO')) return '/logos/bcso.png';
+                          if (dept.includes('LSPD')) return '/logos/lspd.png';
+                          if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                          if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                          return '/logos/sasp.png';
+                        })()} 
+                        alt="Dept Logo" 
+                        className="h-7 w-auto drop-shadow-lg opacity-90 rounded-sm" 
+                      />
+                      <div>
+                        <h3 className="text-xs font-black tracking-[0.25em] uppercase text-white/90 drop-shadow-md">
+                          {selectedEmployee.department || "STATE"}
+                        </h3>
+                        <p className="text-[8px] font-mono tracking-widest" style={{ color: getDepartmentColor(selectedEmployee.department) }}>
+                          OFFICIAL CREDENTIAL
+                        </p>
+                      </div>
+                    </div>
+                    <Cpu className="w-8 h-8 text-amber-500/80 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+                  </div>
 
-                <div className="flex flex-col items-center text-center space-y-4 z-10 relative mt-6 flex-1 transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                  <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-2 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-sm shadow-[0_0_15px_rgba(var(--brand-main),0.2)] overflow-hidden"
-                    style={{
-                      borderColor: getDepartmentColor(selectedEmployee.department),
-                      color: getDepartmentColor(selectedEmployee.department)
-                    }}
-                  >
-                    {selectedEmployee.avatar_url ? (
-                      <img src={selectedEmployee.avatar_url} alt={selectedEmployee.name} className="w-full h-full object-cover" />
-                    ) : (
-                      selectedEmployee.name.charAt(0)
-                    )}
+                  {/* Photo & Main Info */}
+                  <div className="flex flex-col items-center mb-8">
+                    <div 
+                      className="w-32 h-32 rounded-xl flex items-center justify-center text-4xl font-bold border-2 bg-slate-950/80 backdrop-blur-xl border-white/10 shadow-2xl overflow-hidden relative"
+                    >
+                      <div className="absolute inset-0 border border-white/5 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] z-10 pointer-events-none" />
+                      {selectedEmployee.avatar_url ? (
+                        <img src={selectedEmployee.avatar_url} alt={selectedEmployee.name} className="w-full h-full object-cover filter contrast-110" />
+                      ) : (
+                        <span style={{ color: getDepartmentColor(selectedEmployee.department) }}>{selectedEmployee.name.charAt(0)}</span>
+                      )}
+                      
+                      {/* Photo overlay scanline */}
+                      <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none opacity-30 z-20" />
+                    </div>
+
+                    <div className="mt-5 text-center w-full">
+                      <h2 className="text-2xl font-black text-white tracking-wide uppercase drop-shadow-lg leading-none mb-1">
+                        {selectedEmployee.name}
+                      </h2>
+                      <p className="font-mono text-lg font-bold tracking-[0.15em] drop-shadow-md" style={{ color: getDepartmentColor(selectedEmployee.department) }}>
+                        #{selectedEmployee.badge_number}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white tracking-wide leading-tight">{selectedEmployee.name}</h2>
-                    <p className="font-mono mt-1 text-sm tracking-widest" style={{ color: getDepartmentColor(selectedEmployee.department) }}>{selectedEmployee.badge_number}</p>
-                  </div>
-                  <div className="w-full h-px bg-slate-800/60 my-2" />
                   
-                  <div className="grid grid-cols-2 gap-y-6 gap-x-6 w-full text-left mt-2">
+                  {/* Data Grid */}
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-4 w-full text-left mt-auto bg-black/40 p-4 rounded-xl border border-white/5 backdrop-blur-md">
                     <div>
-                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Department</p>
-                      <p className="text-sm font-bold tracking-wide truncate" style={{ color: getDepartmentColor(selectedEmployee.department) }}>{selectedEmployee.department || "—"}</p>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Rank</p>
+                      <p className="text-xs font-bold text-slate-200 truncate">{selectedEmployee.rank || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Rank</p>
-                      <p className="text-sm font-medium text-slate-200 truncate">{selectedEmployee.rank || "—"}</p>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Role</p>
+                      <p className="text-xs font-bold text-slate-200 truncate">{selectedEmployee.role || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Status</p>
-                      <p className={`text-sm font-medium truncate ${selectedEmployee.status === 'Active' ? 'text-emerald-400' : selectedEmployee.status === 'Inactive' ? 'text-rose-400' : 'text-fuchsia-400'}`}>{selectedEmployee.status || "Active"}</p>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Status</p>
+                      <p className={`text-xs font-black tracking-wider truncate uppercase ${selectedEmployee.status === 'Active' ? 'text-emerald-400' : selectedEmployee.status === 'Inactive' ? 'text-rose-400' : 'text-fuchsia-400'}`}>
+                        {selectedEmployee.status || "ACTIVE"}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Role</p>
-                      <p className="text-sm font-medium text-slate-300 truncate">{selectedEmployee.role || "—"}</p>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Clearance</p>
+                      <p className="text-xs font-bold text-amber-400 truncate flex items-center gap-1">
+                        <Key className="w-3 h-3" /> LEVEL {selectedEmployee.is_admin ? 'ALPHA' : 'BRAVO'}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-slate-800/60 relative z-10">
-                  <p className="text-[9px] tracking-[0.2em] text-slate-500 uppercase text-center group-hover:opacity-0 transition-opacity duration-300">
-                    San Andreas State Property
-                  </p>
-                  <p 
-                    className="absolute inset-x-0 bottom-4 text-[10px] tracking-widest uppercase font-bold text-center opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ color: getDepartmentColor(selectedEmployee.department) }}
-                  >
-                    Click anywhere to flip
+                {/* Footer Barcode */}
+                <div className="mt-auto h-16 w-full flex flex-col items-center justify-end pb-4 bg-gradient-to-t from-black/80 to-transparent z-10 relative">
+                  <div className="flex gap-1 h-6 opacity-60">
+                    {/* Simulated barcode bars */}
+                    {[1, 3, 1, 2, 4, 1, 1, 3, 2, 1, 5, 1, 2, 3, 1, 2, 1].map((w, i) => (
+                      <div key={i} className="bg-white h-full" style={{ width: `${w * 2}px` }} />
+                    ))}
+                  </div>
+                  <p className="text-[7px] font-mono tracking-widest text-slate-500 mt-2 uppercase">
+                    Scan for verification
                   </p>
                 </div>
               </div>
 
-              {/* BACK OF CARD */}
+              {/* BACK OF CARD - INTELLIGENCE DOSSIER (BENTO BOX) */}
               <div 
-                className="absolute inset-0 w-full h-full p-6 rounded-2xl shadow-2xl bg-slate-950 border border-slate-800 overflow-hidden backface-hidden rotate-y-180 flex flex-col group"
+                className="absolute inset-0 w-full h-full rounded-[24px] bg-slate-950 flex flex-col overflow-hidden backface-hidden rotate-y-180"
                 style={{
-                  boxShadow: `0 25px 50px -12px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.25)}, inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.1)}`
+                  boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 30px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.15)}`
                 }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1.5 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
-                
-                {/* Background Logo */}
+                {/* Holographic Overlay Layer */}
                 <div 
-                  className="absolute inset-0 z-0 opacity-10 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-100 group-hover:scale-110 transition-transform duration-700"
+                  className="absolute inset-0 opacity-20 mix-blend-color-dodge pointer-events-none transition-transform duration-1000 ease-out group-hover/card:scale-110"
+                  style={{
+                    background: `linear-gradient(125deg, transparent 20%, ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.4)} 40%, rgba(255,255,255,0.8) 50%, ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.4)} 60%, transparent 80%)`,
+                    backgroundSize: '200% 200%',
+                    animation: 'shimmer 8s linear infinite'
+                  }}
+                />
+
+                {/* Tech Grid Background */}
+                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+                
+                {/* Background Logo Watermark */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-20 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-110"
                   style={{
                     backgroundImage: `url(${(() => {
                       const dept = selectedEmployee.department || '';
@@ -556,61 +626,111 @@ export default function EmployeeDirectory() {
                       if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
                       return '/logos/sasp.png';
                     })()})`,
-                    backgroundSize: '80%'
+                    backgroundSize: '120%'
                   }}
                 />
                 
-                <div className="flex justify-between items-center mb-6 relative z-10 pt-2 transform group-hover:scale-105 transition-transform duration-700 ease-out origin-top">
-                  <div>
-                    <h3 className="text-xl font-bold tracking-wide text-white leading-tight">
-                      {selectedEmployee.name}
-                    </h3>
-                    <p className="text-[10px] font-mono tracking-widest mt-1" style={{ color: getDepartmentColor(selectedEmployee.department) }}>DOSSIER DETAILS</p>
+                <div className="absolute top-0 left-0 right-0 h-1.5 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 relative z-10 border-b border-white/5 bg-black/20">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <h3 className="text-lg font-black tracking-wide text-white uppercase flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-emerald-500" />
+                        DOSSIER FILE
+                      </h3>
+                      <p className="text-[9px] font-mono tracking-widest mt-1 opacity-70" style={{ color: getDepartmentColor(selectedEmployee.department) }}>
+                        {selectedEmployee.name} // {selectedEmployee.badge_number}
+                      </p>
+                    </div>
+                    <img 
+                      src={(() => {
+                        const dept = selectedEmployee.department || '';
+                        if (dept.includes('BCSO')) return '/logos/bcso.png';
+                        if (dept.includes('LSPD')) return '/logos/lspd.png';
+                        if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                        if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                        return '/logos/sasp.png';
+                      })()} 
+                      alt="Department Logo" 
+                      className="h-10 w-auto opacity-80 drop-shadow-md" 
+                    />
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pr-2 space-y-4 animated-scrollbar relative z-10 transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                  <div className="grid grid-cols-2 gap-3 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Citizen ID</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.citizen_id || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Phone Number</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.phone_number || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Sub Dept.</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.sub_department || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Titles</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.titles || '—'}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Join Date</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.department_join_date || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Duration</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.duration_in_department || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Last Promoted</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.last_promotion_date || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Days Since</p>
-                      <p className="text-xs font-medium text-slate-200">{selectedEmployee.days_since_last_promoted !== null && selectedEmployee.days_since_last_promoted !== undefined ? selectedEmployee.days_since_last_promoted : '—'}</p>
+                {/* Bento Box Grid Content */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 relative z-10">
+                  
+                  {/* Identity Block */}
+                  <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-4 border border-white/5 shadow-inner">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                      <ScanLine className="w-3 h-3" /> Identity Matrix
+                    </p>
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-4">
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Citizen ID</p>
+                        <p className="text-xs font-medium text-slate-200 font-mono">{selectedEmployee.citizen_id || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Phone Number</p>
+                        <p className="text-xs font-medium text-slate-200 font-mono">{selectedEmployee.phone_number || '—'}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Discord Tag</p>
+                        <p className="text-xs font-medium text-slate-200">{selectedEmployee.discord_tag || '—'}</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 backdrop-blur-sm p-3.5 rounded-lg border border-slate-800/50">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Certifications</p>
-                    <div className="grid grid-cols-3 gap-y-2 gap-x-2">
+                  {/* Service Record Block */}
+                  <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-4 border border-white/5 shadow-inner">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                      <Activity className="w-3 h-3" /> Service Record
+                    </p>
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-4">
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Sub Dept.</p>
+                        <p className="text-xs font-medium text-slate-200">{selectedEmployee.sub_department || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Titles</p>
+                        <p className="text-xs font-medium text-slate-200 truncate" title={selectedEmployee.titles}>{selectedEmployee.titles || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Join Date</p>
+                        <p className="text-xs font-medium text-slate-200">{selectedEmployee.department_join_date || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest mb-0.5">Duration</p>
+                        <p className="text-xs font-medium text-slate-200">{selectedEmployee.duration_in_department || '—'}</p>
+                      </div>
+                      
+                      {/* Promotion Progress Bar style */}
+                      <div className="col-span-2 mt-1">
+                        <div className="flex justify-between items-end mb-1">
+                          <p className="text-[8px] text-slate-500 uppercase tracking-widest">Last Promoted</p>
+                          <p className="text-[9px] font-bold text-emerald-400">{selectedEmployee.days_since_last_promoted !== null ? `${selectedEmployee.days_since_last_promoted} Days Ago` : '—'}</p>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
+                            style={{ 
+                              width: `${Math.min(100, Math.max(5, (selectedEmployee.days_since_last_promoted || 0) / 100 * 100))}%` 
+                            }} 
+                          />
+                        </div>
+                        <p className="text-[8px] text-slate-500 text-right mt-1">{selectedEmployee.last_promotion_date || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certifications Block */}
+                  <div className="bg-slate-900/50 backdrop-blur-md rounded-xl p-4 border border-white/5 shadow-inner">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                      <Shield className="w-3 h-3" /> Active Certifications
+                    </p>
+                    <div className="flex flex-wrap gap-2">
                       {[
                         { key: 'cert_fto', label: 'FTO' },
                         { key: 'cert_asd', label: 'ASD' },
@@ -622,17 +742,20 @@ export default function EmployeeDirectory() {
                         { key: 'cert_sop', label: 'SOP' }
                       ].map(cert => {
                         const isActive = selectedEmployee[cert.key as keyof Employee];
-                        return (
-                          <div key={cert.key} className="flex items-center gap-1.5">
-                            {isActive ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            ) : (
-                              <Circle className="w-3.5 h-3.5 text-slate-700" />
-                            )}
-                            <span className={`text-[10px] font-semibold tracking-wide ${isActive ? 'text-slate-200' : 'text-slate-500'}`}>
-                              {cert.label}
-                            </span>
-                          </div>
+                        return isActive ? (
+                          <span 
+                            key={cert.key} 
+                            className="px-2.5 py-1 rounded-md text-[9px] font-black tracking-widest uppercase border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                          >
+                            {cert.label}
+                          </span>
+                        ) : (
+                          <span 
+                            key={cert.key} 
+                            className="px-2.5 py-1 rounded-md text-[9px] font-bold tracking-widest uppercase border border-slate-700/50 bg-slate-800/30 text-slate-500"
+                          >
+                            {cert.label}
+                          </span>
                         )
                       })}
                     </div>

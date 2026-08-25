@@ -14,8 +14,8 @@ export function isTrueAdmin(user: Partial<Employee> | null | undefined): boolean
 export function isHighCommandOrHR(user: Partial<Employee> | null | undefined): boolean {
   if (!user) return false;
   if (user.is_admin) return true;
-  const role = user.role || '';
-  return ['High Command', 'HR'].includes(role);
+  const role = (user.role || '').toLowerCase();
+  return ['high command', 'hr'].includes(role);
 }
 
 /**
@@ -24,8 +24,8 @@ export function isHighCommandOrHR(user: Partial<Employee> | null | undefined): b
 export function isCommandOrHigher(user: Partial<Employee> | null | undefined): boolean {
   if (!user) return false;
   if (user.is_admin) return true;
-  const role = user.role || '';
-  return ['admin', 'High Command', 'Command'].includes(role);
+  const role = (user.role || '').toLowerCase();
+  return ['admin', 'high command', 'command', 'hr'].includes(role);
 }
 
 /**
@@ -34,6 +34,6 @@ export function isCommandOrHigher(user: Partial<Employee> | null | undefined): b
 export function canToggleAdminSafeMode(user: Partial<Employee> | null | undefined): boolean {
   if (!user) return false;
   if (user.is_admin) return true;
-  const role = user.role || '';
+  const role = (user.role || '').toLowerCase();
   return ['admin'].includes(role);
 }

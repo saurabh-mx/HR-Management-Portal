@@ -43,7 +43,7 @@ export default function DisciplinarySystem() {
       if (profile.is_admin) setIsTrueAdmin(true);
       if (isHighCommandOrHR(profile)) {
         setIsAdmin(true);
-      } else if (profile.role === 'Command') {
+      } else if (profile.role?.toLowerCase() === 'command') {
         setIsCommand(true);
       }
       fetchStrikes(profile, profile.name);
@@ -61,10 +61,7 @@ export default function DisciplinarySystem() {
   async function fetchStrikes(userObj?: any, userName?: string) {
     let query = supabase.from('strikes').select('*').order('created_at', { ascending: false });
     
-    // Normal users ONLY see their own strikes
-    if (userObj && !isHighCommandOrHR(userObj) && userObj.role !== 'Command' && !userObj.is_admin) {
-      query = query.eq('name', userName || "");
-    } else if (!userObj) {
+    if (!userObj) {
       // If user not found in DB, show nothing
       query = query.eq('id', '00000000-0000-0000-0000-000000000000');
     }
@@ -218,7 +215,7 @@ export default function DisciplinarySystem() {
                 }`}
               >
                 {showForm ? <X className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
-                <span>{showForm ? "Cancel" : "Issue Action"}</span>
+                <span>{showForm ? "Cancel" : "Issue a Strike"}</span>
               </button>
             </div>
           )}
