@@ -112,7 +112,7 @@ export default function Landing() {
         </div>
 
         <Reveal className="relative z-20 px-6 w-full max-w-5xl mx-auto text-center mt-12">
-          <div className="inline-block bg-slate-950/40 p-10 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl">
+          <div className="inline-block glass-panel p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-slide-up">
             <h2 className="text-4xl md:text-7xl font-extralight tracking-widest mb-2 uppercase drop-shadow-[0_5px_15px_rgba(0,0,0,1)] text-slate-100">
               {landingData.hero.titleTop} 
             </h2>
@@ -203,7 +203,7 @@ export default function Landing() {
                                  feature.theme === 'emerald' ? 'text-emerald-400 border-emerald-500/20 group-hover:border-emerald-500/50 shadow-emerald-500/5' : 
                                  'text-brand border-brand/20 group-hover:border-brand/50 shadow-brand/5';
               return (
-                <Reveal key={idx} delay={`delay-${(idx + 1) * 100}`} className={`relative group bg-slate-950/60 backdrop-blur-xl p-10 border transition-all duration-500 shadow-2xl hover:-translate-y-2 rounded-2xl ${themeColor}`}>
+                <Reveal key={idx} delay={`delay-${(idx + 1) * 100}`} className={`relative group bento-card glass-panel p-10 transition-all duration-500 shadow-2xl ${themeColor}`}>
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className={`p-4 rounded-xl bg-slate-900 inline-block mb-8 border border-white/5`}>
                     <Icon className={`w-8 h-8 ${themeColor.split(' ')[0]}`} />

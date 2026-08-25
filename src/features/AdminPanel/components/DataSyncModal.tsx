@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Database, Link as LinkIcon, RefreshCw, X, AlertTriangle, Play, Save, CheckCircle2 } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
+import { fetchAllEmployees, runGlobalAutoSync } from "@/lib/sync/syncService";
 import Papa from "papaparse";
 
 interface DataSyncModalProps {
@@ -144,7 +145,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
           }
 
           setSyncStatus("Fetching current database roster...");
-          const { data: currentRoster } = await supabase.from('employees').select('*');
+          const currentRoster = await fetchAllEmployees();
           
           const stagedData: any[] = [];
           const processedIds = new Set<string>();
@@ -206,11 +207,11 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
             
             const r = existing ? existing.role : 'Patrol Officer';
             
-            // Priority: Existing DB Dept -> CSV Dept Column -> Fallback passed to function -> 'SASP'
+            // Priority: CSV Dept Column -> Fallback passed to function -> Existing DB Dept -> 'SASP'
             let dept = 'SASP';
-            if (existing && existing.department) dept = existing.department;
-            else if (sheet_department) dept = sheet_department;
+            if (sheet_department) dept = sheet_department;
             else if (fallbackDept) dept = fallbackDept;
+            else if (existing && existing.department) dept = existing.department;
             
             sheetDepartments.add(dept.toUpperCase());
 
@@ -384,6 +385,14 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
     }));
     setSavedSyncs(newSyncs);
     localStorage.setItem('hr_portal_saved_syncs', JSON.stringify(newSyncs));
+
+    // If it was just toggled ON, immediately trigger a background sync for all enabled rosters
+    if (newSyncs[idxToToggle].isAutoSync) {
+      const autoSyncProfiles = newSyncs.filter(s => s.isAutoSync && s.url);
+      if (autoSyncProfiles.length > 0) {
+        runGlobalAutoSync(autoSyncProfiles);
+      }
+    }
   };
 
   const handleCloseSuccess = () => {
@@ -467,7 +476,10 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                 <option value="">-- Select Role --</option>
                 <option value="Patrol Officer">Patrol Officer</option>
                 <option value="High Command">High Command</option>
+                <option value="Command">Command</option>
+                <option value="Supervisor">Supervisor</option>
                 <option value="HR">HR</option>
+                <option value="Student">Student</option>
               </select>
             </div>
             <div className="flex gap-2 items-center">
@@ -483,6 +495,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
               >
                 <option value="">-- Select Dept --</option>
                 <option value="SASP">SASP</option>
+                <option value="SASP Academy">SASP Academy</option>
                 <option value="LSPD">LSPD</option>
                 <option value="BCSO">BCSO</option>
                 <option value="SAPR">SAPR</option>
@@ -541,6 +554,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                         className="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 w-full max-w-[120px] disabled:opacity-50"
                       >
                         <option value="SASP">SASP</option>
+                        <option value="SASP Academy">SASP Academy</option>
                         <option value="LSPD">LSPD</option>
                         <option value="BCSO">BCSO</option>
                         <option value="SAPR">SAPR</option>
@@ -559,7 +573,9 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                         <option value="Patrol Officer">Patrol Officer</option>
                         <option value="High Command">High Command</option>
                         <option value="Command">Command</option>
+                        <option value="Supervisor">Supervisor</option>
                         <option value="HR">HR</option>
+                        <option value="Student">Student</option>
                       </select>
                     </td>
                   </tr>

@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Edit2, Plus, Search } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import Papa from "papaparse";
+import { fetchAllEmployees } from "@/lib/sync/syncService";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { logAuditAction } from "@/lib/auditLogger";
 import LOASyncModal from '@/features/AdminPanel/components/LOASyncModal';
@@ -354,7 +355,7 @@ export default function AdminPanel() {
           }
 
           // Fetch current roster to compare
-          const { data: currentRoster } = await supabase.from('employees').select('*');
+          const currentRoster = await fetchAllEmployees();
 
           // 3. Process data rows (start after subHeaderRow)
           const stagedData: any[] = [];

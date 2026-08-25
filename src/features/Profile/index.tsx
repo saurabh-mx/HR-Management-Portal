@@ -146,7 +146,7 @@ Join Date: ${formatDate(profile.department_join_date)}
       <div className="relative z-10 space-y-8">
 
         {/* HERO HEADER */}
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl glass-panel border border-brand/20 animate-fade-in">
           <div className="absolute top-0 right-0 p-6 flex flex-col items-end z-20">
             {canToggleAdmin && (
               <div className="flex items-center gap-4 bg-slate-950/80 backdrop-blur-md border border-slate-700/50 px-4 py-2 rounded-xl shadow-lg">
@@ -200,12 +200,12 @@ Join Date: ${formatDate(profile.department_join_date)}
 
           {/* LEFT COLUMN: ID CARD & ACTIONS */}
           <div className="col-span-1 lg:col-span-4 space-y-6">
-            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-6 rounded-xl shadow-xl flex flex-col items-center">
+            <div className="glass-panel p-6 rounded-2xl shadow-2xl flex flex-col items-center animate-slide-up">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 w-full border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Shield className="w-4 h-4" /> Digital Credentials
               </h3>
 
-              <div ref={idCardRef} className="w-full p-6 rounded-xl shadow-2xl bg-slate-950 border border-slate-800 flex flex-col relative overflow-hidden group">
+              <div ref={idCardRef} className="w-full p-6 rounded-xl shadow-2xl bg-slate-950 border border-brand/50 flex flex-col relative overflow-hidden group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(var(--brand-main),0.3)] glow-border">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-brand z-10" />
                 <div
                   className="absolute inset-0 z-0 opacity-10 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-110 group-hover:scale-100 transition-transform duration-700"
@@ -261,7 +261,7 @@ Join Date: ${formatDate(profile.department_join_date)}
             </div>
 
             {/* Security Settings Panel */}
-            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-6 rounded-xl shadow-xl">
+            <div className="glass-panel p-6 rounded-2xl shadow-xl animate-slide-up delay-100">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Key className="w-4 h-4" /> Security Settings
               </h3>
@@ -303,7 +303,7 @@ Join Date: ${formatDate(profile.department_join_date)}
           <div className="col-span-1 lg:col-span-8 space-y-6">
 
             {/* Identity & Contact */}
-            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
+            <div className="glass-panel p-8 rounded-2xl shadow-xl animate-slide-up delay-200">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Fingerprint className="w-4 h-4" /> Personal Dossier
               </h3>
@@ -328,7 +328,7 @@ Join Date: ${formatDate(profile.department_join_date)}
             </div>
 
             {/* Service Record */}
-            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
+            <div className="glass-panel p-8 rounded-2xl shadow-xl animate-slide-up delay-300">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <ClipboardList className="w-4 h-4" /> Service Record
               </h3>
@@ -371,7 +371,7 @@ Join Date: ${formatDate(profile.department_join_date)}
             </div>
 
             {/* Certifications */}
-            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 p-8 rounded-xl shadow-xl">
+            <div className="glass-panel p-8 rounded-2xl shadow-xl animate-slide-up delay-400">
               <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-6 border-b border-brand/30 pb-2 flex items-center gap-2">
                 <Medal className="w-4 h-4" /> Certifications & Qualifications
               </h3>

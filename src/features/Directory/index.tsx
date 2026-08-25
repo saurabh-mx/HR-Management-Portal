@@ -337,6 +337,7 @@ export default function EmployeeDirectory() {
                 <label className="text-xs font-medium text-slate-400">Department</label>
                 <select value={newEmployee.department} onChange={e => setNewEmployee({...newEmployee, department: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                   <option value="SASP">SASP</option>
+                  <option value="SASP Academy">SASP Academy</option>
                   <option value="LSPD">LSPD</option>
                   <option value="BCSO">BCSO</option>
                   <option value="SAPR">SAPR</option>
@@ -399,8 +400,8 @@ export default function EmployeeDirectory() {
         />
       </div>
 
-      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 shadow-xl overflow-hidden">
-        <CardHeader>
+      <Card className="glass-panel rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 animate-slide-up">
+        <CardHeader className="bg-slate-950/40 border-b border-white/5">
           <CardTitle className="text-lg font-medium text-white">{activeDepartment === "All" ? "Global" : activeDepartment} Active Roster</CardTitle>
           <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />

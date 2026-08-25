@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import type { Session } from "@supabase/supabase-js";
 import type { Employee } from "@/types";
-import { runBackgroundAutoSync } from '@/lib/sync/syncService';
+import { runGlobalAutoSync } from '@/lib/sync/syncService';
 import { logAuditAction } from "@/lib/auditLogger";
 import { AlertTriangle, X } from "lucide-react";
 import { isCommandOrHigher } from '@/auth/roles/roleMatrix';
@@ -56,6 +56,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Periodic Auto-Sync every 15 minutes for Admins
+  useEffect(() => {
+    if (!profile || !isCommandOrHigher(profile)) return;
+
+    const syncInterval = setInterval(() => {
+      const savedSyncsRaw = localStorage.getItem('hr_portal_saved_syncs');
+      if (savedSyncsRaw) {
+        try {
+          const syncs = JSON.parse(savedSyncsRaw);
+          const autoSyncProfiles = syncs.filter((s: any) => s.isAutoSync && s.url);
+          if (autoSyncProfiles.length > 0) {
+            runGlobalAutoSync(autoSyncProfiles);
+          }
+        } catch (e) {}
+      }
+    }, 15 * 60 * 1000);
+
+    return () => clearInterval(syncInterval);
+  }, [profile]);
+
   const fetchProfile = async (email: string | undefined, isLoginEvent: boolean = false, userMetaData: any = null) => {
     let discordId = "";
 
@@ -101,13 +121,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const autoSyncProfiles = syncs.filter((s: any) => s.isAutoSync && s.url);
             if (autoSyncProfiles.length > 0) {
               console.log(`Triggering background auto-sync for ${autoSyncProfiles.length} roster(s)...`);
-              for (const profile of autoSyncProfiles) {
-                runBackgroundAutoSync(profile.url, profile.defaultDept).then((success) => {
-                  if (success) {
-                    console.log(`Background roster sync completed successfully for: ${profile.name || 'Unknown'}`);
-                  }
-                });
-              }
+              runGlobalAutoSync(autoSyncProfiles).then(() => {
+                console.log(`Global background roster sync completed.`);
+              });
             }
           } catch (e) {
             console.error("Failed to parse saved syncs for auto-sync.");

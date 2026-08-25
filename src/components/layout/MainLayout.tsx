@@ -97,11 +97,7 @@ export default function MainLayout() {
         
         {/* Top Header */}
         <header 
-          className="relative h-16 bg-slate-950/80 backdrop-blur-xl flex items-center justify-between px-6 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)] transition-all duration-500"
-          style={{
-            borderBottom: `1px solid ${hexToRgba(deptColor, 0.3)}`,
-            boxShadow: `0 4px 20px -10px ${hexToRgba(deptColor, 0.4)}`
-          }}
+          className="relative h-16 glass-panel rounded-2xl mx-4 mt-4 mb-2 flex items-center justify-between px-6 z-40 transition-all duration-500 animate-slide-down"
         >
           <span 
             className="font-black tracking-widest uppercase text-sm drop-shadow-md"
@@ -156,15 +152,9 @@ export default function MainLayout() {
                   <div className="px-4 py-4 border-b bg-slate-900/50" style={{ borderColor: hexToRgba(deptColor, 0.2) }}>
                     <p className="text-sm font-black tracking-wider uppercase text-white">{profile?.name}</p>
                     <div className="flex items-center gap-1.5 mt-2">
-                      {profile?.is_admin ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-400 uppercase tracking-wider border border-rose-500/20">
-                          <ShieldCheck className="w-3 h-3" /> Command / HR
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border border-slate-700">
-                          <Shield className="w-3 h-3" /> Standard Officer
-                        </span>
-                      )}
+                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${profile?.is_admin ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                        {profile?.is_admin ? <ShieldCheck className="w-3 h-3" /> : <Shield className="w-3 h-3" />} {profile?.role || 'Unknown'}
+                      </span>
                     </div>
                   </div>
   

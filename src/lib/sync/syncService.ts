@@ -1,11 +1,66 @@
 import { supabase } from "../supabase/supabaseClient";
 import Papa from "papaparse";
 
-/**
- * Runs a complete Google Sheets -> Supabase sync in the background
- * completely bypassing the UI and automatically committing records.
- */
-export async function runBackgroundAutoSync(csvUrl: string, fallbackDept?: string) {
+export async function fetchAllEmployees() {
+  let allRoster: any[] = [];
+  let hasMore = true;
+  let from = 0;
+  const pageSize = 1000;
+  
+  while (hasMore) {
+    const { data, error } = await supabase.from('employees').select('*').range(from, from + pageSize - 1);
+    if (error) {
+      console.error("Error fetching employees:", error);
+      hasMore = false;
+      break;
+    }
+    if (data && data.length > 0) {
+      allRoster = [...allRoster, ...data];
+      from += pageSize;
+      if (data.length < pageSize) hasMore = false;
+    } else {
+      hasMore = false;
+    }
+  }
+  return allRoster;
+}
+
+export async function runGlobalAutoSync(profiles: {url: string, defaultDept?: string}[]) {
+  console.log(`Starting global sync for ${profiles.length} profiles...`);
+  const globalProcessedIds = new Set<string>();
+  const globalSheetDepartments = new Set<string>();
+  let totalAdded = 0;
+  let totalUpdated = 0;
+  let totalDeleted = 0;
+
+  for (const profile of profiles) {
+    try {
+      const result = await processSingleSheet(profile.url, profile.defaultDept);
+      if (result) {
+        totalAdded += result.added;
+        totalUpdated += result.updated;
+        result.processedIds.forEach(id => globalProcessedIds.add(id));
+        result.sheetDepartments.forEach(dep => globalSheetDepartments.add(dep.toUpperCase()));
+      }
+    } catch (err) {
+      console.error(`Error processing sheet ${profile.name || profile.url}:`, err);
+    }
+  }
+
+  // Global deletion phase
+  const finalRoster = await fetchAllEmployees();
+  for (const emp of finalRoster) {
+    if (!globalProcessedIds.has(emp.id) && globalSheetDepartments.has((emp.department || '').toUpperCase())) {
+      const { error } = await supabase.from('employees').delete().eq('id', emp.id);
+      if (!error) totalDeleted++;
+    }
+  }
+
+  console.log(`Global AutoSync Complete: Added ${totalAdded}, Updated ${totalUpdated}, Deleted ${totalDeleted}`);
+  return true;
+}
+
+export async function processSingleSheet(csvUrl: string, fallbackDept?: string): Promise<{added: number, updated: number, processedIds: Set<string>, sheetDepartments: Set<string>} | null> {
   try {
     const response = await fetch(csvUrl);
     const csvText = await response.text();
@@ -27,7 +82,7 @@ export async function runBackgroundAutoSync(csvUrl: string, fallbackDept?: strin
 
           if (headerIdx === -1) {
             console.error("AutoSync: Could not find header row.");
-            return resolve(false);
+            return resolve(null);
           }
 
           const headerRow = rows[headerIdx];
@@ -64,10 +119,10 @@ export async function runBackgroundAutoSync(csvUrl: string, fallbackDept?: strin
 
           if (idxName === -1 || idxBadge === -1) {
             console.error("AutoSync: Could not find NAME or BADGE # columns.");
-            return resolve(false);
+            return resolve(null);
           }
 
-          const { data: currentRoster } = await supabase.from('employees').select('*');
+          const currentRoster = await fetchAllEmployees();
           
           let added = 0;
           let updated = 0;
@@ -128,11 +183,11 @@ export async function runBackgroundAutoSync(csvUrl: string, fallbackDept?: strin
 
             const r = existing ? existing.role : 'Patrol Officer';
             
-            // Priority: Existing DB Dept -> CSV Dept Column -> Fallback passed to function -> 'SASP'
+            // Priority: CSV Dept Column -> Fallback passed to function -> Existing DB Dept -> 'SASP'
             let dept = 'SASP';
-            if (existing && existing.department) dept = existing.department;
-            else if (sheet_department) dept = sheet_department;
+            if (sheet_department) dept = sheet_department;
             else if (fallbackDept) dept = fallbackDept;
+            else if (existing && existing.department) dept = existing.department;
 
             sheetDepartments.add(dept.toUpperCase());
 
@@ -161,31 +216,26 @@ export async function runBackgroundAutoSync(csvUrl: string, fallbackDept?: strin
               const { error } = await supabase.from('employees').update(payload).eq('id', existing.id);
               if (!error) updated++;
             } else {
-              const { error } = await supabase.from('employees').insert([payload]);
-              if (!error) added++;
-            }
-          }
-          
-          if (currentRoster) {
-            for (const emp of currentRoster) {
-              if (!processedIds.has(emp.id) && sheetDepartments.has((emp.department || '').toUpperCase())) {
-                const { error } = await supabase.from('employees').delete().eq('id', emp.id);
-                if (!error) deleted++;
+              const { data: insertedData, error } = await supabase.from('employees').insert([payload]).select();
+              if (!error) {
+                added++;
+                if (insertedData && insertedData.length > 0) {
+                  processedIds.add(insertedData[0].id);
+                }
               }
             }
           }
           
-          console.log(`AutoSync Complete: Added ${added}, Updated ${updated}, Deleted ${deleted}`);
-          resolve(true);
+          resolve({ added, updated, processedIds, sheetDepartments });
         },
         error: (error: any) => {
           console.error("AutoSync Parse Error:", error);
-          resolve(false);
+          resolve(null);
         }
       });
     });
   } catch (err: any) {
     console.error("AutoSync Fetch Error:", err);
-    return false;
+    return null;
   }
 }

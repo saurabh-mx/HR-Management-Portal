@@ -31,7 +31,7 @@ const NavButton = ({ item, isActive, isCollapsed, deptColor }: any) => {
         "group relative flex items-center rounded-xl text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]",
         isCollapsed ? "justify-center p-3 my-1" : "gap-3 px-3 py-2.5 my-0.5",
         isActive
-          ? "bg-white/5 text-white"
+          ? "bg-primary/10 text-white shadow-[0_0_15px_rgba(var(--primary),0.2)]"
           : "text-slate-400 hover:text-white hover:bg-white/5"
       )}
     >
@@ -92,7 +92,7 @@ export const Sidebar = () => {
 
   return (
     <div className={cn(
-      "h-full bg-slate-950/95 backdrop-blur-3xl border-r border-white/5 flex flex-col shadow-2xl z-50 relative transition-all duration-[400ms] ease-[cubic-bezier(0.25,1,0.5,1)]",
+      "h-[calc(100vh-2rem)] my-4 ml-4 glass-panel rounded-2xl flex flex-col shadow-2xl z-50 relative transition-all duration-[400ms] ease-[cubic-bezier(0.25,1,0.5,1)] animate-slide-up",
       isCollapsed ? "w-[80px]" : "w-[260px]"
     )}>
       <style>{`
@@ -129,7 +129,7 @@ export const Sidebar = () => {
       </div>
 
       {/* Navigation Links */}
-      <nav className={cn("flex-1 overflow-y-auto py-4 space-y-1 relative no-scrollbar", isCollapsed ? "px-2" : "px-3")}>
+      <nav className="flex-1 overflow-y-auto py-4 space-y-1 relative no-scrollbar px-3">
         {navItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path as string);
           return (
