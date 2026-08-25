@@ -43,7 +43,7 @@ export async function runGlobalAutoSync(profiles: {url: string, defaultDept?: st
         result.sheetDepartments.forEach(dep => globalSheetDepartments.add(dep.toUpperCase()));
       }
     } catch (err) {
-      console.error(`Error processing sheet ${profile.name || profile.url}:`, err);
+      console.error(`Error processing sheet ${profile.url}:`, err);
     }
   }
 
@@ -126,7 +126,6 @@ export async function processSingleSheet(csvUrl: string, fallbackDept?: string):
           
           let added = 0;
           let updated = 0;
-          let deleted = 0;
 
           const processedIds = new Set<string>();
           const sheetDepartments = new Set<string>();

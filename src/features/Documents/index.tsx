@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, ChevronRight, FileText, Search, ShieldCheck, ExternalLink, Menu } from "lucide-react";
+import { BookOpen, ChevronRight, Search, ShieldCheck, ExternalLink, Menu } from "lucide-react";
 import { documents, hexToRgba } from '@/constants/documentsData';
 import { useAuth } from '@/auth/hooks/useAuth';
 

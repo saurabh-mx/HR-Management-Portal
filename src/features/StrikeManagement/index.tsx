@@ -46,9 +46,9 @@ export default function DisciplinarySystem() {
       } else if (profile.role?.toLowerCase() === 'command') {
         setIsCommand(true);
       }
-      fetchStrikes(profile, profile.name);
+      fetchStrikes(profile);
     } else {
-      fetchStrikes(null, "");
+      fetchStrikes(null);
     }
     fetchEmployees();
   }, [profile]);
@@ -58,7 +58,7 @@ export default function DisciplinarySystem() {
     if (data) setEmployees(data);
   }
 
-  async function fetchStrikes(userObj?: any, userName?: string) {
+  async function fetchStrikes(userObj?: any) {
     let query = supabase.from('strikes').select('*').order('created_at', { ascending: false });
     
     if (!userObj) {
@@ -122,7 +122,7 @@ export default function DisciplinarySystem() {
       setNewStrike({ name: "", reason: "" });
       setActionType("Warning");
       setStrikeLevel("1/5");
-      fetchStrikes(profile, profile?.name);
+      fetchStrikes(profile);
       setShowForm(false);
     }
   };
