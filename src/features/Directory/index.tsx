@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, Search, Plus, X, UserMinus, CalendarOff, Database, Edit, ScanLine, Activity, AlertTriangle } from "lucide-react";
+import { Users, Shield, Search, UserMinus, CalendarOff, Database, Edit, ScanLine, Activity, AlertTriangle } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
 import { StatCard } from '@/features/Dashboard/components/StatCard';
 import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
-
+import { useAuth } from '@/auth/hooks/useAuth';
 
 interface Employee {
   id: string;
@@ -38,6 +37,7 @@ interface Employee {
   callsign?: string;
   is_admin?: boolean;
   avatar_url?: string;
+  led_sub_departments?: string[];
 }
 
 const getDepartmentColor = (dept: string) => {
@@ -74,14 +74,15 @@ export const isStatusLOA = (s?: string) => {
   return str === 'loa' || str === 'on loa';
 };
 
-const EmployeeRow = ({ employee, onClick }: { employee: Employee, onClick: () => void }) => {
+const EmployeeRow = ({ employee, onClick, isAdmin, onUpdateLeads }: { employee: Employee, onClick: () => void, isAdmin: boolean, onUpdateLeads: (empId: string, leads: string[]) => void }) => {
   const deptColor = getDepartmentColor(employee.department);
   const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   return (
     <tr
       onClick={onClick}
-      className="border-b border-transparent transition-all duration-300 relative cursor-pointer"
+      className="group border-b border-transparent transition-all duration-300 relative cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -114,12 +115,54 @@ const EmployeeRow = ({ employee, onClick }: { employee: Employee, onClick: () =>
       <td className="py-4 px-3 font-medium transition-colors duration-300" style={{ color: isHovered ? deptColor : hexToRgba(deptColor, 0.85) }}>{employee.rank || "—"}</td>
       <td className="py-4 px-3 font-bold tracking-wider transition-all duration-300" style={{ color: deptColor, textShadow: isHovered ? `0 0 10px ${hexToRgba(deptColor, 0.5)}` : 'none' }}>{employee.department}</td>
       <td className="py-4 px-3 text-sm transition-colors duration-300" style={{ color: isHovered ? deptColor : hexToRgba(deptColor, 0.7) }}>{employee.discord_tag || "—"}</td>
+      {isAdmin && (
+        <td className="py-4 px-3 text-right relative" onClick={e => e.stopPropagation()}>
+           {!isEditing ? (
+             <button onClick={() => setIsEditing(true)} className="text-slate-500 hover:text-white p-1.5 rounded bg-white/5 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+               <Edit className="w-4 h-4" />
+             </button>
+           ) : (
+             <div className="flex items-center justify-end gap-2">
+               <details className="group relative text-left">
+                 <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1 text-white cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36 shadow-lg hover:border-brand/50">
+                    <span className="truncate">
+                      {employee.led_sub_departments?.length ? employee.led_sub_departments.join(', ') : 'Select Leads...'}
+                    </span>
+                 </summary>
+                 <div className="absolute right-0 top-full mt-1 z-50 w-48 flex flex-col gap-1 max-h-48 overflow-y-auto bg-slate-950 p-2 rounded-lg border border-slate-700 shadow-2xl custom-scrollbar">
+                    {['HEAT', 'FTD', 'ASD', 'K9', 'MEDIA TEAM', 'DOC', 'SBI', 'MEU'].map(sub => (
+                      <label key={sub} className="flex items-center gap-2 text-[11px] font-medium text-slate-300 cursor-pointer hover:text-white p-1.5 rounded hover:bg-slate-900 transition-colors">
+                        <input 
+                          type="checkbox" 
+                          checked={(employee.led_sub_departments || []).includes(sub)}
+                          onChange={e => {
+                             const currentLeads = employee.led_sub_departments || [];
+                             if (e.target.checked) {
+                               onUpdateLeads(employee.id, [...currentLeads, sub]);
+                             } else {
+                               onUpdateLeads(employee.id, currentLeads.filter(s => s !== sub));
+                             }
+                          }}
+                          className="rounded border-slate-700 text-brand focus:ring-brand bg-slate-900 w-3.5 h-3.5"
+                        />
+                        {sub}
+                      </label>
+                    ))}
+                 </div>
+               </details>
+               <button onClick={() => setIsEditing(false)} className="text-emerald-500 hover:text-emerald-400 p-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-[10px] font-bold uppercase tracking-wider transition-colors">
+                 Done
+               </button>
+             </div>
+           )}
+        </td>
+      )}
     </tr>
   );
 };
 
 export default function EmployeeDirectory() {
-  const navigate = useNavigate();
+  const { profile, adminSafeMode } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -127,15 +170,7 @@ export default function EmployeeDirectory() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeDepartment, setActiveDepartment] = useState("All");
   const departmentsList = ["All", "SASP", "LSPD", "BCSO", "SAPR", "SASP Academy"];
-  const [isAdding, setIsAdding] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-  const [newEmployee, setNewEmployee] = useState({ 
-    name: "", 
-    badge_number: "", 
-    role: "Patrol Officer", 
-    department: "SASP",
-    discord_tag: ""
-  });
 
   const [employeeStrikes, setEmployeeStrikes] = useState({ strikes: 0, warnings: 0, verbals: 0, revoked: 0 });
 
@@ -180,22 +215,18 @@ export default function EmployeeDirectory() {
 
   useEffect(() => {
     fetchEmployees();
-    checkAdminStatus();
   }, []);
 
-  // SECURITY CHECK: Verify if the logged-in user is High Command
-  async function checkAdminStatus() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.email) return;
+  useEffect(() => {
+    checkAdminStatus();
+  }, [profile, adminSafeMode]);
 
-    const { data, error } = await supabase
-      .from('employees')
-      .select('is_admin, role')
-      .eq('discord_tag', session.user.email.split('@')[0])
-      .single();
-    
-    if (!error && (isHighCommandOrHR(data))) {
+  // SECURITY CHECK: Verify if the logged-in user is High Command
+  function checkAdminStatus() {
+    if (adminSafeMode || (profile && isHighCommandOrHR(profile))) {
       setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
     }
   }
 
@@ -257,33 +288,24 @@ export default function EmployeeDirectory() {
     }
   }
 
-  const handleAddEmployee = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateLeads = async (empId: string, newLeads: string[]) => {
+    const updatedEmployees = employees.map(e => e.id === empId ? { ...e, led_sub_departments: newLeads } : e);
+    setEmployees(updatedEmployees);
     
-    const isDuplicate = employees.some(
-      emp => emp.name.toLowerCase() === newEmployee.name.toLowerCase() || 
-             emp.badge_number === newEmployee.badge_number
-    );
-
-    if (isDuplicate) {
-      alert(`An officer with the name "${newEmployee.name}" or callsign "${newEmployee.badge_number}" already exists!`);
-      return;
+    if (selectedEmployee?.id === empId) {
+      setSelectedEmployee({ ...selectedEmployee, led_sub_departments: newLeads });
     }
 
-    const isAdmin = newEmployee.role === 'admin';
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('employees')
-      .insert([{ ...newEmployee, status: 'Active', is_admin: isAdmin }])
-      .select();
-
+      .update({ led_sub_departments: newLeads })
+      .eq('id', empId);
+      
     if (error) {
-      console.error("Error adding employee:", error);
-      alert("Failed to onboard recruit: " + error.message);
-    } else if (data) {
-      logAuditAction("ADD_PERSONNEL", newEmployee.badge_number, `Added new employee: ${newEmployee.name} (${newEmployee.department} - ${newEmployee.role})`);
-      setEmployees([...employees, data[0]]);
-      setIsAdding(false);
-      setNewEmployee({ name: "", badge_number: "", role: "Patrol Officer", department: "SASP", discord_tag: "" });
+       alert("Failed to update leads: " + error.message);
+    } else {
+       const emp = updatedEmployees.find(e => e.id === empId);
+       logAuditAction("PERSONNEL_UPDATED", emp?.name || 'Unknown', `Updated Leads to [${newLeads.join(', ')}]`);
     }
   };
 
@@ -334,69 +356,14 @@ export default function EmployeeDirectory() {
           <div className="pb-1 flex items-center gap-3">
             {isAdmin && (
               <>
-                <button 
-                  onClick={() => navigate('/admin')}
-                  className="bg-sky-500/10 backdrop-blur-md text-sky-400 px-5 py-2.5 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-sky-500/20 transition-all flex items-center gap-2 border border-sky-500/30 shadow-[0_0_15px_rgba(14,165,233,0.15)]"
-                >
-                  <Edit className="w-4 h-4" /> Manage Directory
-                </button>
                 <button onClick={() => setIsSyncModalOpen(true)} className="bg-brand/10 backdrop-blur-md text-brand px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-brand/20 transition-all flex items-center gap-2 border border-brand/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)] whitespace-nowrap">
                   <Database className="w-4 h-4" /> Directory Imports
-                </button>
-                <button 
-                  onClick={() => setIsAdding(!isAdding)}
-                  className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/80 backdrop-blur-md text-white px-5 py-2.5 rounded-lg font-medium text-sm font-sans hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)] transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-2 border border-slate-700 hover:border-emerald-500/50 group"
-                >
-                  {isAdding ? <X className="w-4 h-4 text-rose-500" /> : <Plus className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />}
-                  {isAdding ? "Cancel" : "Onboard Recruit"}
                 </button>
               </>
             )}
           </div>
         </div>
       </div>
-
-      {/* Only render the form if they are an Admin AND clicked the button */}
-      {isAdmin && isAdding && (
-        <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-slate-800/60 text-slate-200 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium text-emerald-400">Onboard New Personnel</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddEmployee} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Full Name</label>
-                <input required type="text" value={newEmployee.name} onChange={e => setNewEmployee({...newEmployee, name: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Alex Hawk" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Callsign</label>
-                <input required type="text" value={newEmployee.badge_number} onChange={e => setNewEmployee({...newEmployee, badge_number: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. 710" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Discord ID</label>
-                <input type="text" value={newEmployee.discord_tag} onChange={e => setNewEmployee({...newEmployee, discord_tag: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="Optional Discord ID..." />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Role / Rank</label>
-                <input required type="text" value={newEmployee.role} onChange={e => setNewEmployee({...newEmployee, role: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="e.g. Patrol Officer" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Department</label>
-                <select value={newEmployee.department} onChange={e => setNewEmployee({...newEmployee, department: e.target.value})} className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                  <option value="SASP">SASP</option>
-                  <option value="SASP Academy">SASP Academy</option>
-                  <option value="LSPD">LSPD</option>
-                  <option value="BCSO">BCSO</option>
-                  <option value="SAPR">SAPR</option>
-                </select>
-              </div>
-              <button type="submit" className="w-full lg:col-span-5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 px-4 py-2 rounded-md font-medium transition-colors border border-emerald-500/20 mt-2">
-                Save Official Record
-              </button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
 
       <div className="flex flex-wrap gap-2 mb-4">
         {departmentsList.map(dept => {
@@ -472,6 +439,7 @@ export default function EmployeeDirectory() {
                   <th className="pb-3 px-3 font-medium">Rank</th>
                   <th className="pb-3 px-3 font-medium">Department</th>
                   <th className="pb-3 px-3 font-medium">Discord ID</th>
+                  {isAdmin && <th className="pb-3 px-3 font-medium text-right w-24">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-transparent border-t border-slate-800/60">
@@ -479,6 +447,8 @@ export default function EmployeeDirectory() {
                   <EmployeeRow 
                     key={employee.id} 
                     employee={employee} 
+                    isAdmin={!!isAdmin}
+                    onUpdateLeads={handleUpdateLeads}
                     onClick={() => {
                       setSelectedEmployee(employee);
                       setIsFlipped(false);
@@ -740,6 +710,12 @@ export default function EmployeeDirectory() {
                         <p className="text-xs font-medium text-slate-200">{selectedEmployee.sub_department || '—'}</p>
                       </div>
                       <div>
+                        <p className="text-[7px] text-slate-500 uppercase tracking-widest mb-0.5">Leads</p>
+                        <p className="text-xs font-medium text-slate-200 truncate" title={selectedEmployee.led_sub_departments?.join(', ')}>
+                          {selectedEmployee.led_sub_departments?.length ? selectedEmployee.led_sub_departments.join(', ') : '—'}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
                         <p className="text-[7px] text-slate-500 uppercase tracking-widest mb-0.5">Titles</p>
                         <p className="text-xs font-medium text-slate-200 truncate" title={selectedEmployee.titles}>{selectedEmployee.titles || '—'}</p>
                       </div>

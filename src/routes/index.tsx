@@ -8,7 +8,7 @@ import CommunicationsFeed from "@/features/Communications";
 import MeetingsDashboard from "@/features/Meetings";
 import LOAManagement from "@/features/LOAManagement";
 import StrikeManagement from "@/features/StrikeManagement";
-import RankManagement from "@/features/RankManagement";
+import SOIApplications from "@/features/SOIApplications";
 import HRRequestsDashboard from "@/features/HRRequests";
 import Landing from "@/features/Landing";
 import AdminPanel from "@/features/AdminPanel";
@@ -38,7 +38,7 @@ export function AppRoutes() {
           <Route path="/meetings" element={<MeetingsDashboard />} />
           <Route path="/loa" element={<LOAManagement />} />
           <Route path="/strikes" element={<StrikeManagement />} />
-          <Route path="/promotions" element={<RankManagement />} />
+          <Route path="/soi-applications" element={<SOIApplications />} />
           <Route path="/hr-requests" element={<HRRequestsDashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/documents" element={<DocumentsDashboard />} />

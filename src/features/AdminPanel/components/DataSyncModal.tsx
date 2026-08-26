@@ -3,6 +3,8 @@ import { Database, Link as LinkIcon, RefreshCw, X, AlertTriangle, Play, Save, Ch
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
 import { fetchAllEmployees, runGlobalAutoSync } from "@/lib/sync/syncService";
+import { useAuth } from '@/auth/hooks/useAuth';
+import { isTrueAdmin } from '@/auth/roles/roleMatrix';
 import Papa from "papaparse";
 
 interface DataSyncModalProps {
@@ -12,6 +14,8 @@ interface DataSyncModalProps {
 }
 
 export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncModalProps) {
+  const { profile, adminSafeMode } = useAuth();
+  const hasEditAccess = adminSafeMode || isTrueAdmin(profile);
   const [csvUrl, setCsvUrl] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState("");
@@ -520,7 +524,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
               >
                 <option value="">-- Select Role --</option>
                 <option value="Patrol Officer">Patrol Officer</option>
-                <option value="High Command">High Command</option>
+                {hasEditAccess && <option value="High Command">High Command</option>}
                 <option value="Command">Command</option>
                 <option value="Supervisor">Supervisor</option>
                 <option value="HR">HR</option>
@@ -616,7 +620,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                         className="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 w-full max-w-[120px] disabled:opacity-50"
                       >
                         <option value="Patrol Officer">Patrol Officer</option>
-                        <option value="High Command">High Command</option>
+                        {hasEditAccess && <option value="High Command">High Command</option>}
                         <option value="Command">Command</option>
                         <option value="Supervisor">Supervisor</option>
                         <option value="HR">HR</option>
@@ -666,15 +670,16 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left Side: New Import */}
-        <div className="flex-1 p-8 bg-slate-900/50 border-r border-slate-800/60">
-          <h2 className="text-2xl font-light text-slate-200 tracking-wider mb-2 flex items-center gap-3">
-            <Database className="w-6 h-6 text-brand" />
-            DIRECTORY <span className="font-bold text-brand">IMPORTS</span>
-          </h2>
-          <p className="text-sm text-slate-400 mb-8">Import personnel data securely from Google Sheets.</p>
+        {/* Left Side: Active Sync Control */}
+        {hasEditAccess ? (
+          <div className="flex-1 p-8 bg-slate-900/50 border-r border-slate-800/60">
+            <h2 className="text-2xl font-light text-slate-200 tracking-wider mb-2 flex items-center gap-3">
+              <Database className="w-6 h-6 text-brand" />
+              DIRECTORY <span className="font-bold text-brand">IMPORTS</span>
+            </h2>
+            <p className="text-sm text-slate-400 mb-8">Import personnel data securely from Google Sheets.</p>
 
-          <div className="space-y-6">
+            <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Google Sheets CSV Link</label>
               <div className="flex gap-2">
@@ -750,6 +755,15 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
             )}
           </div>
         </div>
+        ) : (
+          <div className="flex-1 p-8 bg-slate-900/50 flex flex-col items-center justify-center border-r border-slate-800/60 text-center">
+            <Database className="w-16 h-16 text-slate-800 mb-6" />
+            <h2 className="text-2xl font-light text-slate-200 tracking-wider mb-2">RUN <span className="font-bold text-brand">SYNCS</span></h2>
+            <p className="text-sm text-slate-400 mt-2 max-w-sm leading-relaxed">
+              You have permission to run saved directory synchronizations. Only True Admins can modify or create new sync configurations.
+            </p>
+          </div>
+        )}
 
         {/* Right Side: Saved Syncs */}
         <div className="w-full md:w-[350px] bg-slate-950 p-8 flex flex-col relative overflow-hidden">
@@ -781,33 +795,45 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                       />
                       <p className="text-sm font-bold text-slate-200">{sync.name}</p>
                     </div>
-                    <button 
-                      onClick={() => handleDeleteSavedSync(idx)}
-                      className="text-slate-500 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    {hasEditAccess && (
+                      <button 
+                        onClick={() => handleDeleteSavedSync(idx)}
+                        className="text-slate-500 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <p className="text-[9px] text-slate-500 font-mono truncate mb-3">{sync.url}</p>
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-800">
-                    <label className="flex items-center gap-2 cursor-pointer group/toggle">
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={sync.isAutoSync || false}
-                          onChange={() => handleToggleAutoSync(idx)}
-                        />
-                        <div className={`block w-7 h-4 rounded-full transition-colors ${sync.isAutoSync ? 'bg-emerald-500' : 'bg-slate-700 group-hover/toggle:bg-slate-600'}`}></div>
-                        <div className={`absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform ${sync.isAutoSync ? 'translate-x-3' : 'translate-x-0'}`}></div>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-medium select-none">
+                    {hasEditAccess ? (
+                      <label className="flex items-center gap-2 cursor-pointer group/toggle">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={sync.isAutoSync || false}
+                            onChange={() => handleToggleAutoSync(idx)}
+                          />
+                          <div className={`block w-7 h-4 rounded-full transition-colors ${sync.isAutoSync ? 'bg-emerald-500' : 'bg-slate-700 group-hover/toggle:bg-slate-600'}`}></div>
+                          <div className={`absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform ${sync.isAutoSync ? 'translate-x-3' : 'translate-x-0'}`}></div>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium select-none">
+                          {sync.isAutoSync && timeRemaining[idx] !== undefined 
+                            ? `Auto-Sync (Next: ${Math.floor(timeRemaining[idx] / 60).toString().padStart(2, '0')}:${(timeRemaining[idx] % 60).toString().padStart(2, '0')})`
+                            : "Auto-Sync on Load"
+                          }
+                        </span>
+                      </label>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium select-none">
+                        {sync.isAutoSync ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <div className="w-3.5 h-3.5 rounded-full border border-slate-600" />}
                         {sync.isAutoSync && timeRemaining[idx] !== undefined 
                           ? `Auto-Sync (Next: ${Math.floor(timeRemaining[idx] / 60).toString().padStart(2, '0')}:${(timeRemaining[idx] % 60).toString().padStart(2, '0')})`
                           : "Auto-Sync on Load"
                         }
-                      </span>
-                    </label>
+                      </div>
+                    )}
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-[10px] text-slate-400">Last: {sync.lastSync}</p>

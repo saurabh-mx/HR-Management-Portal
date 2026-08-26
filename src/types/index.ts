@@ -17,6 +17,7 @@ export interface Employee {
   last_promotion_date?: string;
   days_since_last_promoted?: number;
   sub_department?: string;
+  led_sub_departments?: string[];
   titles?: string;
   notes?: string;
   cert_fto?: boolean;

@@ -443,58 +443,130 @@ Join Date: ${formatDate(profile.department_join_date)}
             
             {/* Dossier Grid Row 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
-                <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
-                  <Fingerprint className="w-4 h-4 text-brand" /> Personal Details
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Citizen ID</span>
-                    <span className="text-sm font-medium text-slate-200 font-mono">{profile.citizen_id || "N/A"}</span>
+              {/* Left Column */}
+              <div className="flex flex-col gap-6">
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                  <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
+                    <Fingerprint className="w-4 h-4 text-brand" /> Personal Details
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Citizen ID</span>
+                      <span className="text-sm font-medium text-slate-200 font-mono">{profile.citizen_id || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phone</span>
+                      <span className="text-sm font-medium text-slate-200 font-mono">{profile.phone_number || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Discord</span>
+                      <span className="text-sm font-medium text-slate-200">{profile.discord_tag || "N/A"}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phone</span>
-                    <span className="text-sm font-medium text-slate-200 font-mono">{profile.phone_number || "N/A"}</span>
-                  </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Discord</span>
-                    <span className="text-sm font-medium text-slate-200">{profile.discord_tag || "N/A"}</span>
+                </div>
+
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                  <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-brand" /> Disciplinary Actions
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Strikes</span>
+                      <span className={`text-sm font-bold ${totalStrikes > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{totalStrikes}/5</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Warnings</span>
+                      <span className={`text-sm font-bold ${totalWarnings > 0 ? 'text-amber-500' : 'text-slate-400'}`}>{totalWarnings}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verbal Warnings</span>
+                      <span className={`text-sm font-bold ${totalVerbalWarnings > 0 ? 'text-indigo-400' : 'text-slate-400'}`}>{totalVerbalWarnings}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revoked Actions</span>
+                      <span className="text-sm font-bold text-slate-400">{totalRevoked}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
-                <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4 text-brand" /> Department Info
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sub-Dept</span>
-                    <span className="text-sm font-medium text-slate-200">{profile.sub_department || "—"}</span>
+              {/* Right Column */}
+              <div className="flex flex-col gap-6">
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                  <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4 text-brand" /> Department Info
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sub-Dept</span>
+                      <span className="text-sm font-medium text-slate-200">{profile.sub_department || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Lead Status</span>
+                      <span className="text-sm font-medium text-brand">{profile.led_sub_departments?.length ? profile.led_sub_departments.join(", ") : "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Titles</span>
+                      <span className="text-sm font-medium text-slate-200">{profile.titles || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time in Svc</span>
+                      <span className="text-sm font-medium text-brand">{profile.duration_in_department || "—"}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Titles</span>
-                    <span className="text-sm font-medium text-slate-200">{profile.titles || "—"}</span>
-                  </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time in Svc</span>
-                    <span className="text-sm font-medium text-brand">{profile.duration_in_department || "—"}</span>
-                  </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Strikes</span>
-                    <span className={`text-sm font-bold ${totalStrikes > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{totalStrikes}/5</span>
-                  </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Warnings</span>
-                    <span className={`text-sm font-bold ${totalWarnings > 0 ? 'text-amber-500' : 'text-slate-400'}`}>{totalWarnings}</span>
-                  </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verbal Warnings</span>
-                    <span className={`text-sm font-bold ${totalVerbalWarnings > 0 ? 'text-indigo-400' : 'text-slate-400'}`}>{totalVerbalWarnings}</span>
-                  </div>
-                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revoked Actions</span>
-                    <span className="text-sm font-bold text-slate-400">{totalRevoked}</span>
+                </div>
+
+                {/* Certifications (Tags) */}
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl">
+                  <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
+                    <Medal className="w-4 h-4 text-brand" /> Active Certifications
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {profile.cert_fto && (
+                      <span className="inline-flex items-center gap-2 bg-indigo-950/40 border border-indigo-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-indigo-300">
+                        <span className="text-base">🎓</span> FTO
+                      </span>
+                    )}
+                    {profile.cert_asd && (
+                      <span className="inline-flex items-center gap-2 bg-sky-950/40 border border-sky-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-sky-300">
+                        <span className="text-base">🚁</span> ASD
+                      </span>
+                    )}
+                    {profile.cert_heat && (
+                      <span className="inline-flex items-center gap-2 bg-rose-950/40 border border-rose-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-rose-300">
+                        <span className="text-base">🏎️</span> H.E.A.T
+                      </span>
+                    )}
+                    {profile.cert_swat && (
+                      <span className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-slate-300">
+                        <span className="text-base">🛡️</span> S.W.A.T
+                      </span>
+                    )}
+                    {profile.cert_cid && (
+                      <span className="inline-flex items-center gap-2 bg-amber-950/40 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-amber-300">
+                        <span className="text-base">🕵️</span> C.I.D
+                      </span>
+                    )}
+                    {profile.cert_meu && (
+                      <span className="inline-flex items-center gap-2 bg-teal-950/40 border border-teal-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-teal-300">
+                        <span className="text-base">🛥️</span> M.E.U
+                      </span>
+                    )}
+                    {profile.cert_k9 && (
+                      <span className="inline-flex items-center gap-2 bg-orange-950/40 border border-orange-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-orange-300">
+                        <span className="text-base">🐕</span> K-9 Unit
+                      </span>
+                    )}
+                    {profile.cert_sop && (
+                      <span className="inline-flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-emerald-300">
+                        <span className="text-base">📋</span> S.O.P
+                      </span>
+                    )}
+                    {!profile.cert_fto && !profile.cert_asd && !profile.cert_heat && !profile.cert_swat && !profile.cert_cid && !profile.cert_meu && !profile.cert_k9 && !profile.cert_sop && (
+                      <div className="w-full text-center py-6">
+                        <p className="text-sm text-slate-600 font-medium italic">No specialized certifications logged in database.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -539,61 +611,7 @@ Join Date: ${formatDate(profile.department_join_date)}
               )}
             </div>
 
-            {/* Certifications (Tags) */}
-            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl">
-              <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
-                <Medal className="w-4 h-4 text-brand" /> Active Certifications
-              </h3>
 
-              <div className="flex flex-wrap gap-3">
-                {profile.cert_fto && (
-                  <span className="inline-flex items-center gap-2 bg-indigo-950/40 border border-indigo-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-indigo-300">
-                    <span className="text-base">🎓</span> FTO
-                  </span>
-                )}
-                {profile.cert_asd && (
-                  <span className="inline-flex items-center gap-2 bg-sky-950/40 border border-sky-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-sky-300">
-                    <span className="text-base">🚁</span> ASD
-                  </span>
-                )}
-                {profile.cert_heat && (
-                  <span className="inline-flex items-center gap-2 bg-rose-950/40 border border-rose-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-rose-300">
-                    <span className="text-base">🏎️</span> H.E.A.T
-                  </span>
-                )}
-                {profile.cert_swat && (
-                  <span className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-slate-300">
-                    <span className="text-base">🛡️</span> S.W.A.T
-                  </span>
-                )}
-                {profile.cert_cid && (
-                  <span className="inline-flex items-center gap-2 bg-amber-950/40 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-amber-300">
-                    <span className="text-base">🕵️</span> C.I.D
-                  </span>
-                )}
-                {profile.cert_meu && (
-                  <span className="inline-flex items-center gap-2 bg-teal-950/40 border border-teal-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-teal-300">
-                    <span className="text-base">🛥️</span> M.E.U
-                  </span>
-                )}
-                {profile.cert_k9 && (
-                  <span className="inline-flex items-center gap-2 bg-orange-950/40 border border-orange-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-orange-300">
-                    <span className="text-base">🐕</span> K-9 Unit
-                  </span>
-                )}
-                {profile.cert_sop && (
-                  <span className="inline-flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider text-emerald-300">
-                    <span className="text-base">📋</span> S.O.P
-                  </span>
-                )}
-
-                {!profile.cert_fto && !profile.cert_asd && !profile.cert_heat && !profile.cert_swat && !profile.cert_cid && !profile.cert_meu && !profile.cert_k9 && !profile.cert_sop && (
-                  <div className="w-full text-center py-6">
-                    <p className="text-sm text-slate-600 font-medium italic">No specialized certifications logged in database.</p>
-                  </div>
-                )}
-              </div>
-            </div>
 
           </div>
         </div>

@@ -57,7 +57,7 @@ export default function AdminPanel() {
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ role: "Patrol Officer", department: "SASP" });
+  const [editForm, setEditForm] = useState<{ role: string, department: string, led_sub_departments: string[] }>({ role: "Patrol Officer", department: "SASP", led_sub_departments: [] });
 
   const [stagedEmployees, setStagedEmployees] = useState<any[]>([]);
   const [selectedStagedIds, setSelectedStagedIds] = useState<Set<string>>(new Set());
@@ -262,20 +262,20 @@ export default function AdminPanel() {
 
   const handleEditClick = (emp: Employee) => {
     setEditingId(emp.id);
-    setEditForm({ role: emp.role || 'Patrol Officer', department: emp.department || 'SASP' });
+    setEditForm({ role: emp.role || 'Patrol Officer', department: emp.department || 'SASP', led_sub_departments: emp.led_sub_departments || [] });
   };
 
   const handleSaveEdit = async (id: string) => {
     const isAdmin = editForm.role === 'admin';
     const { error } = await supabase
       .from('employees')
-      .update({ role: editForm.role, department: editForm.department, is_admin: isAdmin })
+      .update({ role: editForm.role, department: editForm.department, is_admin: isAdmin, led_sub_departments: editForm.led_sub_departments })
       .eq('id', id);
 
     if (error) alert("Failed to update: " + error.message);
     else {
       const emp = employees.find(e => e.id === id);
-      if (emp) logAuditAction("PERSONNEL_UPDATED", emp.name, `Updated Role to ${editForm.role} and Dept to ${editForm.department}`);
+      if (emp) logAuditAction("PERSONNEL_UPDATED", emp.name, `Updated Role to ${editForm.role}, Dept to ${editForm.department}, and Leads to [${editForm.led_sub_departments.join(', ')}]`);
       setEmployees(employees.map(emp => emp.id === id ? { ...emp, ...editForm, is_admin: isAdmin } : emp));
       setEditingId(null);
     }
@@ -812,6 +812,7 @@ export default function AdminPanel() {
                 <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Rank</th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Role</th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Department</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/60">Leads</th>
                 <th className="px-5 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right border-b border-slate-800/60">Actions</th>
               </tr>
             </thead>
@@ -857,6 +858,34 @@ export default function AdminPanel() {
                             <option value="SASP Academy">SASP Academy</option>
                           </select>
                         </td>
+                        <td className="px-4 py-3 relative">
+                          <details className="group">
+                            <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50 cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36">
+                              <span className="truncate">
+                                {editForm.led_sub_departments.length ? editForm.led_sub_departments.join(', ') : 'Select Leads...'}
+                              </span>
+                            </summary>
+                            <div className="absolute top-full left-4 mt-1 z-[100] w-48 flex flex-col gap-1 max-h-48 overflow-y-auto bg-slate-950 p-2 rounded-lg border border-slate-700 shadow-2xl custom-scrollbar">
+                               {['HEAT', 'FTD', 'ASD', 'K9', 'MEDIA TEAM', 'DOC', 'SBI', 'MEU'].map(sub => (
+                                 <label key={sub} className="flex items-center gap-2 text-[11px] font-medium text-slate-300 cursor-pointer hover:text-white p-1.5 rounded hover:bg-slate-900 transition-colors">
+                                   <input 
+                                     type="checkbox" 
+                                     checked={editForm.led_sub_departments.includes(sub)}
+                                     onChange={e => {
+                                        if (e.target.checked) {
+                                          setEditForm({...editForm, led_sub_departments: [...editForm.led_sub_departments, sub]});
+                                        } else {
+                                          setEditForm({...editForm, led_sub_departments: editForm.led_sub_departments.filter(s => s !== sub)});
+                                        }
+                                     }}
+                                     className="rounded border-slate-700 text-brand focus:ring-brand bg-slate-900 w-3.5 h-3.5"
+                                   />
+                                   {sub}
+                                 </label>
+                               ))}
+                            </div>
+                          </details>
+                        </td>
                       </>
                     ) : (
                       <>
@@ -866,6 +895,17 @@ export default function AdminPanel() {
                           </span>
                         </td>
                         <td className={`px-4 py-3 text-sm font-medium ${getDeptColor(dept)}`}>{dept}</td>
+                        <td className="px-4 py-3 text-[11px] text-slate-400">
+                          {emp.led_sub_departments?.length ? (
+                            <div className="flex flex-wrap gap-1">
+                              {emp.led_sub_departments.map(sub => (
+                                <span key={sub} className="px-1.5 py-0.5 rounded-md bg-slate-800/80 border border-slate-700 text-[9px] font-semibold">{sub}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="opacity-50">-</span>
+                          )}
+                        </td>
                       </>
                     )}
                     <td className="px-5 py-3 text-right rounded-r-lg">
@@ -898,7 +938,7 @@ export default function AdminPanel() {
               })}
               {filteredEmployees.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-12 text-center">
+                  <td colSpan={6} className="px-5 py-12 text-center">
                     <Search className="w-8 h-8 text-slate-700 mx-auto mb-2" />
                     <p className="text-sm text-slate-500">No personnel found matching your criteria</p>
                   </td>

@@ -8,18 +8,16 @@ import {
   MapPin,
   CalendarOff,
   ShieldAlert,
-  Award,
   FileText,
   ClipboardList,
   Database,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/hooks/useAuth';
 import { getDepartmentColor, } from '@/styles/theme';
-import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
-
 
 const NavButton = ({ item, isActive, isCollapsed, deptColor }: any) => {
   const Icon = item.icon;
@@ -72,8 +70,6 @@ export const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const deptColor = getDepartmentColor(profile?.department || '');
 
-  const is_AdminOrHighCommand = isHighCommandOrHR(profile);
-
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Personnel Directory', path: '/directory', icon: Users },
@@ -81,7 +77,7 @@ export const Sidebar = () => {
     { name: 'Meetings', path: '/meetings', icon: MapPin },
     { name: 'LOA Requests', path: '/loa', icon: CalendarOff },
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },
-    ...(is_AdminOrHighCommand ? [{ name: 'Rank Management', path: '/promotions', icon: Award }] : []),
+    { name: 'SOI Applications', path: '/soi-applications', icon: Shield },
     { name: 'HR Requests', path: '/hr-requests', icon: FileText },
     { name: 'Documents', path: '/documents', icon: BookOpen },
     ...(profile?.is_admin ? [
