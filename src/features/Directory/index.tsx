@@ -198,6 +198,12 @@ export default function EmployeeDirectory() {
       };
 
       const sorted = [...data].sort((a, b) => {
+        const aIsStudent = a.role?.toLowerCase() === 'student';
+        const bIsStudent = b.role?.toLowerCase() === 'student';
+        
+        if (aIsStudent && !bIsStudent) return 1;
+        if (!aIsStudent && bIsStudent) return -1;
+
         const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
         if (deptDiff !== 0) return deptDiff;
         
