@@ -18,11 +18,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { imageService } from "@/lib/imageService";
 import type { AppImage } from "@/lib/imageService";
-import { Trash2, GripVertical, Plus, Image as ImageIcon, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Trash2, GripVertical, Plus, Image as ImageIcon, CheckCircle, XCircle, Loader2, ImageOff } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 function SortableItem({ image, onDelete, onToggleActive }: { image: AppImage, onDelete: (id: string) => void, onToggleActive: (id: string, active: boolean) => void }) {
+  const [imgError, setImgError] = useState(false);
   const {
     attributes,
     listeners,
@@ -41,8 +42,20 @@ function SortableItem({ image, onDelete, onToggleActive }: { image: AppImage, on
       <button {...attributes} {...listeners} className="cursor-grab text-slate-600 hover:text-white p-1">
         <GripVertical size={20} />
       </button>
-      <div className="w-24 h-14 bg-slate-950 rounded border border-slate-800 flex-shrink-0 overflow-hidden relative">
-        <img src={image.url} alt="thumbnail" className="w-full h-full object-cover" />
+      <div className="w-24 h-14 bg-slate-950 rounded border border-slate-800 flex-shrink-0 overflow-hidden relative flex items-center justify-center">
+        {!imgError ? (
+          <img 
+            src={image.url} 
+            alt="thumbnail" 
+            onError={() => setImgError(true)} 
+            className="w-full h-full object-cover" 
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center w-full h-full bg-slate-900/50">
+            <ImageOff size={16} className="text-rose-500/70" />
+            <span className="text-[8px] text-rose-500/50 mt-1 uppercase font-bold tracking-widest">Broken</span>
+          </div>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="truncate font-mono text-xs text-slate-300">

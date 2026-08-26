@@ -243,19 +243,19 @@ export default function Landing() {
             
             {/* Layer 3 (Deepest) */}
             <div className="absolute inset-0 rounded-3xl transform -rotate-[4deg] translate-y-8 -translate-x-6 border border-white/5 transition-all duration-700 ease-out -z-30 overflow-hidden opacity-30 group-hover:-rotate-[6deg] group-hover:translate-y-10 group-hover:-translate-x-8">
-              <img src={currentImages[nextImgIdx3]} alt="Queue 3" className="w-full h-full object-cover" />
+              <img src={currentImages[nextImgIdx3]} onError={(e) => e.currentTarget.src = FALLBACK_IMAGES[2]} alt="Queue 3" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/70 backdrop-blur-[4px]"></div>
             </div>
 
             {/* Layer 2 */}
             <div className="absolute inset-0 rounded-3xl transform rotate-[3deg] translate-y-5 translate-x-5 border border-white/10 transition-all duration-700 ease-out -z-20 overflow-hidden shadow-2xl opacity-50 group-hover:rotate-[5deg] group-hover:translate-y-7 group-hover:translate-x-7">
-              <img src={currentImages[nextImgIdx2]} alt="Queue 2" className="w-full h-full object-cover" />
+              <img src={currentImages[nextImgIdx2]} onError={(e) => e.currentTarget.src = FALLBACK_IMAGES[1]} alt="Queue 2" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/60 backdrop-blur-[3px]"></div>
             </div>
 
             {/* Layer 1 */}
             <div className="absolute inset-0 rounded-3xl transform -rotate-[2deg] translate-y-2 -translate-x-3 border border-white/10 transition-transform duration-700 ease-out -z-10 overflow-hidden shadow-2xl opacity-80 group-hover:-rotate-[3deg] group-hover:translate-y-3 group-hover:-translate-x-4">
-              <img src={currentImages[nextImgIdx1]} alt="Queue 1" className="w-full h-full object-cover" />
+              <img src={currentImages[nextImgIdx1]} onError={(e) => e.currentTarget.src = FALLBACK_IMAGES[0]} alt="Queue 1" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] group-hover:bg-black/20 group-hover:backdrop-blur-0 transition-all duration-700"></div>
             </div>
             
@@ -267,6 +267,7 @@ export default function Landing() {
               {/* Invisible spacer to perfectly set container boundary to the image size */}
               <img 
                 src={currentImages[communityImgIdx]} 
+                onError={(e) => e.currentTarget.src = FALLBACK_IMAGES[0]}
                 alt="spacer" 
                 className="w-full h-auto opacity-0 block transition-all duration-1000"
               />
@@ -275,6 +276,7 @@ export default function Landing() {
                 <img 
                   key={idx}
                   src={imgUrl}
+                  onError={(e) => e.currentTarget.src = FALLBACK_IMAGES[0]}
                   alt="Gallery"
                   className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${
                     idx === communityImgIdx 

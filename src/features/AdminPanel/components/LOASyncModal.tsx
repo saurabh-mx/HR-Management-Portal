@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { RefreshCw, X, Save, CheckCircle2, Database, AlertTriangle, Link as LinkIcon, Play } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
@@ -27,7 +27,47 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
   const [isSavingLink, setIsSavingLink] = useState(false);
   const [syncProfileName, setSyncProfileName] = useState("");
   const [hasAutoSynced, setHasAutoSynced] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({});
+  const handleSyncCSVRef = useRef<any>(null);
 
+  useEffect(() => {
+    handleSyncCSVRef.current = handleSyncCSV;
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRemaining(prev => {
+        const next = { ...prev };
+        let needsUpdate = false;
+        
+        savedSyncs.forEach((sync, idx) => {
+          if (sync.isAutoSync) {
+            if (next[idx] === undefined) {
+              next[idx] = 300;
+              needsUpdate = true;
+            } else if (next[idx] > 0) {
+              next[idx] -= 1;
+              needsUpdate = true;
+            } else {
+              if (sync.url && handleSyncCSVRef.current) {
+                handleSyncCSVRef.current(sync.url, true);
+              }
+              next[idx] = 300;
+              needsUpdate = true;
+            }
+          } else {
+            if (next[idx] !== undefined) {
+              delete next[idx];
+              needsUpdate = true;
+            }
+          }
+        });
+        
+        return needsUpdate ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [savedSyncs]);
   useEffect(() => {
     if (!isOpen) return;
     const saved = localStorage.getItem('hr_portal_loa_saved_syncs');
@@ -97,7 +137,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
     });
   };
 
-  const handleSyncCSV = async (eOrUrl?: any, autoCommit: boolean = false) => {
+  async function handleSyncCSV(eOrUrl?: any, autoCommit: boolean = false) {
     setErrorMsg(null);
     let finalUrl = typeof eOrUrl === 'string' ? eOrUrl : csvUrl;
     finalUrl = finalUrl.trim();
@@ -609,7 +649,12 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                         <div className={`block w-7 h-4 rounded-full transition-colors ${sync.isAutoSync ? 'bg-emerald-500' : 'bg-slate-700 group-hover/toggle:bg-slate-600'}`}></div>
                         <div className={`absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform ${sync.isAutoSync ? 'translate-x-3' : 'translate-x-0'}`}></div>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium select-none">Auto-Sync on Load</span>
+                      <span className="text-[10px] text-slate-400 font-medium select-none">
+                        {sync.isAutoSync && timeRemaining[idx] !== undefined 
+                          ? `Auto-Sync (Next: ${Math.floor(timeRemaining[idx] / 60).toString().padStart(2, '0')}:${(timeRemaining[idx] % 60).toString().padStart(2, '0')})`
+                          : "Auto-Sync on Load"
+                        }
+                      </span>
                     </label>
                   </div>
                   

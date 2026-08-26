@@ -709,10 +709,13 @@ export default function AdminPanel() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white mb-0.5">Access Overview</h3>
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex flex-wrap items-center gap-3 mt-1">
                 <span className="text-xs text-slate-500"><span className="text-amber-400 font-semibold">{employees.filter(e => e.role === 'admin' || e.role === 'High Command').length}</span> HC</span>
                 <span className="text-xs text-slate-500"><span className="text-blue-400 font-semibold">{employees.filter(e => e.role === 'Command').length}</span> CMD</span>
                 <span className="text-xs text-slate-500"><span className="text-violet-400 font-semibold">{employees.filter(e => e.role === 'HR').length}</span> HR</span>
+                <span className="text-xs text-slate-500"><span className="text-cyan-400 font-semibold">{employees.filter(e => e.role === 'Supervisor').length}</span> SUP</span>
+                <span className="text-xs text-slate-500"><span className="text-slate-300 font-semibold">{employees.filter(e => e.role === 'Patrol Officer' || !e.role).length}</span> PATROL</span>
+                <span className="text-xs text-slate-500"><span className="text-emerald-400 font-semibold">{employees.filter(e => e.role === 'Student').length}</span> STU</span>
               </div>
             </div>
           </div>

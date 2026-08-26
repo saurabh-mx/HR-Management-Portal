@@ -23,6 +23,51 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
   const [savedSyncs, setSavedSyncs] = useState<{name: string, url: string, lastSync: string, isAutoSync?: boolean, defaultDept?: string, lastSyncStatus?: 'success' | 'error'}[]>([]);
   const [isSavingLink, setIsSavingLink] = useState(false);
   const [syncProfileName, setSyncProfileName] = useState("");
+  const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRemaining(prev => {
+        const next = { ...prev };
+        let needsUpdate = false;
+        
+        savedSyncs.forEach((sync, idx) => {
+          if (sync.isAutoSync) {
+            if (next[idx] === undefined) {
+              next[idx] = 300;
+              needsUpdate = true;
+            } else if (next[idx] > 0) {
+              next[idx] -= 1;
+              needsUpdate = true;
+            } else {
+              if (sync.url) {
+                runGlobalAutoSync([{ url: sync.url, defaultDept: sync.defaultDept }]).then(() => {
+                  setSavedSyncs(prevSyncs => {
+                    const newSyncs = prevSyncs.map(s => {
+                      if (s.url === sync.url) return { ...s, lastSync: new Date().toLocaleString(), lastSyncStatus: 'success' as const };
+                      return s;
+                    });
+                    localStorage.setItem('hr_portal_saved_syncs', JSON.stringify(newSyncs));
+                    return newSyncs;
+                  });
+                });
+              }
+              next[idx] = 300;
+              needsUpdate = true;
+            }
+          } else {
+            if (next[idx] !== undefined) {
+              delete next[idx];
+              needsUpdate = true;
+            }
+          }
+        });
+        
+        return needsUpdate ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [savedSyncs]);
 
   useEffect(() => {
     const saved = localStorage.getItem('hr_portal_saved_syncs');
@@ -756,7 +801,12 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                         <div className={`block w-7 h-4 rounded-full transition-colors ${sync.isAutoSync ? 'bg-emerald-500' : 'bg-slate-700 group-hover/toggle:bg-slate-600'}`}></div>
                         <div className={`absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform ${sync.isAutoSync ? 'translate-x-3' : 'translate-x-0'}`}></div>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium select-none">Auto-Sync on Load</span>
+                      <span className="text-[10px] text-slate-400 font-medium select-none">
+                        {sync.isAutoSync && timeRemaining[idx] !== undefined 
+                          ? `Auto-Sync (Next: ${Math.floor(timeRemaining[idx] / 60).toString().padStart(2, '0')}:${(timeRemaining[idx] % 60).toString().padStart(2, '0')})`
+                          : "Auto-Sync on Load"
+                        }
+                      </span>
                     </label>
                   </div>
                   <div className="flex justify-between items-center mt-2">
