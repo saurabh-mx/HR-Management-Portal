@@ -711,7 +711,7 @@ export default function EmployeeDirectory() {
                       </div>
                       <div>
                         <p className="text-[7px] text-slate-500 uppercase tracking-widest mb-0.5">Leads</p>
-                        <p className="text-xs font-medium text-slate-200 truncate" title={selectedEmployee.led_sub_departments?.join(', ')}>
+                        <p className="text-xs font-medium text-slate-200 break-words" title={selectedEmployee.led_sub_departments?.join(', ')}>
                           {selectedEmployee.led_sub_departments?.length ? selectedEmployee.led_sub_departments.join(', ') : '—'}
                         </p>
                       </div>
