@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
-import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Camera, X, Barcode, Cpu } from "lucide-react";
+import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Camera, X, Barcode } from "lucide-react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import { canToggleAdminSafeMode } from '@/auth/roles/roleMatrix';
@@ -39,6 +39,7 @@ export default function Profile() {
   const [totalStrikes, setTotalStrikes] = useState(0);
   const [totalWarnings, setTotalWarnings] = useState(0);
   const [totalVerbalWarnings, setTotalVerbalWarnings] = useState(0);
+  const [totalRevoked, setTotalRevoked] = useState(0);
 
   useEffect(() => {
     async function fetchUserStrikes() {
@@ -46,15 +47,19 @@ export default function Profile() {
       const { data } = await supabase
         .from('strikes')
         .select('*')
-        .eq('name', profile.name)
-        .neq('status', 'revoked');
+        .ilike('name', `${profile.name}%`);
       
       if (data) {
         let strikes = 0;
         let warnings = 0;
         let verbals = 0;
+        let revoked = 0;
 
         data.forEach(curr => {
+          if (curr.status === 'revoked') {
+            revoked += 1;
+            return;
+          }
           if (curr.action_type === 'Strike') {
             strikes += parseInt(curr.strike_level?.split('/')[0] || '1');
           } else if (curr.action_type === 'Warning') {
@@ -67,6 +72,7 @@ export default function Profile() {
         setTotalStrikes(strikes);
         setTotalWarnings(warnings);
         setTotalVerbalWarnings(verbals);
+        setTotalRevoked(revoked);
       }
     }
     fetchUserStrikes();
@@ -319,9 +325,13 @@ Join Date: ${formatDate(profile.department_join_date)}
                 />
 
                 <div className="flex flex-col items-center flex-1 z-10 relative pt-12 px-6 pb-6 transition-transform duration-500 ease-out group-hover:scale-[1.03] group-hover:-translate-y-1">
-                  {/* Microchip */}
-                  <div className="absolute top-10 left-6 text-yellow-600/60 opacity-80">
-                    <Cpu className="w-8 h-8" />
+                  {/* Department Logo */}
+                  <div className="absolute top-8 left-6 opacity-90">
+                    <img 
+                      src={deptLogo} 
+                      alt="Department Logo" 
+                      className="w-11 h-11 object-contain drop-shadow-lg mix-blend-screen rounded-full" 
+                    />
                   </div>
 
                   {/* Avatar */}
@@ -354,7 +364,7 @@ Join Date: ${formatDate(profile.department_join_date)}
                       <p className="text-[10px] font-bold text-slate-200 uppercase tracking-wider truncate">{profile.rank || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Clearance Role</p>
+                      <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Clearance</p>
                       <p className="text-[10px] font-bold text-slate-300 uppercase tracking-wider truncate">{profile.role || "—"}</p>
                     </div>
                     <div>
@@ -481,6 +491,10 @@ Join Date: ${formatDate(profile.department_join_date)}
                   <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verbal Warnings</span>
                     <span className={`text-sm font-bold ${totalVerbalWarnings > 0 ? 'text-indigo-400' : 'text-slate-400'}`}>{totalVerbalWarnings}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revoked Actions</span>
+                    <span className="text-sm font-bold text-slate-400">{totalRevoked}</span>
                   </div>
                 </div>
               </div>
