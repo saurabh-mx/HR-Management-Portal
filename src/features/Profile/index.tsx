@@ -40,6 +40,9 @@ export default function Profile() {
   const [totalWarnings, setTotalWarnings] = useState(0);
   const [totalVerbalWarnings, setTotalVerbalWarnings] = useState(0);
   const [totalRevoked, setTotalRevoked] = useState(0);
+  
+  const [subDeptStrikes, setSubDeptStrikes] = useState<any[]>([]);
+  const [isBoxFlipped, setIsBoxFlipped] = useState(false);
 
   useEffect(() => {
     async function fetchUserStrikes() {
@@ -73,6 +76,17 @@ export default function Profile() {
         setTotalWarnings(warnings);
         setTotalVerbalWarnings(verbals);
         setTotalRevoked(revoked);
+      }
+      
+      // Fetch Sub-Department Strikes
+      const { data: sdData } = await supabase
+        .from('sub_department_posts')
+        .select('*')
+        .eq('category', 'Departmental Strike')
+        .ilike('title', `${profile.name}%`);
+        
+      if (sdData) {
+        setSubDeptStrikes(sdData);
       }
     }
     fetchUserStrikes();
@@ -465,27 +479,61 @@ Join Date: ${formatDate(profile.department_join_date)}
                   </div>
                 </div>
 
-                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
-                  <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-brand" /> Disciplinary Actions
-                  </h3>
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Strikes</span>
-                      <span className={`text-sm font-bold ${totalStrikes > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{totalStrikes}/5</span>
+                <div className="relative w-full h-[320px] [perspective:1000px] cursor-pointer group" onClick={() => setIsBoxFlipped(!isBoxFlipped)}>
+                  <div className={`w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${isBoxFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
+                    
+                    {/* FRONT FACE - Disciplinary Actions */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                      <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center justify-between">
+                        <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-brand" /> Disciplinary Actions</span>
+                        <span className="text-[9px] text-slate-500 font-normal uppercase tracking-wider">Click to Flip</span>
+                      </h3>
+                      <div className="space-y-6">
+                        <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Strikes</span>
+                          <span className={`text-sm font-bold ${totalStrikes > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>{totalStrikes}/5</span>
+                        </div>
+                        <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Warnings</span>
+                          <span className={`text-sm font-bold ${totalWarnings > 0 ? 'text-amber-500' : 'text-slate-400'}`}>{totalWarnings}</span>
+                        </div>
+                        <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verbal Warnings</span>
+                          <span className={`text-sm font-bold ${totalVerbalWarnings > 0 ? 'text-indigo-400' : 'text-slate-400'}`}>{totalVerbalWarnings}</span>
+                        </div>
+                        <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revoked Actions</span>
+                          <span className="text-sm font-bold text-slate-400">{totalRevoked}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Warnings</span>
-                      <span className={`text-sm font-bold ${totalWarnings > 0 ? 'text-amber-500' : 'text-slate-400'}`}>{totalWarnings}</span>
+
+                    {/* BACK FACE - Sub-Department Strikes */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-rose-500/30 transition-colors duration-500 flex flex-col">
+                      <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center justify-between shrink-0">
+                        <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-rose-500" /> Sub-Department Strikes</span>
+                        <span className="text-[9px] text-slate-500 font-normal uppercase tracking-wider">Click to Flip</span>
+                      </h3>
+                      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+                        {subDeptStrikes.length === 0 ? (
+                          <div className="h-full flex items-center justify-center">
+                            <p className="text-sm text-slate-500 italic text-center">No departmental strikes logged.</p>
+                          </div>
+                        ) : (
+                          subDeptStrikes.map(strike => (
+                            <div key={strike.id} className="bg-slate-950/50 p-4 rounded-xl border border-rose-500/20 shadow-inner">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-rose-400 uppercase tracking-wider bg-rose-500/10 px-2 py-0.5 rounded">{strike.sub_department}</span>
+                                <span className="text-[10px] text-slate-500 font-medium">{new Date(strike.created_at).toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed mb-2">{strike.message}</p>
+                              <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest text-right">By: {strike.author}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verbal Warnings</span>
-                      <span className={`text-sm font-bold ${totalVerbalWarnings > 0 ? 'text-indigo-400' : 'text-slate-400'}`}>{totalVerbalWarnings}</span>
-                    </div>
-                    <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revoked Actions</span>
-                      <span className="text-sm font-bold text-slate-400">{totalRevoked}</span>
-                    </div>
+
                   </div>
                 </div>
               </div>
@@ -502,7 +550,7 @@ Join Date: ${formatDate(profile.department_join_date)}
                       <span className="text-sm font-medium text-slate-200">{profile.sub_department || "—"}</span>
                     </div>
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Lead Status</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Department Lead</span>
                       <span className="text-sm font-medium text-brand">{profile.led_sub_departments?.length ? profile.led_sub_departments.join(", ") : "—"}</span>
                     </div>
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
@@ -510,7 +558,7 @@ Join Date: ${formatDate(profile.department_join_date)}
                       <span className="text-sm font-medium text-slate-200">{profile.titles || "—"}</span>
                     </div>
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time in Svc</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time in Service</span>
                       <span className="text-sm font-medium text-brand">{profile.duration_in_department || "—"}</span>
                     </div>
                   </div>

@@ -15,6 +15,7 @@ import AdminPanel from "@/features/AdminPanel";
 import DocumentsDashboard from "@/features/Documents";
 import Profile from "@/features/Profile";
 import AuditLogs from "@/features/AdminPanel/AuditLogs";
+import SubDepartmentFeed from "@/features/SubDepartment";
 
 export function AppRoutes() {
   const { session, loading } = useAuth();
@@ -44,6 +45,7 @@ export function AppRoutes() {
           <Route path="/documents" element={<DocumentsDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
+          <Route path="/sub-department" element={<SubDepartmentFeed />} />
         </Route>
       </Routes>
     </BrowserRouter>

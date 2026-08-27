@@ -13,7 +13,8 @@ import {
   Database,
   PanelLeftClose,
   PanelLeftOpen,
-  Shield
+  Shield,
+  Building
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/hooks/useAuth';
@@ -79,6 +80,7 @@ export const Sidebar = () => {
     { name: 'Disciplinary', path: '/strikes', icon: ShieldAlert },
     { name: 'SOI Applications', path: '/soi-applications', icon: Shield },
     { name: 'HR Requests', path: '/hr-requests', icon: FileText },
+    { name: 'Sub-Department', path: '/sub-department', icon: Building },
     { name: 'Documents', path: '/documents', icon: BookOpen },
     ...(profile?.is_admin ? [
       { name: 'Audit Logs', path: '/audit-logs', icon: ClipboardList },
