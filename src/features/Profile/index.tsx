@@ -2,7 +2,8 @@ import { useRef, useState, useEffect } from "react";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
-import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Camera, X, Barcode } from "lucide-react";
+import { Shield, Badge, Calendar, User, Download, FileText, CheckCircle2, Key, ClipboardList, Medal, Fingerprint, MapPin, Hash, Camera, X } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import { canToggleAdminSafeMode } from '@/auth/roles/roleMatrix';
@@ -148,26 +149,62 @@ export default function Profile() {
     }
   };
 
-  const downloadIdText = () => {
+  const copyIdText = () => {
     if (!profile) return;
-    const content = `SASP OFFICIAL PERSONNEL RECORD
-Name: ${profile.name}
-Callsign/Badge: ${profile.badge_number}
-Department: ${profile.department}
-Rank: ${profile.rank || "—"}
-Role: ${profile.role}
-Status: ${profile.status || "Active"}
-Join Date: ${formatDate(profile.department_join_date)}
-`;
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${profile.name?.replace(/ /g, '_')}_ID_Details.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    logAuditAction("ID_EXPORTED", profile.name || "Unknown", "Exported Digital ID Card as Text", profile.name);
-    toast.success("Dossier text exported");
+    
+    const certs = [
+      profile.cert_fto && 'FTO',
+      profile.cert_asd && 'ASD',
+      profile.cert_heat && 'HEAT',
+      profile.cert_swat && 'SWAT',
+      profile.cert_cid && 'CID',
+      profile.cert_meu && 'MEU',
+      profile.cert_k9 && 'K9',
+      profile.cert_sop && 'SOP',
+    ].filter(Boolean).join(', ') || 'None';
+    
+    const content = `══════════════════════════════════
+  SASP OFFICIAL PERSONNEL RECORD
+══════════════════════════════════
+
+▸ Name:            ${profile.name}
+▸ Callsign/Badge:  ${profile.badge_number}
+▸ Department:      ${profile.department || '—'}
+▸ Rank:            ${profile.rank || '—'}
+▸ Role:            ${profile.role || '—'}
+▸ Status:          ${profile.status || 'Active'}
+
+── Personal Details ──────────────
+▸ Citizen ID:      ${profile.citizen_id || 'N/A'}
+▸ Phone:           ${profile.phone_number || 'N/A'}
+▸ Discord:         ${profile.discord_tag || 'N/A'}
+
+── Department Info ───────────────
+▸ Sub-Department:  ${profile.sub_department || '—'}
+▸ Department Lead: ${profile.led_sub_departments?.length ? profile.led_sub_departments.join(', ') : '—'}
+▸ Titles:          ${profile.titles || '—'}
+▸ Time in Service: ${profile.duration_in_department || '—'}
+
+── Service Timeline ──────────────
+▸ Join Date:       ${formatDate(profile.department_join_date)}
+▸ Last Promotion:  ${formatDate(profile.last_promotion_date)}${profile.days_since_last_promoted !== undefined ? ` (${profile.days_since_last_promoted} days ago)` : ''}
+
+── Certifications ────────────────
+▸ ${certs}
+
+── Notes ─────────────────────────
+${profile.notes || 'No service notes on file.'}
+
+══════════════════════════════════
+  Generated: ${new Date().toLocaleString()}
+══════════════════════════════════`;
+    
+    navigator.clipboard.writeText(content).then(() => {
+      logAuditAction("ID_EXPORTED", profile.name || "Unknown", "Copied full profile details to clipboard", profile.name);
+      toast.success("Profile details copied to clipboard");
+    }).catch(() => {
+      toast.error("Failed to copy to clipboard");
+    });
   };
 
   const handleSaveAvatar = async () => {
@@ -307,7 +344,7 @@ Join Date: ${formatDate(profile.department_join_date)}
               {/* ID CARD COMPONENT */}
               <div 
                 ref={idCardRef} 
-                className="w-full max-w-[320px] mx-auto aspect-[6/9] rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] bg-slate-900 border border-slate-700/50 flex flex-col relative overflow-hidden group transition-all duration-500"
+                className="w-full max-w-[320px] mx-auto rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] bg-slate-900 border border-slate-700/50 flex flex-col relative overflow-hidden group transition-all duration-500"
               >
                 {/* Lanyard Hole Punch */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-3 rounded-full bg-slate-950 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] border border-white/5 z-20"></div>
@@ -389,30 +426,41 @@ Join Date: ${formatDate(profile.department_join_date)}
                   
                   {/* Endorsements (Certs) */}
                   <div className="mt-3 flex flex-wrap justify-center gap-1.5 px-2">
-                    {profile.cert_fto && <span title="FTO" className="text-[14px] drop-shadow-md">🎓</span>}
-                    {profile.cert_asd && <span title="ASD" className="text-[14px] drop-shadow-md">🚁</span>}
-                    {profile.cert_heat && <span title="HEAT" className="text-[14px] drop-shadow-md">🏎️</span>}
-                    {profile.cert_swat && <span title="SWAT" className="text-[14px] drop-shadow-md">🛡️</span>}
-                    {profile.cert_cid && <span title="CID" className="text-[14px] drop-shadow-md">🕵️</span>}
-                    {profile.cert_meu && <span title="MEU" className="text-[14px] drop-shadow-md">🛥️</span>}
-                    {profile.cert_k9 && <span title="K9" className="text-[14px] drop-shadow-md">🐕</span>}
-                    {profile.cert_sop && <span title="SOP" className="text-[14px] drop-shadow-md">📋</span>}
+                    {profile.cert_fto && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🎓</span> FTO</span>}
+                    {profile.cert_asd && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🚁</span> ASD</span>}
+                    {profile.cert_heat && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🏎️</span> HEAT</span>}
+                    {profile.cert_swat && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🛡️</span> SWAT</span>}
+                    {profile.cert_cid && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🕵️</span> CID</span>}
+                    {profile.cert_meu && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🛥️</span> MEU</span>}
+                    {profile.cert_k9 && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">🐕</span> K9</span>}
+                    {profile.cert_sop && <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-slate-500/30 text-slate-300 bg-slate-800/50 flex items-center gap-1"><span className="text-[10px] drop-shadow-sm">📋</span> SOP</span>}
                   </div>
 
-                  <div className="mt-auto pt-4 w-full flex flex-col items-center">
-                    <Barcode className="w-full h-8 text-slate-600/50" />
-                    <p className="text-[6px] tracking-[0.3em] text-slate-600 uppercase mt-2 font-bold">Property of San Andreas</p>
-                  </div>
+                  <a
+                    href={`/identity/${profile.badge_number}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-auto pt-4 pb-2 w-full flex flex-col items-center hover:opacity-70 transition-opacity cursor-pointer relative z-30 bg-slate-900"
+                  >
+                    <QRCodeSVG
+                      value={`${window.location.origin}/identity/${profile.badge_number}`}
+                      size={64}
+                      bgColor="#0f172a"
+                      fgColor="#94a3b8"
+                      level="L"
+                    />
+                    <p className="text-[6px] tracking-[0.3em] text-slate-600 uppercase mt-2 font-bold">Scan to verify identity</p>
+                  </a>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button onClick={downloadIdImage} className="bg-brand hover:bg-brand/90 text-white shadow-[0_0_20px_rgba(var(--brand-main),0.3)] px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
-                  <Download className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" /> Save Image
+                  <Download className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" /> Export Image
                 </button>
-                <button onClick={downloadIdText} className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
-                  <FileText className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" /> Copy Text
+                <button onClick={copyIdText} className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
+                  <FileText className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" /> Copy Details
                 </button>
               </div>
             </div>

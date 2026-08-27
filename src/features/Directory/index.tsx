@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Shield, Search, UserMinus, CalendarOff, Database, Edit, ScanLine, Activity, AlertTriangle } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
+import { QRCodeSVG } from 'qrcode.react';
 import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
 import { StatCard } from '@/features/Dashboard/components/StatCard';
@@ -572,42 +573,49 @@ export default function EmployeeDirectory() {
                   </div>
                   
                   {/* Data Grid */}
-                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 w-full text-left mt-auto bg-black/40 p-4 rounded-xl border border-white/5 backdrop-blur-md">
-                    <div>
+                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 w-full text-center my-auto bg-black/40 p-4 rounded-xl border border-white/5 backdrop-blur-md">
+                    <div className="flex flex-col items-center">
                       <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Rank</p>
                       <p className="text-xs font-bold text-slate-200 truncate">{selectedEmployee.rank || "—"}</p>
                     </div>
-                    <div>
+                    <div className="flex flex-col items-center">
                       <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Clearance</p>
                       <p className="text-xs font-bold text-slate-200 truncate">{selectedEmployee.role || "—"}</p>
                     </div>
-                    <div>
+                    <div className="flex flex-col items-center">
                       <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Status</p>
                       <p className={`text-xs font-black tracking-wider truncate uppercase ${selectedEmployee.status === 'Active' ? 'text-emerald-400' : selectedEmployee.status === 'Inactive' ? 'text-rose-400' : 'text-fuchsia-400'}`}>
                         {selectedEmployee.status || "ACTIVE"}
                       </p>
                     </div>
-                    <div>
+                    <div className="flex flex-col items-center">
                       <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Department</p>
-                      <p className="text-xs font-bold truncate flex items-center gap-1" style={{ color: getDepartmentColor(selectedEmployee.department) }}>
+                      <p className="text-xs font-bold truncate flex items-center justify-center gap-1" style={{ color: getDepartmentColor(selectedEmployee.department) }}>
                         {selectedEmployee.department || "—"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Footer Barcode */}
-                <div className="mt-auto h-12 w-full flex flex-col items-center justify-end pb-3 bg-gradient-to-t from-black/80 to-transparent z-10 relative">
-                  <div className="flex gap-1 h-5 opacity-60">
-                    {/* Simulated barcode bars */}
-                    {[1, 3, 1, 2, 4, 1, 1, 3, 2, 1, 5, 1, 2, 3, 1, 2, 1].map((w, i) => (
-                      <div key={i} className="bg-white h-full" style={{ width: `${w * 2}px` }} />
-                    ))}
-                  </div>
-                  <p className="text-[6px] font-mono tracking-widest text-slate-500 mt-1 uppercase">
-                    Scan for verification
+                {/* Footer QR Code */}
+                <a
+                  href={`/identity/${selectedEmployee.badge_number}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-auto w-full flex flex-col items-center justify-end pb-3 bg-gradient-to-t from-black/80 to-transparent z-10 relative hover:opacity-80 transition-opacity cursor-pointer"
+                >
+                  <QRCodeSVG
+                    value={`${window.location.origin}/identity/${selectedEmployee.badge_number}`}
+                    size={64}
+                    bgColor="transparent"
+                    fgColor="rgba(148, 163, 184, 0.6)"
+                    level="L"
+                  />
+                  <p className="text-[6px] font-mono tracking-widest text-slate-500 mt-1.5 uppercase">
+                    Scan to verify identity
                   </p>
-                </div>
+                </a>
               </div>
 
               {/* BACK OF CARD - INTELLIGENCE DOSSIER (BENTO BOX) */}
