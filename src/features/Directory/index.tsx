@@ -606,7 +606,7 @@ export default function EmployeeDirectory() {
                   className="mt-auto w-full flex flex-col items-center justify-end pb-3 bg-gradient-to-t from-black/80 to-transparent z-10 relative hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   <QRCodeSVG
-                    value={`${window.location.origin}/identity/${selectedEmployee.badge_number}`}
+                    value={`${import.meta.env.VITE_SITE_URL || window.location.origin}/identity/${selectedEmployee.badge_number}`}
                     size={64}
                     bgColor="transparent"
                     fgColor="rgba(148, 163, 184, 0.6)"

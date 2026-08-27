@@ -415,7 +415,7 @@ export default function IdentityCard() {
           {/* QR Code Footer */}
           <div className="mt-6 flex flex-col items-center justify-end">
             <QRCodeSVG
-              value={`${window.location.origin}/identity/${identity?.badge_number}`}
+              value={`${import.meta.env.VITE_SITE_URL || window.location.origin}/identity/${identity?.badge_number}`}
               size={56}
               bgColor="transparent"
               fgColor="rgba(148, 163, 184, 0.5)"

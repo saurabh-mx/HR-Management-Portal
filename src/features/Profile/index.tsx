@@ -443,7 +443,7 @@ ${profile.notes || 'No service notes on file.'}
                     className="mt-auto pt-4 pb-2 w-full flex flex-col items-center hover:opacity-70 transition-opacity cursor-pointer relative z-30 bg-slate-900"
                   >
                     <QRCodeSVG
-                      value={`${window.location.origin}/identity/${profile.badge_number}`}
+                      value={`${import.meta.env.VITE_SITE_URL || window.location.origin}/identity/${profile.badge_number}`}
                       size={64}
                       bgColor="#0f172a"
                       fgColor="#94a3b8"
