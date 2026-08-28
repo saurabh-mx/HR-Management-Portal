@@ -17,12 +17,45 @@ import Profile from "@/features/Profile";
 import AuditLogs from "@/features/AdminPanel/AuditLogs";
 import SubDepartmentFeed from "@/features/SubDepartment";
 import IdentityCard from "@/features/Identity";
+import ForcePasswordChange from "@/auth/components/ForcePasswordChange";
+import PendingApprovalScreen from "@/auth/components/PendingApprovalScreen";
 
 export function AppRoutes() {
-  const { session, loading } = useAuth();
+  const { session, loading, logout, officerAuthFlow, officerFlowData, setOfficerAuthFlow } = useAuth();
 
   if (loading) {
     return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-500">Establishing Secure Connection...</div>;
+  }
+
+  // ─── Officer Auth Flow Intercepts ───────────────────────────────────
+  // These take priority over normal routing when the officer is mid-auth-flow
+
+  if (officerAuthFlow === 'force_password_change' && officerFlowData.officerId) {
+    return (
+      <ForcePasswordChange
+        officerId={officerFlowData.officerId}
+        onSuccess={() => {
+          setOfficerAuthFlow('pending_approval');
+        }}
+        onCancel={async () => {
+          setOfficerAuthFlow('none');
+          await logout();
+        }}
+      />
+    );
+  }
+
+  if (officerAuthFlow === 'pending_approval') {
+    return (
+      <PendingApprovalScreen
+        officerName={officerFlowData.officerId}
+        approvalRequestId={officerFlowData.approvalId}
+        onLogout={async () => {
+          setOfficerAuthFlow('none');
+          await logout();
+        }}
+      />
+    );
   }
 
   return (
@@ -56,4 +89,3 @@ export function AppRoutes() {
     </BrowserRouter>
   );
 }
-

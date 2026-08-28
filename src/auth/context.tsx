@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import type { Session } from "@supabase/supabase-js";
@@ -8,6 +8,7 @@ import { logAuditAction } from "@/lib/auditLogger";
 import { AlertTriangle, X } from "lucide-react";
 import { isCommandOrHigher } from '@/auth/roles/roleMatrix';
 
+
 interface AuthContextType {
   session: Session | null;
   profile: Employee | null;
@@ -16,6 +17,10 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
   adminSafeMode: boolean;
   toggleAdminSafeMode: () => void;
+  // Officer Auth System extensions
+  officerAuthFlow: 'none' | 'force_password_change' | 'pending_approval';
+  officerFlowData: { officerId?: string; tempToken?: string; approvalId?: string };
+  setOfficerAuthFlow: (flow: 'none' | 'force_password_change' | 'pending_approval', data?: { officerId?: string; tempToken?: string; approvalId?: string }) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +31,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [adminSafeMode, setAdminSafeMode] = useState(false);
   const [authError, setAuthError] = useState<{ title: string, message: string } | null>(null);
+  // Officer Auth System state
+  const [officerAuthFlow, setOfficerAuthFlowState] = useState<'none' | 'force_password_change' | 'pending_approval'>('none');
+  const [officerFlowData, setOfficerFlowData] = useState<{ officerId?: string; tempToken?: string; approvalId?: string }>({});
+
+  const setOfficerAuthFlow = useCallback((flow: 'none' | 'force_password_change' | 'pending_approval', data?: { officerId?: string; tempToken?: string; approvalId?: string }) => {
+    setOfficerAuthFlowState(flow);
+    setOfficerFlowData(data || {});
+  }, []);
 
   useEffect(() => {
     // Initial fetch
@@ -78,32 +91,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (email: string | undefined, isLoginEvent: boolean = false, userMetaData: any = null) => {
     let discordId = "";
+    let data;
+    const isCustomOfficerLogin = !!((userMetaData && userMetaData.officer_id) || (email && email.endsWith('@hr-portal.internal')));
 
-    if (userMetaData) {
-      // Strictly use 'preferred_username' as it contains the unique Discord tag (e.g. venomplazzyt)
-      // We avoid 'full_name' or 'global_name' because that contains the Display Name (e.g. '! Venom')
-      discordId = userMetaData.preferred_username || userMetaData.name;
-    } else if (email) {
-      // Fallback for legacy email login
-      discordId = userMetaData.preferred_username || userMetaData.name.split('#')[0];
+    // 1. If this is a Custom Officer Login, we have the exact officer_id OR an internal email
+    if (isCustomOfficerLogin) {
+      let resolvedOfficerId = userMetaData?.officer_id;
+      
+      // If metadata is missing the ID, look it up via auth_credentials using the email prefix
+      if (!resolvedOfficerId && email) {
+        const username = email.split('@')[0];
+        const { data: creds } = await supabase
+          .from('auth_credentials')
+          .select('officer_id')
+          .eq('username', username)
+          .maybeSingle();
+          
+        if (creds) {
+          resolvedOfficerId = creds.officer_id;
+        }
+      }
+
+      if (resolvedOfficerId) {
+        const { data: employeeData } = await supabase
+          .from("employees")
+          .select("*")
+          .eq('id', resolvedOfficerId)
+          .maybeSingle();
+        data = employeeData;
+      }
+    } else {
+      // 2. Otherwise, this is a Discord Login. Resolve the discord tag.
+      if (userMetaData && (userMetaData.preferred_username || userMetaData.name)) {
+        // Strictly use 'preferred_username' as it contains the unique Discord tag (e.g. venomplazzyt)
+        // We avoid 'full_name' or 'global_name' because that contains the Display Name (e.g. '! Venom')
+        discordId = userMetaData.preferred_username || userMetaData.name;
+      } else if (email) {
+        // Fallback for email login
+        discordId = email.split('@')[0];
+      }
+
+      if (!discordId) {
+        setLoading(false);
+        return;
+      }
+
+      // Discord sometimes appends #0 to the end of usernames now. Strip it.
+      discordId = discordId.split('#')[0];
+
+      const { data: employeeData } = await supabase
+        .from("employees")
+        .select("*")
+        .ilike('discord_tag', discordId)
+        .maybeSingle();
+      data = employeeData;
     }
-
-    if (!discordId) {
-      setLoading(false);
-      return;
-    }
-
-    // Discord sometimes appends #0 to the end of usernames now. Strip it.
-    discordId = discordId.split('#')[0];
-
-    const { data } = await supabase
-      .from("employees")
-      .select("*")
-      .ilike('discord_tag', discordId)
-      .maybeSingle();
 
     if (data) {
       const emp = data as Employee;
+      
+      // Claim status checks removed: Discord logins grant immediate access.
+      
       setProfile(emp);
 
       if (isLoginEvent) {
@@ -132,9 +180,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
     } else {
-      console.warn(`Unauthorized login attempt by Discord ID: ${discordId}`);
+      const errorMsg = userMetaData?.officer_id
+        ? "Officer record not found in the roster. Please contact High Command."
+        : `Discord user "${discordId}" is not in the official roster. Please contact High Command.`;
+
+      console.warn(errorMsg);
       if (isLoginEvent) {
-        logAuditAction("USER_LOGIN_FAILED", "Unknown", `Unauthorized login attempt by Discord ID: ${discordId}`, email || "");
+        logAuditAction("USER_LOGIN_FAILED", "Unknown", errorMsg, email || "");
       }
 
       // UNAUTHORIZED -> Force Sign Out
@@ -144,7 +196,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setAuthError({
         title: "ACCESS DENIED",
-        message: `Discord user "${discordId}" is not in the official roster. Please contact High Command.`
+        message: errorMsg
       });
     }
     setLoading(false);
@@ -178,7 +230,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout,
       refreshProfile: async () => { if (session) await fetchProfile(session.user.email); },
       adminSafeMode,
-      toggleAdminSafeMode
+      toggleAdminSafeMode,
+      officerAuthFlow,
+      officerFlowData,
+      setOfficerAuthFlow,
     }}>
       {children}
 

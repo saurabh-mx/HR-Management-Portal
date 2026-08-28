@@ -9,6 +9,7 @@ export interface Employee {
   rank?: string;
   badge_number?: string;
   discord_tag?: string;
+  claim_status?: string;
   status?: string;
   citizen_id?: string;
   phone_number?: string;

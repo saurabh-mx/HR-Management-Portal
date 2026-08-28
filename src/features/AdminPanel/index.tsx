@@ -13,6 +13,7 @@ import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
 import PenalCodeSyncModal from '@/features/AdminPanel/components/PenalCodeSyncModal';
 import DisciplinarySyncModal from '@/features/AdminPanel/components/DisciplinarySyncModal';
 import ImageManagementPanel from '@/features/AdminPanel/components/ImageManagementPanel';
+import OfficerApprovalPanel from '@/features/AdminPanel/components/OfficerApprovalPanel';
 import { CalendarOff, Download, ImageIcon } from "lucide-react";
 
 interface Employee {
@@ -457,6 +458,34 @@ export default function AdminPanel() {
     }));
   };
 
+  const handleApproveClaim = async (id: string) => {
+    if (!window.confirm("Approve this account claim? The user will be granted access immediately.")) return;
+    const { error } = await supabase.from('employees').update({ claim_status: 'approved' }).eq('id', id);
+    if (!error) {
+      alert("Claim approved.");
+      fetchEmployees();
+      const emp = employees.find(e => e.id === id);
+      logAuditAction("ACCOUNT_CLAIM_APPROVED", emp?.name || "Unknown", `Approved account claim`);
+    } else {
+      alert("Error approving claim.");
+      console.error(error);
+    }
+  };
+
+  const handleRejectClaim = async (id: string) => {
+    if (!window.confirm("Reject this account claim? The user will be denied access.")) return;
+    const { error } = await supabase.from('employees').update({ claim_status: 'rejected' }).eq('id', id);
+    if (!error) {
+      alert("Claim rejected.");
+      fetchEmployees();
+      const emp = employees.find(e => e.id === id);
+      logAuditAction("ACCOUNT_CLAIM_REJECTED", emp?.name || "Unknown", `Rejected account claim`);
+    } else {
+      alert("Error rejecting claim.");
+      console.error(error);
+    }
+  };
+
   const handleCommitStaged = async () => {
     if (isCommitting) return;
     setIsCommitting(true);
@@ -728,6 +757,11 @@ export default function AdminPanel() {
           <ImageManagementPanel />
         </DialogContent>
       </Dialog>
+
+      {/* ─── OFFICER APPROVAL PANEL ─── */}
+      <div className="mb-6">
+        <OfficerApprovalPanel />
+      </div>
 
       {/* ─── ONBOARD RECRUIT ─── */}
       <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 backdrop-blur-md overflow-hidden">
