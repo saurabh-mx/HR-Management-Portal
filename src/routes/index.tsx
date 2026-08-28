@@ -83,6 +83,7 @@ export function AppRoutes() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/audit-logs" element={<AuditLogs />} />
             <Route path="/sub-department" element={<SubDepartmentFeed />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         )}
       </Routes>
