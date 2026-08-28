@@ -378,6 +378,17 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
     let added = 0;
     let updated = 0;
     let deleted = 0;
+    const newCredentials: string[] = [];
+
+    // Helper to generate a complex password
+    const generateTempPassword = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+      let password = '';
+      for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return 'A' + 'b' + '1' + '!' + password.substring(4);
+    };
     
     for (const emp of selected) {
        const { _staged_id, _is_existing, _db_id, _is_delete, ...dbPayload } = emp;
@@ -391,13 +402,45 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
          if (!error) updated++;
          else console.error("Update error for", emp.name, error);
        } else {
-         const { error } = await supabase.from('employees').insert([dbPayload]);
-         if (!error) added++;
+         const { error, data } = await supabase.from('employees').insert([dbPayload]).select();
+         if (!error) {
+            added++;
+            if (data && data.length > 0) {
+              const newEmp = data[0];
+              // Auto provision officer credentials
+              const tempPassword = generateTempPassword();
+              const firstName = newEmp.name.split(' ')[0].toLowerCase().replace(/[^a-z]/g, '');
+              const cleanCallsign = (newEmp.callsign || newEmp.badge_number || '000').replace(/[^a-zA-Z0-9]/g, '');
+              const username = `${firstName}.${cleanCallsign}`.toLowerCase();
+              
+              await supabase.rpc('admin_provision_officer', {
+                p_officer_id: newEmp.id,
+                p_username: username,
+                p_password: tempPassword
+              });
+              
+              newCredentials.push(`[SUCCESS] ${newEmp.name} -> Username: ${username} | Temp Pass: ${tempPassword}`);
+            }
+         }
          else console.error("Insert error for", emp.name, error);
        }
     }
     
     logAuditAction("BULK_IMPORT", "Multiple", `Master Import complete: ${added} added, ${updated} updated, ${deleted} deleted.`);
+    
+    // Automatically trigger a file download if new credentials were generated
+    if (newCredentials.length > 0) {
+      const blob = new Blob([newCredentials.join('\n')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `new_officer_passwords_${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
     setSyncResult({ added, updated, deleted });
     setSelectedStagedIds(new Set());
     setIsCommitting(false);

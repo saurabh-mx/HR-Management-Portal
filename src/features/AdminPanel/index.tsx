@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 // Unused import removed
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Edit2, Plus, Search } from "lucide-react";
+import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Edit2, Plus, Search, KeyRound } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import Papa from "papaparse";
 import { fetchAllEmployees } from "@/lib/sync/syncService";
@@ -15,6 +15,7 @@ import DisciplinarySyncModal from '@/features/AdminPanel/components/Disciplinary
 import ImageManagementPanel from '@/features/AdminPanel/components/ImageManagementPanel';
 import OfficerApprovalPanel from '@/features/AdminPanel/components/OfficerApprovalPanel';
 import { CalendarOff, Download, ImageIcon } from "lucide-react";
+import FlashcardModal from '@/components/ui/FlashcardModal';
 
 interface Employee {
   id: string;
@@ -59,6 +60,12 @@ export default function AdminPanel() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ role: string, department: string, led_sub_departments: string[] }>({ role: "Patrol Officer", department: "SASP", led_sub_departments: [] });
+
+  const [resetPasswordTemp, setResetPasswordTemp] = useState<{name: string, tempPassword: string} | null>(null);
+  const [confirmResetTarget, setConfirmResetTarget] = useState<{id: string, name: string} | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+  
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   const [stagedEmployees, setStagedEmployees] = useState<any[]>([]);
   const [selectedStagedIds, setSelectedStagedIds] = useState<Set<string>>(new Set());
@@ -125,6 +132,21 @@ export default function AdminPanel() {
     setNewSyncUrl(sync.url);
   };
 
+  const handleResetPassword = async () => {
+    if (!confirmResetTarget) return;
+    setIsResetting(true);
+    try {
+      const { adminResetOfficerPassword } = await import('@/lib/auth/authService');
+      const tempPass = await adminResetOfficerPassword(confirmResetTarget.id);
+      setConfirmResetTarget(null);
+      setResetPasswordTemp({ name: confirmResetTarget.name, tempPassword: tempPass });
+    } catch (err: any) {
+      alert(`Failed to reset password: ${err.message}`);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   // SECURITY CHECK: Verify High Command clearance
   async function checkAdminAccess() {
     if (adminSafeMode) {
@@ -146,7 +168,8 @@ export default function AdminPanel() {
       return;
     }
 
-    if (profile.is_admin || adminSafeMode) {
+    const isHC = profile.role === 'High Command' || profile.role === 'HR';
+    if (profile.is_admin || adminSafeMode || isHC) {
       setIsAdmin(true);
       setCurrentUserRole(profile.role || "");
       fetchEmployees(); // Only fetch roster if they are authorized
@@ -633,8 +656,10 @@ export default function AdminPanel() {
       {/* ─── QUICK ACTIONS ROW ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-        {/* Directory Imports */}
-        <button
+        {(profile?.is_admin || adminSafeMode) && (
+          <>
+            {/* Directory Imports */}
+            <button
           onClick={() => setShowDataSyncModal(true)}
           disabled={showDataSyncModal}
           className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
@@ -728,6 +753,8 @@ export default function AdminPanel() {
             </div>
           </div>
         </button>
+        </>
+        )}
 
         {/* Onboard Count / Quick Stat */}
         <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md p-5 text-left">
@@ -857,7 +884,7 @@ export default function AdminPanel() {
                 const dept = emp.department || 'SASP';
 
                 return (
-                  <tr key={emp.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                  <tr key={emp.id} onClick={() => setSelectedEmployee(emp)} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group relative hover:z-20 shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg cursor-pointer">
                     <td className="px-5 py-3 rounded-l-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase flex-shrink-0 group-hover:border-brand/30 transition-colors">
@@ -872,7 +899,7 @@ export default function AdminPanel() {
                     <td className="px-4 py-3 text-sm text-slate-300">{emp.rank}</td>
                     {editingId === emp.id ? (
                       <>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50">
                             {getRoleWeight(currentUserRole) >= 4 && <option value="admin">admin</option>}
                             {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
@@ -883,7 +910,7 @@ export default function AdminPanel() {
                             <option value="Student">Student</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <select value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50">
                             <option value="SASP">SASP</option>
                             <option value="LSPD">LSPD</option>
@@ -892,7 +919,7 @@ export default function AdminPanel() {
                             <option value="SASP Academy">SASP Academy</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3 relative">
+                        <td className="px-4 py-3 relative" onClick={(e) => e.stopPropagation()}>
                           <details className="group">
                             <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50 cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36">
                               <span className="truncate">
@@ -942,7 +969,7 @@ export default function AdminPanel() {
                         </td>
                       </>
                     )}
-                    <td className="px-5 py-3 text-right rounded-r-lg">
+                    <td className="px-5 py-3 text-right rounded-r-lg" onClick={(e) => e.stopPropagation()}>
                       {editingId === emp.id ? (
                         <div className="flex justify-end gap-2">
                           <button onClick={() => handleSaveEdit(emp.id)} className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-medium transition-colors">Save</button>
@@ -955,6 +982,11 @@ export default function AdminPanel() {
                               <button onClick={() => handleEditClick(emp)} className="p-1.5 rounded-md text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Edit Role/Dept">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
+                              {(profile?.is_admin || adminSafeMode || currentUserRole === 'High Command') && (
+                                <button onClick={() => setConfirmResetTarget({ id: emp.id, name: emp.name })} className="p-1.5 rounded-md text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all" title="Reset Password">
+                                  <KeyRound className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                               {adminSafeMode && (
                                 <button onClick={() => handleDeleteEmployee(emp.id)} className="p-1.5 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="Delete Officer">
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -984,6 +1016,69 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── MODALS ─── */}
+      <ImageManagementPanel 
+        isOpen={showImageManagementModal} 
+        onClose={() => setShowImageManagementModal(false)} 
+      />
+
+      {/* Temp Password Dialog */}
+      <Dialog open={!!resetPasswordTemp} onOpenChange={() => setResetPasswordTemp(null)}>
+        <DialogContent className="sm:max-w-md bg-slate-950 border-slate-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Password Reset Successful</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Please copy this temporary password and securely send it to {resetPasswordTemp?.name}.
+              They will be forced to change it on their next login.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-6 bg-slate-900 rounded-lg border border-slate-800">
+             <code className="text-2xl font-mono text-emerald-400 tracking-wider">
+               {resetPasswordTemp?.tempPassword}
+             </code>
+          </div>
+          <DialogFooter>
+             <button onClick={() => setResetPasswordTemp(null)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">
+               Done
+             </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Password Reset Dialog */}
+      <Dialog open={!!confirmResetTarget} onOpenChange={(open) => !open && !isResetting && setConfirmResetTarget(null)}>
+        <DialogContent className="bg-slate-950 border-slate-800 shadow-2xl text-slate-200 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-amber-500" />
+              Confirm Password Reset
+            </DialogTitle>
+            <DialogDescription className="text-slate-400 mt-2">
+              You are about to force a password reset for <span className="text-white font-semibold">{confirmResetTarget?.name}</span>. 
+              This will lock their account and require them to use a temporary password on their next login. Are you sure you want to proceed?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 sm:space-x-2 space-y-2 sm:space-y-0 flex-col sm:flex-row">
+            <button
+              onClick={() => setConfirmResetTarget(null)}
+              className="px-4 py-2 border border-slate-700 hover:bg-slate-800/80 text-slate-300 text-sm font-medium rounded-lg transition-colors w-full sm:w-auto"
+              disabled={isResetting}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleResetPassword}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 w-full sm:w-auto"
+              disabled={isResetting}
+            >
+              {isResetting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+              Confirm Reset
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <FlashcardModal employee={selectedEmployee as any} onClose={() => setSelectedEmployee(null)} />
+
       <DataSyncModal 
         isOpen={showDataSyncModal} 
         onClose={() => setShowDataSyncModal(false)} 

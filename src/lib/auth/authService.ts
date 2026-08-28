@@ -310,6 +310,28 @@ export async function changeOfficerPassword(
   };
 }
 
+/**
+ * Reset an officer's password (Admin action).
+ */
+export async function adminResetOfficerPassword(officerId: string): Promise<string> {
+  const newPassword = crypto.randomUUID().slice(0, 8) + 'X!'; // Quick random temp password
+
+  const { error } = await supabase.rpc('admin_reset_officer_password', {
+    target_officer_id: officerId,
+    new_password: newPassword,
+  });
+
+  if (error) {
+    throw new AuthError('VALIDATION_ERROR', { message: error.message });
+  }
+
+  await logAuthEvent(AUTH_ACTIONS.PASSWORD_CHANGED, officerId, {
+    admin_reset: true
+  });
+
+  return newPassword;
+}
+
 // ─── Approval Actions ─────────────────────────────────────────────────────
 
 /**

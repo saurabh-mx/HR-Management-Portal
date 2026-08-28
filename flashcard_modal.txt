@@ -1,0 +1,95 @@
+      {selectedEmployee && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-8 bg-black/80 backdrop-blur-md transition-opacity perspective-1000 overflow-y-auto"
+          onClick={() => setSelectedEmployee(null)}
+        >
+          <div 
+            className="animate-toss relative w-full max-w-[380px] h-[640px] shrink-0 cursor-pointer group/card my-auto"
+            onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}
+          >
+            <div className={`w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] preserve-3d shadow-2xl ${isFlipped ? 'rotate-y-180' : ''}`}>
+              
+              {/* FRONT OF CARD - SMART SECURITY BADGE */}
+              <div 
+                className="absolute inset-0 w-full h-full rounded-[24px] bg-slate-900 flex flex-col overflow-hidden backface-hidden"
+                style={{
+                  boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 20px ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.2)}`
+                }}
+              >
+                {/* Holographic Overlay Layer */}
+                <div 
+                  className="absolute inset-0 opacity-40 mix-blend-color-dodge pointer-events-none transition-transform duration-1000 ease-out group-hover/card:scale-110"
+                  style={{
+                    background: `linear-gradient(125deg, transparent 20%, ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.4)} 40%, rgba(255,255,255,0.8) 50%, ${hexToRgba(getDepartmentColor(selectedEmployee.department), 0.4)} 60%, transparent 80%)`,
+                    backgroundSize: '200% 200%',
+                    animation: 'shimmer 8s linear infinite'
+                  }}
+                />
+                
+                <style>{`
+                  @keyframes shimmer {
+                    0% { background-position: 200% center; }
+                    100% { background-position: -200% center; }
+                  }
+                `}</style>
+
+                {/* Top Border Accent */}
+                <div className="absolute top-0 left-0 right-0 h-2 z-10" style={{ backgroundColor: getDepartmentColor(selectedEmployee.department) }} />
+                
+                {/* Lanyard Hole */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-4 bg-black/60 rounded-full border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] z-20" />
+
+                {/* Background Logo Watermark */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-15 bg-center bg-no-repeat pointer-events-none mix-blend-luminosity scale-110"
+                  style={{
+                    backgroundImage: `url(${(() => {
+                      const dept = selectedEmployee.department || '';
+                      if (dept.includes('BCSO')) return '/logos/bcso.png';
+                      if (dept.includes('LSPD')) return '/logos/lspd.png';
+                      if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                      if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                      return '/logos/sasp.png';
+                    })()})`,
+                    backgroundSize: '120%'
+                  }}
+                />
+
+                <div className="flex flex-col z-10 relative mt-12 px-8 flex-1 h-full">
+                  {/* Header Row: Dept & Microchip */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={(() => {
+                          const dept = selectedEmployee.department || '';
+                          if (dept.includes('BCSO')) return '/logos/bcso.png';
+                          if (dept.includes('LSPD')) return '/logos/lspd.png';
+                          if (dept.includes('SAPR')) return '/logos/sapr.jpg';
+                          if (dept.includes('Academy') || dept.includes('PAU')) return '/logos/pau.jpg';
+                          return '/logos/sasp.png';
+                        })()} 
+                        alt="Dept Logo" 
+                        className="h-7 w-auto drop-shadow-lg opacity-90 rounded-sm" 
+                      />
+                      <div>
+                        <h3 className="text-xs font-black tracking-[0.25em] uppercase text-white/90 drop-shadow-md">
+                          {selectedEmployee.department || "STATE"}
+                        </h3>
+                        <p className="text-[8px] font-mono tracking-widest" style={{ color: getDepartmentColor(selectedEmployee.department) }}>
+                          OFFICIAL CREDENTIAL
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo & Main Info */}
+                  <div className="flex flex-col items-center mb-6">
+                    <div 
+                      className="w-28 h-28 rounded-xl flex items-center justify-center text-4xl font-bold border-2 bg-slate-950/80 backdrop-blur-xl border-white/10 shadow-2xl overflow-hidden relative"
+                    >
+                      <div className="absolute inset-0 border border-white/5 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] z-10 pointer-events-none" />
+                      {selectedEmployee.avatar_url ? (
+                        <img src={selectedEmployee.avatar_url} alt={selectedEmployee.name} className="w-full h-full object-cover filter contrast-110" />
+                      ) : (
+                        <span style={{ color: getDepartmentColor(selectedEmployee.department) }}>{selectedEmployee.name.charAt(0)}</span>
+                      )}

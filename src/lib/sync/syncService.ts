@@ -60,7 +60,7 @@ export async function runGlobalAutoSync(profiles: {url: string, defaultDept?: st
   return true;
 }
 
-export async function processSingleSheet(csvUrl: string, fallbackDept?: string): Promise<{added: number, updated: number, processedIds: Set<string>, sheetDepartments: Set<string>} | null> {
+export async function processSingleSheet(csvUrl: string, fallbackDept?: string): Promise<{added: number, updated: number, processedIds: Set<string>, sheetDepartments: Set<string>, newCredentials: string[]} | null> {
   try {
     const response = await fetch(csvUrl);
     const csvText = await response.text();
@@ -129,6 +129,17 @@ export async function processSingleSheet(csvUrl: string, fallbackDept?: string):
 
           const processedIds = new Set<string>();
           const sheetDepartments = new Set<string>();
+          const newCredentials: string[] = [];
+
+          // Helper to generate a complex password
+          const generateTempPassword = () => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < 8; i++) {
+              password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return 'A' + 'b' + '1' + '!' + password.substring(4);
+          };
 
           // Sequential updates to avoid overloading the DB
           for (let i = headerIdx + 2; i < rows.length; i++) {
@@ -219,13 +230,28 @@ export async function processSingleSheet(csvUrl: string, fallbackDept?: string):
               if (!error) {
                 added++;
                 if (insertedData && insertedData.length > 0) {
-                  processedIds.add(insertedData[0].id);
+                  const newEmp = insertedData[0];
+                  processedIds.add(newEmp.id);
+                  
+                  // Auto provision officer credentials
+                  const tempPassword = generateTempPassword();
+                  const firstName = newEmp.name.split(' ')[0].toLowerCase().replace(/[^a-z]/g, '');
+                  const cleanCallsign = (newEmp.callsign || newEmp.badge_number || '000').replace(/[^a-zA-Z0-9]/g, '');
+                  const username = `${firstName}.${cleanCallsign}`.toLowerCase();
+                  
+                  await supabase.rpc('admin_provision_officer', {
+                    p_officer_id: newEmp.id,
+                    p_username: username,
+                    p_password: tempPassword
+                  });
+                  
+                  newCredentials.push(`[SUCCESS] ${newEmp.name} -> Username: ${username} | Temp Pass: ${tempPassword}`);
                 }
               }
             }
           }
           
-          resolve({ added, updated, processedIds, sheetDepartments });
+          resolve({ added, updated, processedIds, sheetDepartments, newCredentials });
         },
         error: (error: any) => {
           console.error("AutoSync Parse Error:", error);

@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated Passwords
+passwords.txt
+
+# Environment Variables
+.env
+.env.*
+!.env.example

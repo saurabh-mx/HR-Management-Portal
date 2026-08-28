@@ -10,6 +10,9 @@ interface AuditLog {
   action_type: string;
   target_employee: string;
   details: string;
+  source?: 'system' | 'auth';
+  ip_address?: string | null;
+  user_agent?: string | null;
 }
 
 export default function AuditLogs() {
@@ -50,11 +53,20 @@ export default function AuditLogs() {
   }
 
   async function fetchLogs() {
-    const [{ data: logsData, error }, { data: empData }] = await Promise.all([
+    const [
+      { data: logsData, error: logsError },
+      { data: authLogsData, error: authLogsError },
+      { data: empData }
+    ] = await Promise.all([
       supabase
         .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
+        .limit(200),
+      supabase
+        .from('auth_audit_logs')
+        .select('*')
+        .order('timestamp', { ascending: false })
         .limit(200),
       supabase
         .from('employees')
@@ -71,12 +83,37 @@ export default function AuditLogs() {
       setEmployeeMap(map);
     }
 
-    if (error) {
-      console.error("Error fetching audit logs:", error);
-      alert("Error loading audit logs. Make sure the table exists and RLS policies are applied. " + error.message);
-    } else if (logsData) {
-      setLogs(logsData);
+    if (logsError && authLogsError) {
+      console.error("Error fetching audit logs:", logsError, authLogsError);
+      alert("Error loading audit logs. Make sure the table exists and RLS policies are applied.");
+      setIsLoading(false);
+      return;
     }
+
+    let allLogs: AuditLog[] = [];
+
+    if (logsData) {
+      allLogs = [...logsData.map(log => ({ ...log, source: 'system' as const }))];
+    }
+
+    if (authLogsData) {
+      const formattedAuthLogs = authLogsData.map(log => ({
+        id: log.id,
+        created_at: log.timestamp,
+        admin_email: log.actor_name || log.actor_id || 'System',
+        action_type: log.action,
+        target_employee: log.target_id || log.target_type || '',
+        details: log.details ? JSON.stringify(log.details) : '',
+        source: 'auth' as const,
+        ip_address: log.ip_address,
+        user_agent: log.user_agent,
+      }));
+      allLogs = [...allLogs, ...formattedAuthLogs];
+    }
+
+    allLogs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    setLogs(allLogs);
     setIsLoading(false);
   }
 
@@ -86,17 +123,17 @@ export default function AuditLogs() {
     let icon = <Activity className="w-4 h-4" />;
     if (t.includes('STRIKE')) icon = <AlertTriangle className="w-4 h-4" />;
     else if (t.includes('LOA')) icon = <Clock className="w-4 h-4" />;
-    else if (t.includes('ROLE') || t.includes('RANK') || t.includes('PASSWORD')) icon = <Shield className="w-4 h-4" />;
+    else if (t.includes('ROLE') || t.includes('RANK') || t.includes('PASSWORD') || t.includes('AUTH') || t.includes('LOGIN')) icon = <Shield className="w-4 h-4" />;
     else if (t.includes('PERSONNEL') || t.includes('HR')) icon = <User className="w-4 h-4" />;
 
-    if (t.endsWith('_SUBMITTED') || t.endsWith('_ADDED') || t.endsWith('_CREATED') || t.endsWith('_SCHEDULED') || t.endsWith('_FILED') || t.endsWith('_ISSUED')) {
+    if (t.includes('SUCCESS') || t.includes('GRANTED') || t.includes('UNLOCKED') || t.endsWith('_SUBMITTED') || t.endsWith('_ADDED') || t.endsWith('_CREATED') || t.endsWith('_SCHEDULED') || t.endsWith('_FILED') || t.endsWith('_ISSUED')) {
       return { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', icon };
     }
-    if (t.endsWith('_UPDATED') || t.endsWith('_RESOLVED') || t.endsWith('_EXPORTED') || t.endsWith('_SYNC') || t.endsWith('_REQUEST')) {
-      return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', icon };
-    }
-    if (t.endsWith('_DELETED') || t.endsWith('_REMOVED') || t.endsWith('_CANCELED') || t.endsWith('_DENIED')) {
+    if (t.includes('FAILED') || t.includes('REJECTED') || t.includes('REVOKED') || t.includes('LOCKED') || t.endsWith('_DELETED') || t.endsWith('_REMOVED') || t.endsWith('_CANCELED') || t.endsWith('_DENIED')) {
       return { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', icon };
+    }
+    if (t.includes('CHANGED') || t.endsWith('_UPDATED') || t.endsWith('_RESOLVED') || t.endsWith('_EXPORTED') || t.endsWith('_SYNC') || t.endsWith('_REQUEST')) {
+      return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', icon };
     }
 
     return { color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/20', icon };
@@ -104,8 +141,10 @@ export default function AuditLogs() {
 
   const filteredLogs = logs.filter(log => {
     // 1. Tab Filtering
-    if (activeTab === 'System' && log.action_type === 'USER_LOGIN') return false;
-    if (activeTab === 'Logins' && log.action_type !== 'USER_LOGIN') return false;
+    const isAuthLog = log.source === 'auth' || log.action_type === 'USER_LOGIN';
+
+    if (activeTab === 'System' && isAuthLog) return false;
+    if (activeTab === 'Logins' && !isAuthLog) return false;
 
     // 2. Search & Action Filtering
     const query = searchQuery.toLowerCase();
@@ -259,7 +298,7 @@ export default function AuditLogs() {
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
             }`}
         >
-          <LogIn className="w-4 h-4" /> Login Activity
+          <LogIn className="w-4 h-4" /> Authentication
         </button>
       </div>
 
@@ -298,8 +337,16 @@ export default function AuditLogs() {
                   const config = getActionConfig(log.action_type);
 
                   if (activeTab === 'Logins') {
-                    const discordTag = log.admin_email.split('@')[0].toLowerCase();
-                    const realName = employeeMap[discordTag] || log.target_employee;
+                    const discordTag = log.admin_email?.split('@')[0].toLowerCase() || '';
+                    let realName = employeeMap[discordTag];
+                    
+                    if (!realName) {
+                      if (log.source === 'auth') {
+                        realName = log.admin_email;
+                      } else {
+                        realName = log.target_employee || log.admin_email;
+                      }
+                    }
 
                     return (
                       <tr key={log.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
@@ -320,16 +367,22 @@ export default function AuditLogs() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                            <Shield className="w-3.5 h-3.5" />
-                            Secure Login
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm ${config.bg} ${config.color} ${config.border}`}>
+                            {config.icon}
+                            {log.action_type}
                           </span>
                         </td>
                         <td className="p-4 font-mono text-xs text-slate-400 whitespace-nowrap">
                           {new Date(log.created_at).toLocaleString()}
                         </td>
-                        <td className="p-4 text-slate-400 max-w-md truncate" title={log.details}>
-                          {log.details}
+                        <td className="p-4 text-slate-400 max-w-md">
+                          <div className="truncate text-xs" title={log.details}>{log.details}</div>
+                          {(log.ip_address || log.user_agent) && (
+                            <div className="text-[9px] text-slate-500 mt-1 font-mono flex gap-3">
+                              {log.ip_address && <span>IP: {log.ip_address}</span>}
+                              {log.user_agent && <span className="truncate max-w-[150px]" title={log.user_agent}>UA: {log.user_agent}</span>}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );

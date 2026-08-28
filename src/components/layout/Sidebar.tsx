@@ -83,7 +83,9 @@ export const Sidebar = () => {
     { name: 'Sub-Department', path: '/sub-department', icon: Building },
     { name: 'Documents', path: '/documents', icon: BookOpen },
     ...(profile?.is_admin ? [
-      { name: 'Audit Logs', path: '/audit-logs', icon: ClipboardList },
+      { name: 'Audit Logs', path: '/audit-logs', icon: ClipboardList }
+    ] : []),
+    ...(profile?.is_admin || profile?.role === 'High Command' || profile?.role === 'HR' ? [
       { name: 'Command Center', path: '/admin', icon: Database }
     ] : [])
   ];
