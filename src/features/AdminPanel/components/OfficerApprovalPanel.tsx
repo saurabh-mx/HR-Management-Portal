@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldAlert, ShieldCheck, ShieldX, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, Search, User, Badge, Hash, Globe } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, User, Badge, Hash, Globe } from 'lucide-react';
 import { getPendingApprovals, getApprovalHistory, approveOfficerRequest, rejectOfficerRequest, AuthError } from '@/lib/auth';
 import type { ApprovalRequest } from '@/lib/auth';
 import { useAuth } from '@/auth/hooks/useAuth';
