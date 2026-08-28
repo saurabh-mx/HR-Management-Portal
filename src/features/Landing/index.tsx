@@ -80,10 +80,20 @@ export default function Landing() {
           <div className="flex items-center justify-center w-8 h-8 bg-slate-950/60 rounded-sm border border-brand shadow-[0_0_15px_hsl(var(--brand-main)/0.5)] backdrop-blur-md rotate-45">
             <Shield className="w-5 h-5 text-brand -rotate-45" />
           </div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md">
+          <h1 className="text-xl md:text-2xl font-bold tracking-widest text-slate-100 drop-shadow-md truncate max-w-[150px] md:max-w-none">
             SASP <span className="font-light text-brand">PORTAL</span>
           </h1>
         </div>
+
+        {/* Mobile Login */}
+        <div className="md:hidden flex items-center">
+          <LoginModal>
+            <button className="px-4 py-2 bg-slate-950/60 border border-emerald-600/40 hover:bg-emerald-900/40 text-emerald-400 transition-all backdrop-blur-md tracking-wider uppercase text-[10px] font-bold rounded-sm">
+              LOGIN
+            </button>
+          </LoginModal>
+        </div>
+
         <nav className="hidden md:flex items-center space-x-10 font-medium text-[13px] tracking-[0.2em] text-slate-400">
           <a href="#" className="text-brand hover:text-brand/70 transition-colors hover:shadow-[0_0_10px_hsl(var(--brand-main)/0.5)]">HOME</a>
           <a href="#intro" className="hover:text-blue-400 transition-colors">ABOUT</a>

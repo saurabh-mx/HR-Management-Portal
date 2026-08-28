@@ -20,12 +20,13 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/hooks/useAuth';
 import { getDepartmentColor, } from '@/styles/theme';
 
-const NavButton = ({ item, isActive, isCollapsed, deptColor }: any) => {
+const NavButton = ({ item, isActive, isCollapsed, deptColor, onClick }: any) => {
   const Icon = item.icon;
 
   return (
     <Link
       to={item.path as string}
+      onClick={onClick}
       className={cn(
         "group relative flex items-center rounded-xl text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]",
         isCollapsed ? "justify-center p-3 my-1" : "gap-3 px-3 py-2.5 my-0.5",
@@ -65,7 +66,7 @@ const NavButton = ({ item, isActive, isCollapsed, deptColor }: any) => {
   );
 };
 
-export const Sidebar = () => {
+export const Sidebar = ({ isMobileOpen, onCloseMobile }: { isMobileOpen?: boolean; onCloseMobile?: () => void }) => {
   const location = useLocation();
   const { profile } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -91,10 +92,20 @@ export const Sidebar = () => {
   ];
 
   return (
-    <div className={cn(
-      "h-[calc(100vh-2rem)] my-4 ml-4 glass-panel rounded-2xl flex flex-col shadow-2xl z-50 relative transition-all duration-[400ms] ease-[cubic-bezier(0.25,1,0.5,1)] animate-slide-up",
-      isCollapsed ? "w-[80px]" : "w-[260px]"
-    )}>
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[50]"
+          onClick={onCloseMobile}
+        />
+      )}
+      <div className={cn(
+        "h-[calc(100vh-2rem)] my-4 mx-4 md:ml-4 md:mr-0 glass-panel rounded-2xl flex flex-col shadow-2xl z-[60] transition-all duration-[400ms] ease-[cubic-bezier(0.25,1,0.5,1)] animate-slide-up",
+        isCollapsed ? "w-[80px]" : "w-[260px]",
+        "fixed inset-y-0 left-0 md:relative md:translate-x-0",
+        isMobileOpen ? "translate-x-0" : "-translate-x-[120%]"
+      )}>
       <style>{`
         .sidebar-tooltip {
           visibility: hidden;
@@ -139,6 +150,7 @@ export const Sidebar = () => {
               isActive={isActive}
               isCollapsed={isCollapsed}
               deptColor={deptColor}
+              onClick={onCloseMobile}
             />
           );
         })}
@@ -183,5 +195,6 @@ export const Sidebar = () => {
         </Link>
       </div>
     </div>
+    </>
   );
 };

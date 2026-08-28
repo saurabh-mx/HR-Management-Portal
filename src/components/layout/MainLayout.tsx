@@ -1,13 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useState, useEffect, useRef } from "react";
-import { LogOut, User, ChevronDown, ShieldCheck, Shield } from "lucide-react";
+import { LogOut, User, ChevronDown, ShieldCheck, Shield, Menu } from "lucide-react";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { getDepartmentColor, hexToRgba } from '@/styles/theme';
 import { imageService } from "@/lib/imageService";
 
 export default function MainLayout() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -90,21 +91,29 @@ export default function MainLayout() {
         }}
       />
       
-      <Sidebar />
+      <Sidebar isMobileOpen={isMobileSidebarOpen} onCloseMobile={() => setIsMobileSidebarOpen(false)} />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10 w-full">
         
         {/* Top Header */}
         <header 
           className="relative h-16 glass-panel rounded-2xl mx-4 mt-4 mb-2 flex items-center justify-between px-6 z-40 transition-all duration-500 animate-slide-down"
         >
-          <span 
-            className="font-black tracking-widest uppercase text-sm drop-shadow-md"
-            style={{ color: deptColor }}
-          >
-            {profile?.role ? `${profile.role} Portal` : 'Portal'}
-          </span>
+          <div className="flex items-center gap-3">
+            <button 
+              className="md:hidden p-2 -ml-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors"
+              onClick={() => setIsMobileSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <span 
+              className="font-black tracking-widest uppercase text-sm drop-shadow-md hidden sm:inline-block"
+              style={{ color: deptColor }}
+            >
+              {profile?.role ? `${profile.role} Portal` : 'Portal'}
+            </span>
+          </div>
           
           <div className="flex items-center gap-4">
             <div className="relative" ref={dropdownRef}>
