@@ -44,6 +44,56 @@ export default function Landing() {
   const [communityImgIdx, setCommunityImgIdx] = useState(0);
   const [galleryImages, setGalleryImages] = useState<string[]>(FALLBACK_IMAGES);
   
+  // Background images for hero
+  const [bgImages, setBgImages] = useState<string[]>([
+    '/landing-bg-1.jpg',
+    '/landing-bg-2.jpg',
+    '/landing-bg-3.jpg',
+    '/landing-bg-4.jpg'
+  ]);
+  const [bgIndex, setBgIndex] = useState(0);
+
+  // About images for Features section
+  const [aboutImages, setAboutImages] = useState<string[]>(["/landing-bg-4.jpg"]);
+  const [aboutImgIdx, setAboutImgIdx] = useState(0);
+
+  // Drag/Swipe state for hero background
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const onTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    setTouchEnd(null);
+    if ('targetTouches' in e) {
+      setTouchStart(e.targetTouches[0].clientX);
+    } else {
+      setTouchStart((e as React.MouseEvent).clientX);
+    }
+  };
+
+  const onTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if ('targetTouches' in e) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    } else {
+      setTouchEnd((e as React.MouseEvent).clientX);
+    }
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      setBgIndex(prev => (prev + 1) % bgImages.length);
+    }
+    if (isRightSwipe) {
+      setBgIndex(prev => (prev === 0 ? bgImages.length - 1 : prev - 1));
+    }
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   // For mouse tilt effect on cards
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -53,21 +103,39 @@ export default function Landing() {
     };
     window.addEventListener("scroll", handleScroll);
     
-    // Fetch dynamic gallery images
+    // Fetch dynamic gallery, background, and about images
     const fetchImages = async () => {
       try {
-        const data = await imageService.getActiveImages('gallery');
-        if (data && data.length > 0) {
-          setGalleryImages(data.map(img => img.url));
+        const [galleryData, bgData, aboutData] = await Promise.all([
+          imageService.getActiveImages('gallery'),
+          imageService.getActiveImages('background'),
+          imageService.getActiveImages('about')
+        ]);
+        if (galleryData && galleryData.length > 0) {
+          setGalleryImages(galleryData.map(img => img.url));
+        }
+        if (bgData && bgData.length > 0) {
+          setBgImages(bgData.map(img => img.url));
+        }
+        if (aboutData && aboutData.length > 0) {
+          setAboutImages(aboutData.map(img => img.url));
         }
       } catch (err) {
-        console.error("Failed to fetch gallery images", err);
+        console.error("Failed to fetch images", err);
       }
     };
     fetchImages();
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (bgImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setBgIndex(prev => (prev + 1) % bgImages.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [bgImages.length]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -82,6 +150,31 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-300 relative bg-[#0B1121] overflow-x-hidden selection:bg-emerald-500/30">
+      
+      {/* ─── GLOBAL FIXED DYNAMIC BACKGROUND ─── */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {bgImages.map((imgUrl, idx) => (
+          <div
+            key={imgUrl}
+            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+              idx === bgIndex ? "opacity-40 scale-100" : "opacity-0 scale-105"
+            }`}
+          >
+            <img
+              src={imgUrl}
+              alt="Background"
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient overlay to ensure text readability across all sections */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0B1121]/50 via-[#0B1121]/70 to-[#0B1121]/90 mix-blend-overlay"></div>
+          </div>
+        ))}
+        {/* Ambient background glows */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/10 rounded-full blur-[120px] mix-blend-screen animate-pulse duration-[8000ms]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[150px] mix-blend-screen animate-pulse duration-[10000ms] delay-1000"></div>
+        {/* Faint grid overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxwYXRoIGQ9Ik00MCAwaC00MHY0MGg0MHYtNDB6IiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBoLTQweiIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMCAuNWg0MG0tNDAgMzlINDIwIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIHN0cm9rZS13aWR0aD0iMSIvPgo8cGF0aCBkPSJNLjUgMHY0MG0zOS00MHY0MCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-30"></div>
+      </div>
       
       {/* ─── GLOBAL NAVIGATION HEADER ─── */}
       <header className={`fixed top-0 w-full flex items-center justify-between px-6 py-4 z-50 transition-all duration-500 ${scrolled ? 'bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 shadow-2xl py-3' : 'bg-transparent py-6'}`}>
@@ -117,14 +210,17 @@ export default function Landing() {
       </header>
 
       {/* ─── 1. HERO SECTION ─── */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden">
-        {/* Deep Slate abstract mesh / gradient background */}
-        <div className="absolute inset-0 z-0 bg-[#0B1121]">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none animate-pulse duration-[8000ms]"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[150px] mix-blend-screen pointer-events-none animate-pulse duration-[10000ms] delay-1000"></div>
-          {/* Faint grid overlay */}
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxwYXRoIGQ9Ik00MCAwaC00MHY0MGg0MHYtNDB6IiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBoLTQweiIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMCAuNWg0MG0tNDAgMzlINDIwIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIHN0cm9rZS13aWR0aD0iMSIvPgo8cGF0aCBkPSJNLjUgMHY0MG0zOS00MHY0MCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-50"></div>
-        </div>
+      <section 
+        className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden cursor-grab active:cursor-grabbing"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onMouseDown={onTouchStart}
+        onMouseMove={touchStart !== null ? onTouchMove : undefined}
+        onMouseUp={onTouchEnd}
+        onMouseLeave={onTouchEnd}
+      >
+
 
         <Reveal className="relative z-20 px-6 w-full max-w-5xl mx-auto text-center mt-12">
           <div className="inline-block p-10">
@@ -232,11 +328,13 @@ export default function Landing() {
                 <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
               </div>
               <div 
-                className="w-full h-[400px]"
+                className="w-full h-[400px] cursor-pointer"
+                onClick={() => setAboutImgIdx(prev => (prev + 1) % aboutImages.length)}
                 style={{
-                  backgroundImage: "url('/landing-bg-4.jpg')",
+                  backgroundImage: `url('${aboutImages[aboutImgIdx]}')`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
+                  transition: "background-image 0.5s ease-in-out"
                 }}
               >
                 <div className="absolute inset-0 bg-slate-900/20"></div>
@@ -303,16 +401,7 @@ export default function Landing() {
 
       {/* ─── 5. RECRUITMENT CALL TO ACTION ─── */}
       <section id="recruitment" className="relative z-10 py-40 px-6 overflow-hidden">
-        <div className="absolute inset-0 z-0 bg-slate-950">
-          <div 
-            className="absolute inset-0 opacity-20 mix-blend-luminosity grayscale"
-            style={{
-              backgroundImage: "url('/group-photo.jpg')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundAttachment: "fixed"
-            }}
-          ></div>
+        <div className="absolute inset-0 z-0 bg-slate-950/40 backdrop-blur-sm">
           <div className="absolute inset-0 bg-gradient-to-b from-[#0B1121] via-transparent to-[#0B1121]"></div>
         </div>
 
@@ -340,17 +429,17 @@ export default function Landing() {
         <h4 className="text-center text-[11px] font-semibold tracking-[0.2em] text-slate-500 uppercase mb-10">Partner Agencies & Divisions</h4>
         <div className="max-w-5xl mx-auto flex flex-wrap justify-center items-center gap-12 md:gap-20">
           {[
-            { src: '/logos/sasp.png', alt: 'SASP' },
-            { src: '/logos/lspd.png', alt: 'LSPD' },
-            { src: '/logos/bcso.png', alt: 'BCSO' },
-            { src: '/logos/sapr.jpg', alt: 'SAPR', rounded: true },
-            { src: '/logos/pau.jpg', alt: 'PAU', rounded: true }
+            { src: '/logos/sasp.png', alt: 'SASP', glow: 'hover:drop-shadow-[0_0_25px_rgba(16,185,129,0.6)]' }, // Emerald
+            { src: '/logos/lspd.png', alt: 'LSPD', glow: 'hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.6)]' }, // Blue
+            { src: '/logos/bcso.png', alt: 'BCSO', glow: 'hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.6)]' }, // Amber
+            { src: '/logos/sapr.jpg', alt: 'SAPR', rounded: true, glow: 'hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] hover:border-green-500/50' }, // Green
+            { src: '/logos/pau.jpg', alt: 'PAU', rounded: true, glow: 'hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] hover:border-sky-500/50' } // Sky Blue
           ].map((logo, idx) => (
             <img 
               key={idx} 
               src={logo.src} 
               alt={logo.alt} 
-              className={`h-14 md:h-16 w-auto object-contain opacity-40 grayscale hover:opacity-100 hover:grayscale-0 hover:scale-105 transition-all duration-500 cursor-pointer ${logo.rounded ? 'rounded-full border border-slate-800' : ''}`} 
+              className={`h-14 md:h-16 w-auto object-contain opacity-40 grayscale hover:opacity-100 hover:grayscale-0 hover:scale-110 hover:-translate-y-2 transition-all duration-300 ease-out cursor-pointer ${logo.rounded ? 'rounded-full border border-slate-800' : ''} ${logo.glow}`} 
             />
           ))}
         </div>

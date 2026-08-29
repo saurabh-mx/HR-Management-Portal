@@ -197,6 +197,7 @@ export default function ImageManagementPanel() {
   // Group images by type
   const galleryImages = images.filter(img => img.type === 'gallery');
   const backgroundImages = images.filter(img => img.type === 'background');
+  const aboutImages = images.filter(img => img.type === 'about');
 
   if (loading) {
     return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-brand" /></div>;
@@ -213,7 +214,7 @@ export default function ImageManagementPanel() {
             </div>
             Image Management
           </h2>
-          <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Manage global backgrounds and gallery sequence.</p>
+          <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Manage global backgrounds, gallery sequence, and about images.</p>
         </div>
         <button 
           onClick={() => setIsBulkModalOpen(true)}
@@ -223,11 +224,11 @@ export default function ImageManagementPanel() {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
         {/* Gallery Section */}
         <div className="bg-slate-950/40 border border-slate-800 p-6 rounded-xl shadow-lg">
             <h3 className="text-lg font-medium text-slate-300 mb-6 flex items-center gap-2">
-                <ImageIcon size={18} className="text-brand" /> Landing Gallery Sequence
+                <ImageIcon size={18} className="text-brand" /> Landing Gallery
             </h3>
             
             {galleryImages.length === 0 ? (
@@ -261,6 +262,25 @@ export default function ImageManagementPanel() {
                 </DndContext>
             )}
         </div>
+
+        {/* About Section */}
+        <div className="bg-slate-950/40 border border-slate-800 p-6 rounded-xl shadow-lg">
+            <h3 className="text-lg font-medium text-slate-300 mb-6 flex items-center gap-2">
+                <ImageIcon size={18} className="text-amber-500" /> About Images
+            </h3>
+            
+            {aboutImages.length === 0 ? (
+                <div className="text-slate-600 text-center py-8 border border-dashed border-slate-800 rounded">No about images found</div>
+            ) : (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={aboutImages.map(img => img.id)} strategy={verticalListSortingStrategy}>
+                        {aboutImages.map(image => (
+                        <SortableItem key={image.id} image={image} onDelete={handleDelete} onToggleActive={handleToggleActive} />
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            )}
+        </div>
       </div>
 
       <Dialog open={isBulkModalOpen} onOpenChange={setIsBulkModalOpen}>
@@ -282,6 +302,7 @@ export default function ImageManagementPanel() {
               >
                 <option value="gallery">Gallery (Landing Page)</option>
                 <option value="background">Background (App Layout)</option>
+                <option value="about">About (Landing Page)</option>
               </select>
             </div>
             
