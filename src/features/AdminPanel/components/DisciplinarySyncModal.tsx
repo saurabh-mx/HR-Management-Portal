@@ -269,6 +269,7 @@ export default function DisciplinarySyncModal({ isOpen, onClose, onSuccess }: Di
               issued_by: issuedBy,
               action_type: actionType,
               strike_level: level,
+              severity: actionType === 'Strike' ? 'High' : actionType === 'Warning' ? 'Medium' : 'Low',
               status: status,
               created_at: createdAt
             });
@@ -338,7 +339,8 @@ export default function DisciplinarySyncModal({ isOpen, onClose, onSuccess }: Di
             .update({
               status: req.status,
               action_type: req.action_type,
-              strike_level: req.strike_level
+              strike_level: req.strike_level,
+              severity: req.severity
             })
             .eq('id', existing.id);
             
