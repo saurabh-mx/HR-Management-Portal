@@ -125,7 +125,7 @@ const EmployeeRow = ({ employee, onClick, isAdmin, onUpdateLeads }: { employee: 
            ) : (
              <div className="flex items-center justify-end gap-2">
                <details className="group relative text-left">
-                 <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1 text-white cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36 shadow-lg hover:border-brand/50">
+                 <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1 text-white cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36 shadow-lg hover:border-primary/50">
                     <span className="truncate">
                       {employee.led_sub_departments?.length ? employee.led_sub_departments.join(', ') : 'Select Leads...'}
                     </span>
@@ -144,7 +144,7 @@ const EmployeeRow = ({ employee, onClick, isAdmin, onUpdateLeads }: { employee: 
                                onUpdateLeads(employee.id, currentLeads.filter(s => s !== sub));
                              }
                           }}
-                          className="rounded border-slate-700 text-brand focus:ring-brand bg-slate-900 w-3.5 h-3.5"
+                          className="rounded border-slate-700 text-primary focus:ring-primary bg-slate-900 w-3.5 h-3.5"
                         />
                         {sub}
                       </label>
@@ -285,7 +285,7 @@ export default function EmployeeDirectory() {
   
   const renderDeptBreakdown = (list: Employee[]) => (
     <div className="space-y-2.5 h-full flex flex-col justify-center">
-      <h4 className="text-[10px] uppercase font-bold tracking-widest text-brand/80 mb-1 border-b border-brand/20 pb-1">Department Breakdown</h4>
+      <h4 className="text-[10px] uppercase font-bold tracking-widest text-primary/80 mb-1 border-b border-primary/20 pb-1">Department Breakdown</h4>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
         <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP') }}>SASP</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP')}</span></div>
         <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('LSPD') }}><span className="font-bold" style={{ color: getDepartmentColor('LSPD') }}>LSPD</span><span className="font-bold text-slate-200">{getDeptCount(list, 'LSPD')}</span></div>
@@ -304,9 +304,9 @@ export default function EmployeeDirectory() {
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
-              PERSONNEL <span className="font-bold text-brand">DIRECTORY</span>
+              PERSONNEL <span className="font-bold text-primary">DIRECTORY</span>
             </h1>
-            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <div className="w-16 h-1 bg-primary mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
             <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Manage and view personnel rosters, department allocations, and statuses.
             </p>
@@ -315,7 +315,7 @@ export default function EmployeeDirectory() {
           <div className="pb-1 flex items-center gap-3">
             {isAdmin && (
               <>
-                <button onClick={() => setIsSyncModalOpen(true)} className="bg-brand/10 backdrop-blur-md text-brand px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-brand/20 transition-all flex items-center gap-2 border border-brand/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)] whitespace-nowrap">
+                <button onClick={() => setIsSyncModalOpen(true)} className="bg-primary/10 backdrop-blur-md text-primary px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-primary/20 transition-all flex items-center gap-2 border border-primary/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)] whitespace-nowrap">
                   <Database className="w-4 h-4" /> Directory Imports
                 </button>
               </>

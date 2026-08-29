@@ -126,10 +126,10 @@ export default function LOAManagement() {
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <CalendarOff className="w-7 h-7 text-brand" />
-              LEAVE OF <span className="font-bold text-brand">ABSENCE</span>
+              <CalendarOff className="w-7 h-7 text-primary" />
+              LEAVE OF <span className="font-bold text-primary">ABSENCE</span>
             </h1>
-            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <div className="w-16 h-1 bg-primary mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
             <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Submit and manage departmental time-off requests.
             </p>
@@ -138,7 +138,7 @@ export default function LOAManagement() {
             {isAdmin && (
               <button 
                 onClick={() => setShowSyncModal(true)}
-                className="bg-brand/10 backdrop-blur-md text-brand px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-brand/20 transition-all flex items-center gap-2 border border-brand/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)]"
+                className="bg-primary/10 backdrop-blur-md text-primary px-5 py-2 rounded-lg font-bold tracking-widest uppercase text-xs hover:bg-primary/20 transition-all flex items-center gap-2 border border-primary/30 shadow-[0_0_10px_hsl(var(--brand-main)/0.2)]"
               >
                 <Database className="w-4 h-4" /> Sync LOAs
               </button>
@@ -160,7 +160,7 @@ export default function LOAManagement() {
 
       <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
         <div className="overflow-hidden">
-          <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+          <Card className="glass-panel border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader><CardTitle className="text-lg font-medium text-fuchsia-400">Submit LOA Request</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,7 +187,7 @@ export default function LOAManagement() {
         </div>
       </div>
 
-      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <Card className="glass-panel border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-4">
           <CardTitle className="text-lg font-medium">Departmental LOA Records</CardTitle>
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -195,7 +195,7 @@ export default function LOAManagement() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand w-full sm:w-auto"
+              className="bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-auto"
             >
               <option value="All">All Statuses</option>
               <option value="Approved">Active (Approved)</option>
@@ -212,7 +212,7 @@ export default function LOAManagement() {
                 placeholder="Search officer..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-md text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand w-full sm:w-64"
+                className="pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-md text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-64"
               />
             </div>
           </div>
@@ -232,9 +232,9 @@ export default function LOAManagement() {
               </thead>
               <tbody className="group/table">
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="bg-slate-950/30 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
+                  <tr key={req.id} className="bg-slate-950/30 hover:glass-panel shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)]">
                     <td className="py-3 px-4 rounded-l-lg font-medium text-white">
-                      <span className="inline-block transition-transform duration-300 origin-left group-hover:text-brand">
+                      <span className="inline-block transition-transform duration-300 origin-left group-hover:text-primary">
                         {req.officer_name}
                       </span>
                     </td>
@@ -291,7 +291,7 @@ export default function LOAManagement() {
       {/* Delete Confirmation Modal */}
       {requestToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -326,7 +326,7 @@ export default function LOAManagement() {
       {/* Status Action Confirmation Modal */}
       {statusAction && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className={`absolute top-0 left-0 right-0 h-1 ${statusAction.newStatus === 'Approved' ? 'bg-emerald-500' :
                 statusAction.newStatus === 'Denied' ? 'bg-rose-500' :
                   statusAction.newStatus === 'End Requested' ? 'bg-sky-500' :

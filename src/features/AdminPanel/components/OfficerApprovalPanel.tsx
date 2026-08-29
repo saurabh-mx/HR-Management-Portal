@@ -123,7 +123,7 @@ export default function OfficerApprovalPanel() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-8 text-center">
+      <div className="rounded-xl border glass-panel p-8 text-center">
         <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto" />
         <p className="text-xs text-slate-500 mt-3 uppercase tracking-wider">Loading approval queue...</p>
       </div>
@@ -263,7 +263,7 @@ export default function OfficerApprovalPanel() {
 
       {/* ─── NO PENDING ─── */}
       {pendingApprovals.length === 0 && (
-        <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-6 text-center">
+        <div className="rounded-xl border glass-panel p-6 text-center">
           <ShieldCheck className="w-8 h-8 text-emerald-500/40 mx-auto mb-3" />
           <p className="text-sm text-slate-400 font-medium">No Pending Officer Access Requests</p>
           <p className="text-xs text-slate-600 mt-1">All officer access requests have been processed.</p>
@@ -282,7 +282,7 @@ export default function OfficerApprovalPanel() {
 
       {/* ─── APPROVAL HISTORY ─── */}
       {showHistory && (
-        <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+        <div className="rounded-xl border glass-panel backdrop-blur-xl shadow-2xl overflow-hidden">
           <div className="px-5 py-3.5 border-b border-slate-800/60 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Clock className="w-4 h-4 text-slate-400" />

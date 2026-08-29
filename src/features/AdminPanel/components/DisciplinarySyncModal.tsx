@@ -207,6 +207,8 @@ export default function DisciplinarySyncModal({ isOpen, onClose, onSuccess }: Di
           const idxLevel = findIdx(['LEVEL', 'STRIKE LEVEL']);
           const idxStatus = findIdx(['STATUS', 'STATE']);
           const idxDate = findIdx(['DATE', 'TIMESTAMP', 'CREATED']);
+          const idxRevokedBy = findIdx(['REVOKED BY']);
+          const idxRevokedDate = findIdx(['REVOKED DATE', 'REVOKED ON']);
 
           if (idxName === -1) {
             setErrorMsg("Could not find an 'Officer Name' column.");
@@ -257,11 +259,20 @@ export default function DisciplinarySyncModal({ isOpen, onClose, onSuccess }: Di
             const issuedBy = idxIssuedBy !== -1 ? row[idxIssuedBy]?.trim() : "System";
             const actionType = idxActionType !== -1 ? row[idxActionType]?.trim() : "Warning";
             const level = idxLevel !== -1 ? row[idxLevel]?.trim() : "1/5";
-            let status = idxStatus !== -1 ? row[idxStatus]?.trim() : "Active";
-            if (!status) status = "Active";
-
+            let statusRaw = idxStatus !== -1 ? row[idxStatus]?.trim().toLowerCase() : "approved";
+            if (!statusRaw) statusRaw = "approved";
+            
+            // Map common sheet statuses to DB statuses
+            let status = "approved";
+            if (statusRaw.includes('pending')) status = "pending";
+            else if (statusRaw.includes('revoked')) status = "revoked";
+            
             const dateRaw = idxDate !== -1 ? row[idxDate]?.trim() : "";
             const createdAt = normalizeDate(dateRaw) || new Date().toISOString().split('T')[0];
+            
+            const revokedBy = idxRevokedBy !== -1 ? row[idxRevokedBy]?.trim() : null;
+            const revokedDateRaw = idxRevokedDate !== -1 ? row[idxRevokedDate]?.trim() : "";
+            const revokedAt = normalizeDate(revokedDateRaw);
 
             newStaged.push({
               name: name,
@@ -271,7 +282,9 @@ export default function DisciplinarySyncModal({ isOpen, onClose, onSuccess }: Di
               strike_level: level,
               severity: actionType === 'Strike' ? 'High' : actionType === 'Warning' ? 'Medium' : 'Low',
               status: status,
-              created_at: createdAt
+              created_at: createdAt,
+              revoked_by: revokedBy,
+              revoked_at: revokedAt ? new Date(revokedAt).toISOString() : null
             });
           }
           
@@ -340,7 +353,9 @@ export default function DisciplinarySyncModal({ isOpen, onClose, onSuccess }: Di
               status: req.status,
               action_type: req.action_type,
               strike_level: req.strike_level,
-              severity: req.severity
+              severity: req.severity,
+              revoked_by: req.revoked_by,
+              revoked_at: req.revoked_at
             })
             .eq('id', existing.id);
             

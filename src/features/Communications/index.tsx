@@ -140,10 +140,10 @@ export default function CommunicationsFeed() {
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <Megaphone className="w-7 h-7 text-brand animate-pulse" />
-              DEPARTMENT <span className="font-bold text-brand">COMMUNICATIONS</span>
+              <Megaphone className="w-7 h-7 text-primary animate-pulse" />
+              DEPARTMENT <span className="font-bold text-primary">COMMUNICATIONS</span>
             </h1>
-            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <div className="w-16 h-1 bg-primary mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
             <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Official Announcements, Alerts, and Shift Briefings.
             </p>
@@ -177,9 +177,9 @@ export default function CommunicationsFeed() {
       {isAdmin && (
         <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
           <div className="overflow-hidden">
-            <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 backdrop-blur-xl border border-sky-900/50 shadow-[0_0_40px_rgba(14,165,233,0.1)] text-slate-200 relative overflow-hidden">
+            <Card className="glass-panel/60 backdrop-blur-xl border border-sky-900/50 shadow-[0_0_40px_rgba(14,165,233,0.1)] text-slate-200 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-600 to-sky-400"></div>
-          <CardHeader className="border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 pb-4">
+          <CardHeader className="border-b border-slate-800/60 glass-panel/40 pb-4">
             <CardTitle className="text-xl font-semibold text-sky-400 flex items-center gap-3">
               <Megaphone className="w-5 h-5 text-sky-500" />
               {postToEdit ? "Update Broadcast" : "Transmit New Broadcast"}
@@ -195,7 +195,7 @@ export default function CommunicationsFeed() {
                     type="text" 
                     value={newPost.title} 
                     onChange={e => setNewPost({...newPost, title: e.target.value})} 
-                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" 
+                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:glass-panel" 
                     placeholder="e.g. BOLO: Black Sultan on Route 68" 
                   />
                 </div>
@@ -204,7 +204,7 @@ export default function CommunicationsFeed() {
                   <select 
                     value={newPost.category} 
                     onChange={e => setNewPost({...newPost, category: e.target.value})} 
-                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500"
+                    className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:glass-panel"
                   >
                     <option value="Announcement">Announcement</option>
                     <option value="BOLO / Alert">BOLO / Alert</option>
@@ -219,7 +219,7 @@ export default function CommunicationsFeed() {
                   rows={4}
                   value={newPost.message} 
                   onChange={e => setNewPost({...newPost, message: e.target.value})} 
-                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 resize-none" 
+                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:glass-panel resize-none" 
                   placeholder="Enter dispatch details, instructions, or notes..." 
                 />
               </div>
@@ -229,7 +229,7 @@ export default function CommunicationsFeed() {
                   type="url" 
                   value={imageLink} 
                   onChange={e => setImageLink(e.target.value)} 
-                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500" 
+                  className="w-full rounded-lg border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 focus:glass-panel" 
                   placeholder="https://example.com/image.png" 
                 />
               </div>
@@ -264,11 +264,11 @@ export default function CommunicationsFeed() {
               return (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 mb-6">
-                    <h2 className="text-2xl font-light tracking-widest text-brand uppercase">Today</h2>
+                    <h2 className="text-2xl font-light tracking-widest text-primary uppercase">Today</h2>
                     <div className="h-px flex-1 bg-gradient-to-r from-brand/50 to-transparent"></div>
                   </div>
                   {todaysPosts.map((post) => (
-                    <Card key={post.id} className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-1 hover:shadow-2xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border-l-4" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
+                    <Card key={post.id} className="bg-slate-900/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-1 hover:shadow-2xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:glass-panel border-l-4" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <div className="flex items-center gap-3">
                           {post.category === "BOLO / Alert" ? (
@@ -351,7 +351,7 @@ export default function CommunicationsFeed() {
                     <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent"></div>
                   </div>
                   {previousPosts.map((post) => (
-                    <Card key={post.id} className="bg-slate-900/30 backdrop-blur-md border-slate-800/40 shadow-md overflow-hidden text-slate-300 group transition-all duration-300 relative hover:z-20 hover:-translate-y-0.5 hover:shadow-xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 opacity-80 border-l-2" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
+                    <Card key={post.id} className="bg-slate-900/30 backdrop-blur-md border-slate-800/40 shadow-md overflow-hidden text-slate-300 group transition-all duration-300 relative hover:z-20 hover:-translate-y-0.5 hover:shadow-xl hover:!opacity-100 hover:!blur-none group-hover/list:opacity-50 hover:glass-panel/60 opacity-80 border-l-2" style={{ borderLeftColor: post.category === "BOLO / Alert" ? "#f43f5e" : post.category === "Shift Briefing" ? "#f59e0b" : "#38bdf8" }}>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <div className="flex items-center gap-3">
                           {post.category === "BOLO / Alert" ? (
@@ -428,7 +428,7 @@ export default function CommunicationsFeed() {
       {/* Delete Confirmation Modal */}
       {postToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">

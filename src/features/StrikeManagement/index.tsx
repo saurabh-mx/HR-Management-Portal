@@ -225,7 +225,7 @@ export default function DisciplinarySystem() {
       {(isAdmin || isCommand) && (
         <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
           <div className="overflow-hidden">
-            <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-rose-900/50 text-slate-200 shadow-xl relative overflow-hidden">
+            <Card className="hover:border-white/10 transition-all duration-500/40 relative overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg font-medium text-rose-400">
               {isCommand && !isAdmin ? "Issue Disciplinary Action" : "Issue Disciplinary Action"}
@@ -254,7 +254,7 @@ export default function DisciplinarySystem() {
 
                 {/* Autocomplete Dropdown */}
                 {showSuggestions && newStrike.name.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto animated-scrollbar bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-md shadow-2xl z-50 divide-y divide-slate-800/50">
+                  <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto animated-scrollbar glass-panel z-50 divide-y divide-slate-800/50">
                     {employees
                       .filter(emp =>
                         (emp.name && emp.name.toLowerCase().includes(newStrike.name.toLowerCase())) ||
@@ -347,7 +347,7 @@ export default function DisciplinarySystem() {
         </div>
       )}
 
-      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <Card className="hover:border-white/10 transition-all duration-500/40 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-lg font-medium">Department Strike Database</CardTitle>
           {/* SEARCH BAR */}
@@ -386,7 +386,7 @@ export default function DisciplinarySystem() {
                   </tr>
                 ) : (
                   filteredStrikes.map((strike) => (
-                    <tr key={strike.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(244,63,94,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(244,63,94,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                    <tr key={strike.id} className="bg-slate-900/40 hover:bg-slate-800/60 group transition-all duration-300 relative hover:z-20 shadow-[inset_2px_0_0_0_rgba(244,63,94,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(244,63,94,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                       <td className="py-3 px-3 text-slate-400 rounded-l-lg">{new Date(strike.created_at).toLocaleDateString()}</td>
                       <td className="py-3 px-3 font-medium text-white">
                         <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
@@ -394,7 +394,7 @@ export default function DisciplinarySystem() {
                         </span>
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider whitespace-nowrap ${strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
                           strike.action_type === 'Verbal Warning' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' :
                             'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                           }`}>
@@ -455,7 +455,7 @@ export default function DisciplinarySystem() {
       {/* Revoke Confirmation Modal */}
       {strikeToRevoke && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel rounded-xl max-w-md w-full overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -489,7 +489,7 @@ export default function DisciplinarySystem() {
       {/* Delete Confirmation Modal */}
       {strikeToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel rounded-xl max-w-md w-full overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-red-600" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">

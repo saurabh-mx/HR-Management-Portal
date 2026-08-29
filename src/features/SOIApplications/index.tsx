@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, CheckCircle2, XCircle, Trash2, Search, Plus, X, Filter, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Shield, CheckCircle2, XCircle, Trash2, Search, Plus, X, Filter, Clock, ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { isHighCommandOrHR, isTrueAdmin, canReviewSOI } from '@/auth/roles/roleMatrix';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import SOITogglePanel from '@/features/SOIApplications/components/SOITogglePanel';
 
 interface SOIApplication {
   id: string;
@@ -23,6 +25,7 @@ export default function SOIApplications() {
   const { profile, adminSafeMode } = useAuth();
   const [records, setRecords] = useState<SOIApplication[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showToggleModal, setShowToggleModal] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [authorName, setAuthorName] = useState("Unknown");
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
@@ -30,7 +33,9 @@ export default function SOIApplications() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const subDepartments = ["HEAT", "FTD", "ASD", "K9", "MEDIA TEAM", "DOC", "SBI", "MEU"];
+  const subDepartments = ["HEAT", "FTD", "ASD", "K9", "MEDIA TEAM", "DOC", "SBI", "MEU", "DAO"];
+  
+  const [openDepartments, setOpenDepartments] = useState<Set<string>>(new Set(subDepartments));
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -49,6 +54,7 @@ export default function SOIApplications() {
     if (profile) {
       setAuthorName(`${profile.name} (${profile.badge_number})`);
       fetchRecords(profile);
+      fetchSettings();
       setIsCheckingAuth(false);
     } else {
       const timer = setTimeout(() => {
@@ -57,6 +63,15 @@ export default function SOIApplications() {
       return () => clearTimeout(timer);
     }
   }, [profile]);
+
+  async function fetchSettings() {
+    const { data } = await supabase.from('soi_settings').select('department, is_open');
+    if (data) {
+      const openSet = new Set<string>();
+      data.forEach(d => { if (d.is_open) openSet.add(d.department) });
+      setOpenDepartments(openSet);
+    }
+  }
 
   async function fetchRecords(userObj?: any) {
     let query = supabase.from('soi_applications').select('*').order('created_at', { ascending: false });
@@ -81,6 +96,11 @@ export default function SOIApplications() {
 
     if (!profile) return;
     const officerName = `${profile.name} (${profile.badge_number})`;
+    
+    if (!openDepartments.has(newRecord.target_sub_department)) {
+      alert("This department is currently not accepting applications.");
+      return;
+    }
 
     const { data, error } = await supabase
       .from('soi_applications')
@@ -155,10 +175,14 @@ export default function SOIApplications() {
   if (isCheckingAuth) {
     return (
       <div className="flex items-center justify-center min-h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
+
+  const isGlobalAdmin = isHighCommandOrHR(profile);
+  const isDeptLead = subDepartments.some(dept => canReviewSOI(profile, dept));
+  const canManageSOI = isGlobalAdmin || isDeptLead;
 
   return (
     <div className="p-8 space-y-8 bg-transparent min-h-[90vh]">
@@ -167,15 +191,24 @@ export default function SOIApplications() {
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <Shield className="w-7 h-7 text-brand" />
-              SOI <span className="font-bold text-brand">APPLICATIONS</span>
+              <Shield className="w-7 h-7 text-primary" />
+              SOI <span className="font-bold text-primary">APPLICATIONS</span>
             </h1>
-            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <div className="w-16 h-1 bg-primary mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
             <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               Apply for sub-departments and manage pending requests.
             </p>
           </div>
-          <div className="shrink-0">
+          <div className="shrink-0 flex items-center gap-3">
+            {canManageSOI && (
+              <button 
+                onClick={() => setShowToggleModal(true)} 
+                className="flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all duration-300 shadow-md border text-sm bg-slate-900/80 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white"
+              >
+                <Settings className="w-4 h-4" />
+                <span>SOI Access</span>
+              </button>
+            )}
             <button 
               onClick={() => setShowForm(!showForm)} 
               className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all duration-300 shadow-md border text-sm ${
@@ -191,10 +224,17 @@ export default function SOIApplications() {
         </div>
       </div>
 
+      {/* SOI ACCESS CONTROLS MODAL */}
+      <Dialog open={showToggleModal} onOpenChange={setShowToggleModal}>
+        <DialogContent className="max-w-2xl bg-slate-950 border border-slate-800/60 text-slate-200 p-0 overflow-hidden rounded-xl shadow-2xl">
+          <SOITogglePanel />
+        </DialogContent>
+      </Dialog>
+
       {/* SUBMISSION FORM */}
       <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
         <div className="overflow-hidden">
-          <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border border-emerald-900/50 text-slate-200 shadow-xl relative overflow-hidden">
+          <Card className="glass-panel border border-emerald-900/50 text-slate-200 shadow-xl relative overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-medium text-emerald-400 flex items-center gap-2">
             <Shield className="w-5 h-5" /> Submit Statement of Interest
@@ -242,9 +282,14 @@ export default function SOIApplications() {
                 onChange={e => setNewRecord({ ...newRecord, target_sub_department: e.target.value })}
                 className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-emerald-500 appearance-none"
               >
-                {subDepartments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
+                {subDepartments.map(dept => {
+                  const isOpen = openDepartments.has(dept);
+                  return (
+                    <option key={dept} value={dept} disabled={!isOpen}>
+                      {dept} {!isOpen && "(Closed)"}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
@@ -272,7 +317,7 @@ export default function SOIApplications() {
       </div>
 
       {/* RECORDS BOARD WITH SEARCH & FILTER */}
-      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <Card className="glass-panel border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="border-b border-slate-800 pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle className="text-lg font-medium">Application Records</CardTitle>
@@ -322,7 +367,7 @@ export default function SOIApplications() {
               <tbody className="">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-500 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/20 rounded-lg">
+                    <td colSpan={8} className="py-8 text-center text-slate-500 glass-panel/20 rounded-lg">
                       No applications found.
                     </td>
                   </tr>
@@ -333,14 +378,14 @@ export default function SOIApplications() {
                     return (
                     <React.Fragment key={record.id}>
                       <tr 
-                        className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(16,185,129,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(16,185,129,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(16,185,129,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg cursor-pointer"
+                        className="glass-panel/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(16,185,129,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(16,185,129,0.3)] hover:shadow-[inset_4px_0_0_0_rgba(16,185,129,1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg cursor-pointer"
                         onClick={() => setExpandedRowId(expandedRowId === record.id ? null : record.id)}
                       >
                         <td className="py-3 px-3 text-slate-400 rounded-l-lg">{new Date(record.created_at).toLocaleDateString()}</td>
                         <td className="py-3 px-3 font-medium text-white transition-colors">
-                          <div className="flex items-center gap-1.5 group-hover:text-brand transition-colors">
+                          <div className="flex items-center gap-1.5 group-hover:text-primary transition-colors">
                             {record.officer_name}
-                            {expandedRowId === record.id ? <ChevronUp className="w-4 h-4 text-brand" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-brand" />}
+                            {expandedRowId === record.id ? <ChevronUp className="w-4 h-4 text-primary" /> : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-primary" />}
                           </div>
                         </td>
                         <td className="py-3 text-emerald-400 font-medium">{record.target_sub_department}</td>
@@ -387,7 +432,7 @@ export default function SOIApplications() {
                           <td colSpan={8} className="p-0 border-b border-slate-800/50">
                             <div className="bg-slate-900/50 p-6 shadow-inner animate-in slide-in-from-top-2 flex flex-col md:flex-row gap-6 mx-2 my-2 rounded-xl border border-slate-800">
                               <div className="flex-1 space-y-2">
-                                <h4 className="text-xs font-semibold text-brand uppercase tracking-widest flex items-center gap-2">
+                                <h4 className="text-xs font-semibold text-primary uppercase tracking-widest flex items-center gap-2">
                                   <Shield className="w-3.5 h-3.5" /> Application Summary
                                 </h4>
                                 <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap mt-2">
@@ -395,7 +440,7 @@ export default function SOIApplications() {
                                 </p>
                               </div>
                               <div className="flex-1 space-y-2 border-t md:border-t-0 md:border-l border-slate-700/50 pt-4 md:pt-0 md:pl-6">
-                                <h4 className="text-xs font-semibold text-brand uppercase tracking-widest flex items-center gap-2">
+                                <h4 className="text-xs font-semibold text-primary uppercase tracking-widest flex items-center gap-2">
                                   <Clock className="w-3.5 h-3.5" /> Review Comments
                                 </h4>
                                 <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap mt-2">
@@ -421,7 +466,7 @@ export default function SOIApplications() {
       {/* CONFIRMATION MODAL */}
       {modalState.isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 shadow-2xl rounded-xl max-w-sm w-full p-6 relative overflow-hidden">
+          <div className="glass-panel border border-slate-700 shadow-2xl rounded-xl max-w-sm w-full p-6 relative overflow-hidden">
             <div className={`absolute top-0 left-0 right-0 h-1.5 ${modalState.type === 'Approve' ? 'bg-emerald-500' :
                 modalState.type === 'Deny' ? 'bg-rose-500' : 'bg-red-700'
               }`}></div>

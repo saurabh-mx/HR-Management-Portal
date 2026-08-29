@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase/supabaseClient';
 import Papa from "papaparse";
 import { fetchAllEmployees } from "@/lib/sync/syncService";
 import { useAuth } from '@/auth/hooks/useAuth';
+import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
 import { logAuditAction } from "@/lib/auditLogger";
 import LOASyncModal from '@/features/AdminPanel/components/LOASyncModal';
 import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
@@ -14,6 +15,7 @@ import PenalCodeSyncModal from '@/features/AdminPanel/components/PenalCodeSyncMo
 import DisciplinarySyncModal from '@/features/AdminPanel/components/DisciplinarySyncModal';
 import ImageManagementPanel from '@/features/AdminPanel/components/ImageManagementPanel';
 import OfficerApprovalPanel from '@/features/AdminPanel/components/OfficerApprovalPanel';
+import SOITogglePanel from '@/features/SOIApplications/components/SOITogglePanel';
 import { CalendarOff, Download, ImageIcon } from "lucide-react";
 import FlashcardModal from '@/components/ui/FlashcardModal';
 
@@ -80,6 +82,7 @@ export default function AdminPanel() {
   const [showPenalCodeSyncModal, setShowPenalCodeSyncModal] = useState(false);
   const [showDisciplinarySyncModal, setShowDisciplinarySyncModal] = useState(false);
   const [showImageManagementModal, setShowImageManagementModal] = useState(false);
+  const [showSOIToggleModal, setShowSOIToggleModal] = useState(false);
 
   const [rosterSearch, setRosterSearch] = useState("");
   const [rosterRoleFilter, setRosterRoleFilter] = useState("All");
@@ -623,8 +626,8 @@ export default function AdminPanel() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-brand" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-white">
@@ -656,112 +659,52 @@ export default function AdminPanel() {
       {/* ─── QUICK ACTIONS ROW ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-        {(profile?.is_admin || adminSafeMode) && (
-          <>
-            {/* Directory Imports */}
-            <button
-          onClick={() => setShowDataSyncModal(true)}
-          disabled={showDataSyncModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-          <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-              {showDataSyncModal ? (
-                <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin" />
-              ) : (
-                <Database className="w-5 h-5 text-emerald-400" />
-              )}
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-0.5">Directory Imports</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {showDataSyncModal ? "Fetching data..." : "Sync roster from Google Sheets"}
-              </p>
-            </div>
-          </div>
-        </button>
-
-        {/* LOA Sync */}
-        <button
-          onClick={() => setShowLOASyncModal(true)}
-          disabled={showLOASyncModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-fuchsia-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(217,70,239,0.15)] disabled:opacity-60"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-          <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-fuchsia-500/20 transition-colors">
-              <CalendarOff className="w-5 h-5 text-fuchsia-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-0.5">Sync LOA Records</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Import leave of absences from Sheets</p>
-            </div>
-          </div>
-        </button>
-
-        {/* Disciplinary Sync */}
-        <button
-          onClick={() => setShowDisciplinarySyncModal(true)}
-          disabled={showDisciplinarySyncModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-rose-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.15)] disabled:opacity-60"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-          <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition-colors">
-              <ShieldAlert className="w-5 h-5 text-rose-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-0.5">Sync Disciplinary</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Import strikes from Sheets</p>
-            </div>
-          </div>
-        </button>
-
-        {/* Penal Code Sync */}
-        <button
-          onClick={() => setShowPenalCodeSyncModal(true)}
-          disabled={showPenalCodeSyncModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-sky-500/40 hover:bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.15)] disabled:opacity-60"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-          <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500/20 transition-colors">
-              <Download className="w-5 h-5 text-sky-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-0.5">Penal Code Import</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Sync criminal charges from Sheets</p>
-            </div>
-          </div>
-        </button>
-
         {/* Image Management */}
-        <button
-          onClick={() => setShowImageManagementModal(true)}
-          disabled={showImageManagementModal}
-          className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-amber-500/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-2xl hover:border-white/10 transition-all duration-500/60 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] disabled:opacity-60"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-          <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
-              <ImageIcon className="w-5 h-5 text-amber-400" />
+        {(profile?.is_admin || adminSafeMode) && (
+          <button
+            onClick={() => setShowImageManagementModal(true)}
+            disabled={showImageManagementModal}
+            className="group relative overflow-hidden rounded-xl border glass-panel p-5 text-left transition-all duration-300 hover:border-amber-500/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-2xl hover:border-white/10 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] disabled:opacity-60"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+            <div className="relative flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
+                <ImageIcon className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-0.5">Image Management</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">Manage dynamic landing & app imagery</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-0.5">Image Management</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Manage dynamic landing & app imagery</p>
+          </button>
+        )}
+
+        {/* SOI Toggles Quick Action */}
+        {(isHighCommandOrHR(profile) || adminSafeMode) && (
+          <button
+            onClick={() => setShowSOIToggleModal(true)}
+            disabled={showSOIToggleModal}
+            className="group relative overflow-hidden rounded-xl border glass-panel p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-2xl hover:border-white/10 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
+            <div className="relative flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+                <Shield className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-0.5">SOI Access Controls</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">Manage SOI open/closed status</p>
+              </div>
             </div>
-          </div>
-        </button>
-        </>
+          </button>
         )}
 
         {/* Onboard Count / Quick Stat */}
-        <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md p-5 text-left">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full -translate-y-8 translate-x-8" />
+        <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 glass-panel p-5 text-left">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-8 translate-x-8" />
           <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-brand" />
+            <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white mb-0.5">Access Overview</h3>
@@ -778,6 +721,88 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      {/* ─── SYNCS PANEL ─── */}
+      {(profile?.is_admin || adminSafeMode) && (
+        <div className="mb-6">
+          <div className="glass-panel border-slate-800/60 rounded-xl overflow-hidden shadow-xl">
+            <div className="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+              <div className="flex items-center gap-2.5">
+                <Database className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-base font-semibold text-white">Data Synchronization Hub</h2>
+              </div>
+              <p className="text-xs text-slate-500 hidden sm:block">Manage integrations with external Google Sheets</p>
+            </div>
+            <div className="p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Directory Imports */}
+                <button
+                  onClick={() => setShowDataSyncModal(true)}
+                  disabled={showDataSyncModal}
+                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
+                >
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+                    {showDataSyncModal ? (
+                      <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin" />
+                    ) : (
+                      <Users className="w-5 h-5 text-emerald-400" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-200 mb-1">Roster Sync</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2">Import personnel roster</p>
+                  </div>
+                </button>
+
+                {/* LOA Sync */}
+                <button
+                  onClick={() => setShowLOASyncModal(true)}
+                  disabled={showLOASyncModal}
+                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-fuchsia-500/40 hover:bg-fuchsia-500/5 hover:shadow-[0_0_20px_-5px_rgba(217,70,239,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
+                >
+                  <div className="w-12 h-12 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-fuchsia-500/20 transition-colors">
+                    <CalendarOff className="w-5 h-5 text-fuchsia-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-200 mb-1">LOA Sync</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2">Import leave records</p>
+                  </div>
+                </button>
+
+                {/* Disciplinary Sync */}
+                <button
+                  onClick={() => setShowDisciplinarySyncModal(true)}
+                  disabled={showDisciplinarySyncModal}
+                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-rose-500/40 hover:bg-rose-500/5 hover:shadow-[0_0_20px_-5px_rgba(244,63,94,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
+                >
+                  <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition-colors">
+                    <ShieldAlert className="w-5 h-5 text-rose-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-200 mb-1">Disciplinary Sync</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2">Import strike records</p>
+                  </div>
+                </button>
+
+                {/* Penal Code Sync */}
+                <button
+                  onClick={() => setShowPenalCodeSyncModal(true)}
+                  disabled={showPenalCodeSyncModal}
+                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-sky-500/40 hover:bg-sky-500/5 hover:shadow-[0_0_20px_-5px_rgba(14,165,233,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
+                >
+                  <div className="w-12 h-12 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500/20 transition-colors">
+                    <Download className="w-5 h-5 text-sky-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-200 mb-1">Penal Code Sync</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2">Import charges & fines</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── IMAGE MANAGEMENT MODAL ─── */}
       <Dialog open={showImageManagementModal} onOpenChange={setShowImageManagementModal}>
         <DialogContent className="max-w-6xl bg-slate-950 border border-slate-800/60 text-slate-200 h-[85vh] overflow-y-auto p-6 rounded-xl shadow-2xl">
@@ -790,8 +815,15 @@ export default function AdminPanel() {
         <OfficerApprovalPanel />
       </div>
 
+      {/* ─── SOI TOGGLES MODAL ─── */}
+      <Dialog open={showSOIToggleModal} onOpenChange={setShowSOIToggleModal}>
+        <DialogContent className="max-w-2xl bg-slate-950 border border-slate-800/60 text-slate-200 p-0 overflow-hidden rounded-xl shadow-2xl">
+          <SOITogglePanel />
+        </DialogContent>
+      </Dialog>
+
       {/* ─── ONBOARD RECRUIT ─── */}
-      <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 backdrop-blur-md overflow-hidden">
+      <div className="rounded-xl border border-slate-800/60 glass-panel overflow-hidden">
         <div className="px-5 py-3.5 border-b border-slate-800/60 flex items-center gap-2.5">
           <UserPlus className="w-4 h-4 text-rose-400" />
           <h2 className="text-sm font-semibold text-white">Onboard Recruit</h2>
@@ -822,7 +854,7 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── ROSTER TABLE ─── */}
-      <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 backdrop-blur-md overflow-hidden">
+      <div className="rounded-xl border border-slate-800/60 glass-panel overflow-hidden">
         {/* Table Header with Search & Filters */}
         <div className="px-5 py-3.5 border-b border-slate-800/60">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -841,7 +873,7 @@ export default function AdminPanel() {
                   value={rosterSearch}
                   onChange={e => setRosterSearch(e.target.value)}
                   placeholder="Search..."
-                  className="w-48 pl-8 pr-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-xs text-white focus:ring-1 focus:ring-brand/50 focus:border-brand/50 placeholder:text-slate-600 transition-colors"
+                  className="w-48 pl-8 pr-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-xs text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 placeholder:text-slate-600 transition-colors"
                 />
               </div>
             </div>
@@ -854,7 +886,7 @@ export default function AdminPanel() {
                 onClick={() => setRosterRoleFilter(role)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-200 ${
                   rosterRoleFilter === role
-                    ? "bg-brand/15 text-brand border border-brand/30 shadow-sm"
+                    ? "bg-primary/15 text-primary border border-primary/30 shadow-sm"
                     : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-transparent"
                 }`}
               >
@@ -884,10 +916,10 @@ export default function AdminPanel() {
                 const dept = emp.department || 'SASP';
 
                 return (
-                  <tr key={emp.id} onClick={() => setSelectedEmployee(emp)} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group relative hover:z-20 shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg cursor-pointer">
+                  <tr key={emp.id} onClick={() => setSelectedEmployee(emp)} className="glass-panel/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group relative hover:z-20 shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg cursor-pointer">
                     <td className="px-5 py-3 rounded-l-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase flex-shrink-0 group-hover:border-brand/30 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase flex-shrink-0 group-hover:border-primary/30 transition-colors">
                           {emp.name?.charAt(0)}
                         </div>
                         <div>
@@ -900,7 +932,7 @@ export default function AdminPanel() {
                     {editingId === emp.id ? (
                       <>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50">
+                          <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-primary/50">
                             {getRoleWeight(currentUserRole) >= 4 && <option value="admin">admin</option>}
                             {getRoleWeight(currentUserRole) >= 3 && <option value="High Command">High Command</option>}
                             {getRoleWeight(currentUserRole) >= 2 && <option value="Command">Command</option>}
@@ -911,7 +943,7 @@ export default function AdminPanel() {
                           </select>
                         </td>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          <select value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50">
+                          <select value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-primary/50">
                             <option value="SASP">SASP</option>
                             <option value="LSPD">LSPD</option>
                             <option value="BCSO">BCSO</option>
@@ -921,7 +953,7 @@ export default function AdminPanel() {
                         </td>
                         <td className="px-4 py-3 relative" onClick={(e) => e.stopPropagation()}>
                           <details className="group">
-                            <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-brand/50 cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36">
+                            <summary className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-white focus:ring-1 focus:ring-primary/50 cursor-pointer list-none [&::-webkit-details-marker]:hidden flex justify-between items-center w-36">
                               <span className="truncate">
                                 {editForm.led_sub_departments.length ? editForm.led_sub_departments.join(', ') : 'Select Leads...'}
                               </span>
@@ -939,7 +971,7 @@ export default function AdminPanel() {
                                           setEditForm({...editForm, led_sub_departments: editForm.led_sub_departments.filter(s => s !== sub)});
                                         }
                                      }}
-                                     className="rounded border-slate-700 text-brand focus:ring-brand bg-slate-900 w-3.5 h-3.5"
+                                     className="rounded border-slate-700 text-primary focus:ring-primary bg-slate-900 w-3.5 h-3.5"
                                    />
                                    {sub}
                                  </label>

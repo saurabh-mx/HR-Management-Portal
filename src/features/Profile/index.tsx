@@ -265,8 +265,8 @@ ${profile.notes || 'No service notes on file.'}
     <div className="relative p-4 md:p-8 min-h-full max-w-7xl mx-auto">
       
       {/* Background Decorators */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-brand/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
       
       {/* Huge Department Watermark */}
       <div 
@@ -285,11 +285,11 @@ ${profile.notes || 'No service notes on file.'}
               <div className="flex items-center gap-3 bg-slate-950/80 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg">
                 <div className="flex flex-col text-right">
                   <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Admin Safe Mode</span>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${adminSafeMode ? 'text-brand' : 'text-slate-500'}`}>{adminSafeMode ? 'Active' : 'Disabled'}</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${adminSafeMode ? 'text-primary' : 'text-slate-500'}`}>{adminSafeMode ? 'Active' : 'Disabled'}</span>
                 </div>
                 <button
                   onClick={handleToggleAdmin}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${adminSafeMode ? 'bg-brand' : 'bg-slate-700'}`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${adminSafeMode ? 'bg-primary' : 'bg-slate-700'}`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${adminSafeMode ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -320,9 +320,9 @@ ${profile.notes || 'No service notes on file.'}
                 {profile.name}
               </h1>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-400 font-medium tracking-wide">
-                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><Badge className="w-3.5 h-3.5 text-brand" /> {profile.rank || "Officer"}</span>
-                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><MapPin className="w-3.5 h-3.5 text-brand" /> {profile.department}</span>
-                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><Hash className="w-3.5 h-3.5 text-brand" /> {profile.badge_number}</span>
+                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><Badge className="w-3.5 h-3.5 text-primary" /> {profile.rank || "Officer"}</span>
+                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><MapPin className="w-3.5 h-3.5 text-primary" /> {profile.department}</span>
+                <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs"><Hash className="w-3.5 h-3.5 text-primary" /> {profile.badge_number}</span>
               </div>
             </div>
           </div>
@@ -337,7 +337,7 @@ ${profile.notes || 'No service notes on file.'}
             <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-xl relative">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xs font-bold tracking-widest uppercase text-slate-300 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-brand" /> Digital Identity
+                  <Shield className="w-4 h-4 text-primary" /> Digital Identity
                 </h3>
               </div>
 
@@ -401,14 +401,14 @@ ${profile.notes || 'No service notes on file.'}
                   {/* Identity */}
                   <div className="mt-5 text-center">
                     <h2 className="text-2xl font-black text-white tracking-widest uppercase leading-none drop-shadow-md">{profile.name}</h2>
-                    <p className="text-brand font-mono font-bold mt-2 tracking-[0.2em]">{profile.badge_number}</p>
+                    <p className="text-primary font-mono font-bold mt-2 tracking-[0.2em]">{profile.badge_number}</p>
                   </div>
 
                   {/* Grid Data */}
                   <div className="w-full mt-6 grid grid-cols-2 gap-y-4 gap-x-4 bg-slate-950/50 rounded-xl p-4 border border-white/5 backdrop-blur-sm">
                     <div>
                       <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Department</p>
-                      <p className="text-[10px] font-bold text-brand uppercase tracking-wider truncate">{profile.department || "—"}</p>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-wider truncate">{profile.department || "—"}</p>
                     </div>
                     <div>
                       <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rank</p>
@@ -456,7 +456,7 @@ ${profile.notes || 'No service notes on file.'}
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-3 mt-6">
-                <button onClick={downloadIdImage} className="bg-brand hover:bg-brand/90 text-white shadow-[0_0_20px_rgba(var(--brand-main),0.3)] px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
+                <button onClick={downloadIdImage} className="bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(var(--brand-main),0.3)] px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
                   <Download className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" /> Export Image
                 </button>
                 <button onClick={copyIdText} className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all flex items-center justify-center gap-2 group">
@@ -468,7 +468,7 @@ ${profile.notes || 'No service notes on file.'}
             {/* SECURITY BOX */}
             <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-xl">
               <h3 className="text-xs font-bold tracking-widest uppercase text-slate-300 mb-6 flex items-center gap-2">
-                <Key className="w-4 h-4 text-brand" /> Access Control
+                <Key className="w-4 h-4 text-primary" /> Access Control
               </h3>
               <form onSubmit={handlePasswordUpdate} className="space-y-4">
                 <div className="space-y-3">
@@ -476,7 +476,7 @@ ${profile.notes || 'No service notes on file.'}
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-all placeholder:text-slate-600"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-600"
                     placeholder="New Password"
                     required
                   />
@@ -484,7 +484,7 @@ ${profile.notes || 'No service notes on file.'}
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-all placeholder:text-slate-600"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-600"
                     placeholder="Confirm Password"
                     required
                   />
@@ -507,9 +507,9 @@ ${profile.notes || 'No service notes on file.'}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
               <div className="flex flex-col gap-6">
-                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-primary/30 transition-colors duration-500">
                   <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
-                    <Fingerprint className="w-4 h-4 text-brand" /> Personal Details
+                    <Fingerprint className="w-4 h-4 text-primary" /> Personal Details
                   </h3>
                   <div className="space-y-6">
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
@@ -531,9 +531,9 @@ ${profile.notes || 'No service notes on file.'}
                   <div className={`w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${isBoxFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
                     
                     {/* FRONT FACE - Disciplinary Actions */}
-                    <div className="absolute inset-0 [backface-visibility:hidden] bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                    <div className="absolute inset-0 [backface-visibility:hidden] bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-primary/30 transition-colors duration-500">
                       <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center justify-between">
-                        <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-brand" /> Disciplinary Actions</span>
+                        <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-primary" /> Disciplinary Actions</span>
                         <span className="text-[9px] text-slate-500 font-normal uppercase tracking-wider">Click to Flip</span>
                       </h3>
                       <div className="space-y-6">
@@ -588,9 +588,9 @@ ${profile.notes || 'No service notes on file.'}
 
               {/* Right Column */}
               <div className="flex flex-col gap-6">
-                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-brand/30 transition-colors duration-500">
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl hover:border-primary/30 transition-colors duration-500">
                   <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
-                    <ClipboardList className="w-4 h-4 text-brand" /> Department Info
+                    <ClipboardList className="w-4 h-4 text-primary" /> Department Info
                   </h3>
                   <div className="space-y-6">
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
@@ -599,7 +599,7 @@ ${profile.notes || 'No service notes on file.'}
                     </div>
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Department Lead</span>
-                      <span className="text-sm font-medium text-brand">{profile.led_sub_departments?.length ? profile.led_sub_departments.join(", ") : "—"}</span>
+                      <span className="text-sm font-medium text-primary">{profile.led_sub_departments?.length ? profile.led_sub_departments.join(", ") : "—"}</span>
                     </div>
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Titles</span>
@@ -607,7 +607,7 @@ ${profile.notes || 'No service notes on file.'}
                     </div>
                     <div className="flex justify-between items-end border-b border-slate-800/60 pb-2">
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time in Service</span>
-                      <span className="text-sm font-medium text-brand">{profile.duration_in_department || "—"}</span>
+                      <span className="text-sm font-medium text-primary">{profile.duration_in_department || "—"}</span>
                     </div>
                   </div>
                 </div>
@@ -615,7 +615,7 @@ ${profile.notes || 'No service notes on file.'}
                 {/* Certifications (Tags) */}
                 <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl">
                   <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-6 flex items-center gap-2">
-                    <Medal className="w-4 h-4 text-brand" /> Active Certifications
+                    <Medal className="w-4 h-4 text-primary" /> Active Certifications
                   </h3>
                   <div className="flex flex-wrap gap-3">
                     {profile.cert_fto && (
@@ -671,12 +671,12 @@ ${profile.notes || 'No service notes on file.'}
             {/* Dossier Grid Row 2 (Timeline) */}
             <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 shadow-xl">
               <h3 className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-8 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-brand" /> Service Timeline
+                <Calendar className="w-4 h-4 text-primary" /> Service Timeline
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 text-brand" />
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Department Entry</p>
@@ -719,7 +719,7 @@ ${profile.notes || 'No service notes on file.'}
           <div className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-[2rem] shadow-2xl p-8 space-y-6 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold tracking-widest uppercase text-white flex items-center gap-2">
-                <Camera className="w-4 h-4 text-brand" /> Avatar Setup
+                <Camera className="w-4 h-4 text-primary" /> Avatar Setup
               </h3>
               <button onClick={() => setIsEditingAvatar(false)} className="text-slate-500 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -744,7 +744,7 @@ ${profile.notes || 'No service notes on file.'}
                 type="url"
                 value={avatarInput}
                 onChange={e => setAvatarInput(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-brand transition-colors"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-primary transition-colors"
                 placeholder="https://imgur.com/..."
                 autoFocus
               />
@@ -755,7 +755,7 @@ ${profile.notes || 'No service notes on file.'}
               <button
                 onClick={handleSaveAvatar}
                 disabled={isSavingAvatar || !avatarInput.trim()}
-                className="w-full bg-brand hover:bg-brand/90 text-white px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all disabled:opacity-50"
+                className="w-full bg-primary hover:bg-primary/90 text-white px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all disabled:opacity-50"
               >
                 {isSavingAvatar ? "Saving..." : "Save Picture"}
               </button>

@@ -422,7 +422,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50 shrink-0">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Database className="w-5 h-5 text-brand" />
+              <Database className="w-5 h-5 text-primary" />
               Sync LOA Records
             </h2>
             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -460,7 +460,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                         value={csvUrl}
                         onChange={(e) => setCsvUrl(e.target.value)}
                         placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white focus:ring-1 focus:ring-brand focus:border-brand"
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary"
                       />
                       {!isSavingLink && (
                         <button 
@@ -474,7 +474,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                       <button 
                         onClick={() => handleSyncCSV()}
                         disabled={isSyncing || !csvUrl}
-                        className="px-4 py-2 bg-brand/20 text-brand border border-brand/30 hover:bg-brand/30 rounded-md text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 rounded-md text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         Fetch Data
@@ -488,7 +488,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                           value={syncProfileName}
                           onChange={e => setSyncProfileName(e.target.value)}
                           placeholder="Profile Name (e.g., LSPD Active LOAs)"
-                          className="flex-1 rounded border border-slate-600 bg-slate-900 px-3 py-1.5 text-sm text-white focus:outline-none focus:border-brand"
+                          className="flex-1 rounded border border-slate-600 bg-slate-900 px-3 py-1.5 text-sm text-white focus:outline-none focus:border-primary"
                           autoFocus
                         />
                         <button 
@@ -506,7 +506,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                       </div>
                     )}
 
-                    {syncStatus && <p className="text-brand text-xs mt-3 animate-pulse">{syncStatus}</p>}
+                    {syncStatus && <p className="text-primary text-xs mt-3 animate-pulse">{syncStatus}</p>}
                   </div>
                   
                   {/* Beautiful Error UI */}
@@ -602,7 +602,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
           
           <div className="p-6 pb-2">
             <h3 className="text-sm font-bold tracking-widest uppercase text-slate-300 flex items-center gap-2 z-10 relative">
-              <LinkIcon className="w-4 h-4 text-brand" /> Saved Syncs
+              <LinkIcon className="w-4 h-4 text-primary" /> Saved Syncs
             </h3>
           </div>
           
@@ -665,7 +665,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                         setCsvUrl(sync.url);
                         handleSyncCSV(sync.url);
                       }}
-                      className="text-[11px] font-bold text-brand hover:text-fuchsia-300 uppercase flex items-center gap-1 transition-colors bg-brand/10 px-2 py-1 rounded"
+                      className="text-[11px] font-bold text-primary hover:text-fuchsia-300 uppercase flex items-center gap-1 transition-colors bg-primary/10 px-2 py-1 rounded"
                     >
                       <Play className="w-3 h-3" /> Run
                     </button>

@@ -67,7 +67,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div ref={containerRef} className="flex h-screen bg-[#020617] text-foreground overflow-hidden relative">
+    <div ref={containerRef} className="flex h-screen bg-background text-foreground overflow-hidden relative">
       {/* Dynamic Background Slideshow */}
       {bgImages.map((imgUrl, idx) => (
         <div 

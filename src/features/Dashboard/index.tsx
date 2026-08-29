@@ -144,12 +144,12 @@ export const Dashboard = () => {
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg">
-              WELCOME, <span className="font-bold text-brand">{profile?.name || "OFFICER"}</span>
+              WELCOME, <span className="font-bold text-primary">{profile?.name || "OFFICER"}</span>
             </h1>
-            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <div className="w-16 h-1 bg-primary mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
             <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
-              <Shield className="w-5 h-5 text-brand/70" /> 
-              {profile?.rank || "Patrol"} <span className="text-slate-600">|</span> <span className="text-brand/80">{profile?.badge_number || "000"}</span>
+              <Shield className="w-5 h-5 text-primary/70" /> 
+              {profile?.rank || "Patrol"} <span className="text-slate-600">|</span> <span className="text-primary/80">{profile?.badge_number || "000"}</span>
             </p>
           </div>
         </div>
@@ -237,7 +237,7 @@ export const Dashboard = () => {
                           {strike.action_type && (
                             <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold tracking-wider whitespace-nowrap shrink-0 ${
                               strike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
-                              strike.action_type === 'Verbal Warning' ? 'bg-brand/20 text-brand border border-brand/30' :
+                              strike.action_type === 'Verbal Warning' ? 'bg-primary/20 text-primary border border-primary/30' :
                               'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                             }`}>
                               {strike.action_type} {strike.action_type === 'Strike' && strike.strike_level ? `(${strike.strike_level})` : ''}
@@ -313,8 +313,8 @@ export const Dashboard = () => {
       {/* Important Bulletins */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Activity Feed and Bulletins */}
-        <div className="col-span-4 h-96 rounded-xl border border-brand/30 bg-slate-950/80 p-6 flex flex-col shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-          <h3 className="text-xs font-bold tracking-widest uppercase text-brand/80 mb-4 border-b border-brand/30 pb-2">Recent Activity Feed</h3>
+        <div className="col-span-4 h-96 rounded-xl border border-primary/30 bg-slate-950/80 p-6 flex flex-col shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+          <h3 className="text-xs font-bold tracking-widest uppercase text-primary/80 mb-4 border-b border-primary/30 pb-2">Recent Activity Feed</h3>
           
           <div className="flex-1 overflow-y-auto animated-scrollbar pr-2 space-y-4">
             {/* Build activity feed dynamically */}
@@ -386,7 +386,7 @@ export const Dashboard = () => {
                   const titleClass = isBolo ? 'text-rose-100' : isBriefing ? 'text-blue-100' : 'text-slate-200';
                   const textClass = isBolo ? 'text-rose-200/70' : isBriefing ? 'text-blue-200/70' : 'text-slate-400';
                   const metaClass = isBolo ? 'text-rose-500/70' : isBriefing ? 'text-blue-500/70' : 'text-slate-500';
-                  const badgeClass = isBolo ? 'text-rose-400 bg-rose-500/20 border-rose-500/30' : isBriefing ? 'text-blue-400 bg-blue-500/20 border-blue-500/30' : 'text-brand bg-brand/20 border-brand/30';
+                  const badgeClass = isBolo ? 'text-rose-400 bg-rose-500/20 border-rose-500/30' : isBriefing ? 'text-blue-400 bg-blue-500/20 border-blue-500/30' : 'text-primary bg-primary/20 border-primary/30';
                   
                   return (
                     <div 
@@ -420,7 +420,7 @@ export const Dashboard = () => {
 
       {/* Strike Preview Modal */}
       <Dialog open={!!selectedStrike} onOpenChange={(open) => !open && setSelectedStrike(null)}>
-        <DialogContent className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/95 backdrop-blur-xl border-rose-900/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="glass-panel/95 backdrop-blur-xl border-rose-900/50 text-slate-200 shadow-2xl rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-widest uppercase text-rose-500 border-b border-rose-900/30 pb-3 flex items-center gap-2">
               <ShieldAlert className="w-5 h-5" /> Disciplinary Action Report
@@ -444,7 +444,7 @@ export const Dashboard = () => {
                 {selectedStrike.action_type && (
                    <span className={`absolute top-3 right-3 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                           selectedStrike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
-                          selectedStrike.action_type === 'Verbal Warning' ? 'bg-brand/20 text-brand border border-brand/30' :
+                          selectedStrike.action_type === 'Verbal Warning' ? 'bg-primary/20 text-primary border border-primary/30' :
                           'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                         }`}>
                           {selectedStrike.action_type} {selectedStrike.action_type === 'Strike' && selectedStrike.strike_level ? `(${selectedStrike.strike_level})` : ''}
@@ -465,9 +465,9 @@ export const Dashboard = () => {
 
       {/* Announcement Preview Modal */}
       <Dialog open={!!selectedAnnouncement} onOpenChange={(open) => !open && setSelectedAnnouncement(null)}>
-        <DialogContent className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/95 backdrop-blur-xl border-brand/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="glass-panel/95 backdrop-blur-xl border-primary/50 text-slate-200 shadow-2xl rounded-xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold tracking-widest uppercase text-brand border-b border-brand/30 pb-3 flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold tracking-widest uppercase text-primary border-b border-primary/30 pb-3 flex items-center gap-2">
               <Megaphone className="w-5 h-5" /> Official Announcement
             </DialogTitle>
           </DialogHeader>
@@ -489,11 +489,11 @@ export const Dashboard = () => {
                  <span className={`absolute top-3 right-3 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                         selectedAnnouncement.category === 'Announcement' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 
                         selectedAnnouncement.category === 'BOLO / Alert' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                        'bg-brand/20 text-brand border border-brand/30'
+                        'bg-primary/20 text-primary border border-primary/30'
                       }`}>
                         {selectedAnnouncement.category}
                  </span>
-                <h4 className="text-[10px] font-bold text-brand/70 uppercase tracking-widest mb-2">Subject / Title</h4>
+                <h4 className="text-[10px] font-bold text-primary/70 uppercase tracking-widest mb-2">Subject / Title</h4>
                 <p className="text-base text-slate-200 font-medium md:pr-24">{selectedAnnouncement.title}</p>
               </div>
               
@@ -506,7 +506,7 @@ export const Dashboard = () => {
                     <div className="space-y-4">
                       <div className="text-sm text-slate-300 leading-relaxed font-light whitespace-pre-wrap space-y-1">{formatMessage(text)}</div>
                       {imgUrl && (
-                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-800/80 shadow-lg bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 flex justify-center">
+                        <div className="mt-4 rounded-xl overflow-hidden border border-slate-800/80 shadow-lg glass-panel flex justify-center">
                           <img src={imgUrl} alt="Announcement Attachment" className="w-full h-auto object-contain max-h-[800px]" />
                         </div>
                       )}

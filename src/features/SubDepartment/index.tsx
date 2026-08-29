@@ -135,11 +135,11 @@ export default function SubDepartmentFeed() {
   async function fetchSubDepartments(adminStatus = isAdmin) {
     const { data } = await supabase.from('employees').select('sub_department');
     if (data) {
-      const depts = new Set<string>(['HEAT', 'FTD', 'ASD', 'K9', 'MEDIA TEAM', 'DOC', 'SBI', 'MEU']);
+      const depts = new Set<string>(['HEAT', 'FTD', 'ASD', 'K9', 'MEDIA TEAM', 'DOC', 'SBI', 'MEU', 'DAO']);
       data.forEach(emp => {
         if (emp.sub_department && emp.sub_department !== 'N/A' && emp.sub_department.trim() !== '') {
           const dept = emp.sub_department.trim().toUpperCase();
-          if (dept !== 'SAO') {
+          if (dept !== 'DAO') {
             depts.add(dept);
           }
         }

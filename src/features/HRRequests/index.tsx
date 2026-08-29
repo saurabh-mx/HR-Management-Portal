@@ -196,7 +196,7 @@ export default function HRRequestsDashboard() {
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </button>
 
-        <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+        <Card className="glass-panel border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
           <CardHeader className="border-b border-slate-800 pb-4">
             <div className="flex justify-between items-start">
               <div>
@@ -243,7 +243,7 @@ export default function HRRequestsDashboard() {
                 type="text"
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
-                className="flex-1 rounded-md border border-slate-700 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="flex-1 rounded-md border border-slate-700 glass-panel px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 placeholder="Type your secure message..."
                 disabled={activeTicket.status === 'Resolved'}
               />
@@ -274,7 +274,7 @@ export default function HRRequestsDashboard() {
         {/* Resolve Confirmation Modal */}
         {showResolveConfirm && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-            <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -318,10 +318,10 @@ export default function HRRequestsDashboard() {
         <div className="py-2 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <h1 className="text-3xl font-light tracking-widest text-slate-200 uppercase drop-shadow-lg flex items-center gap-4">
-              <Ticket className="w-7 h-7 text-brand" />
-              HR REQUESTS & <span className="font-bold text-brand">SUPPORT</span>
+              <Ticket className="w-7 h-7 text-primary" />
+              HR REQUESTS & <span className="font-bold text-primary">SUPPORT</span>
             </h1>
-            <div className="w-16 h-1 bg-brand mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
+            <div className="w-16 h-1 bg-primary mt-2 mb-2 shadow-[0_0_15px_hsl(var(--brand-main)/0.8)] rounded-full"></div>
             <p className="text-sm text-slate-400 font-light tracking-wide flex items-center gap-2">
               {userProfile?.isAdmin ? "Command View: Review and respond to departmental inquiries." : "Submit an official, confidential request directly to High Command."}
             </p>
@@ -344,7 +344,7 @@ export default function HRRequestsDashboard() {
 
       <div className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100 mb-8 mt-4' : 'grid-rows-[0fr] opacity-0 mb-0 mt-0'}`}>
         <div className="overflow-hidden">
-          <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border-emerald-900/50 text-slate-200 relative overflow-hidden">
+          <Card className="glass-panel border-emerald-900/50 text-slate-200 relative overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg font-medium text-emerald-400">Open a Confidential Ticket</CardTitle>
         </CardHeader>
@@ -402,7 +402,7 @@ export default function HRRequestsDashboard() {
       </div>
 
       {/* TICKETS BOARD WITH TABS */}
-      <Card className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/40 backdrop-blur-md border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
+      <Card className="glass-panel border-slate-800/60 shadow-xl overflow-hidden text-slate-200">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-2">
             <CardTitle className="text-lg font-medium">{userProfile?.isAdmin ? "Department Tickets" : "Your Tickets"}</CardTitle>
@@ -411,14 +411,14 @@ export default function HRRequestsDashboard() {
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab('Active')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:text-slate-300 hover:bg-primary/10 group'
                   }`}
               >
                 <Clock className="w-4 h-4 inline mr-1.5" /> Active
               </button>
               <button
                 onClick={() => setActiveTab('Resolved')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'Resolved' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300 hover:bg-brand/10 group'
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'Resolved' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300 hover:bg-primary/10 group'
                   }`}
               >
                 <History className="w-4 h-4 inline mr-1.5" /> Resolved History
@@ -441,13 +441,13 @@ export default function HRRequestsDashboard() {
               <tbody className="group/table">
                 {displayedRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-500 bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/20 rounded-lg">
+                    <td colSpan={5} className="py-8 text-center text-slate-500 glass-panel/20 rounded-lg">
                       No {activeTab.toLowerCase()} tickets found.
                     </td>
                   </tr>
                 ) : (
                   displayedRequests.map((request) => (
-                    <tr key={request.id} className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
+                    <tr key={request.id} className="glass-panel/30 hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/80 group transition-all duration-300 relative hover:z-20 hover:scale-[1.01] hover:-translate-y-[1px] hover:shadow-2xl shadow-[inset_2px_0_0_0_rgba(var(--brand-main),0.5)] hover:shadow-[inset_4px_0_0_0_rgba(var(--brand-main),1),_0_10px_30px_-10px_rgba(0,0,0,0.5)] rounded-lg">
                       <td className="py-3 px-3 text-slate-400 rounded-l-lg">{new Date(request.created_at).toLocaleDateString()}</td>
                       <td className="py-3 px-3 font-medium text-white">
                         <span className="inline-block transition-transform duration-300 origin-left group-hover:scale-105">
@@ -486,7 +486,7 @@ export default function HRRequestsDashboard() {
       {/* Delete Confirmation Modal */}
       {ticketToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -519,7 +519,7 @@ export default function HRRequestsDashboard() {
       {/* Submit Confirmation Modal */}
       {showSubmitConfirm && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -553,7 +553,7 @@ export default function HRRequestsDashboard() {
       {/* Success Notification Modal */}
       {showSubmitSuccess && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity">
-          <div className="bg-slate-950/60 backdrop-blur-xl border border-white/5 shadow-2xl hover:border-white/10 transition-all duration-500 border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="glass-panel border border-slate-700 rounded-xl max-w-md w-full shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
             <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
             <div className="p-6 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 mb-4">
