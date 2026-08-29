@@ -284,52 +284,92 @@ export default function ImageManagementPanel() {
       </div>
 
       <Dialog open={isBulkModalOpen} onOpenChange={setIsBulkModalOpen}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-slate-200 w-full max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-light text-slate-100">Add Image URLs</DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Paste direct image URLs below (one per line). External links (like Imgur) or local paths (like /group-photo.jpg) are supported.
+        <DialogContent className="bg-slate-950/90 backdrop-blur-xl border-slate-800/60 shadow-[0_0_50px_rgba(0,0,0,0.5)] text-slate-200 w-full max-w-lg overflow-hidden">
+          {/* Decorative glow */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0"></div>
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+          <DialogHeader className="relative z-10 space-y-3">
+            <DialogTitle className="text-2xl font-light text-white flex items-center gap-3 tracking-tight">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Plus className="w-5 h-5 text-emerald-400" />
+              </div>
+              Import Media
+            </DialogTitle>
+            <DialogDescription className="text-slate-400 text-sm font-light">
+              Batch import images by pasting direct URLs. Supports external links (e.g., Imgur) or local assets (e.g., /group-photo.jpg).
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 my-4">
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Category Type</label>
-              <select 
-                value={bulkType} 
-                onChange={e => setBulkType(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded p-3 focus:outline-none focus:border-brand"
-              >
-                <option value="gallery">Gallery (Landing Page)</option>
-                <option value="background">Background (App Layout)</option>
-                <option value="about">About (Landing Page)</option>
-              </select>
+          <div className="space-y-6 my-6 relative z-10">
+            {/* Category Dropdown */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <ImageIcon className="w-3 h-3 text-emerald-500" />
+                Target Category
+              </label>
+              <div className="relative group">
+                <select 
+                  value={bulkType} 
+                  onChange={e => setBulkType(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700/50 text-slate-200 rounded-lg p-3.5 appearance-none outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-inner hover:bg-slate-900/80"
+                >
+                  <option value="gallery" className="bg-slate-900 text-slate-200">Landing Gallery Sequence</option>
+                  <option value="background" className="bg-slate-900 text-slate-200">App Backgrounds</option>
+                  <option value="about" className="bg-slate-900 text-slate-200">About Images</option>
+                </select>
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400 group-hover:text-emerald-400 transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
             </div>
             
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Image URLs</label>
-              <textarea 
-                value={bulkUrls}
-                onChange={e => setBulkUrls(e.target.value)}
-                placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.png"
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded p-3 h-40 focus:outline-none focus:border-brand font-mono text-sm"
-              />
+            {/* URLs Textarea */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <Plus className="w-3 h-3 text-emerald-500" />
+                Direct URLs
+              </label>
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+                <textarea 
+                  value={bulkUrls}
+                  onChange={e => setBulkUrls(e.target.value)}
+                  placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.png"
+                  className="relative w-full bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 text-slate-200 rounded-xl p-4 h-48 outline-none focus:border-emerald-500/50 font-mono text-[13px] leading-relaxed resize-none shadow-inner placeholder:text-slate-600 transition-all"
+                  spellCheck="false"
+                />
+              </div>
+              <div className="flex justify-between items-center text-[11px] text-slate-500 mt-2 px-1">
+                <span>One URL per line</span>
+                <span>{bulkUrls.split('\n').filter(l => l.trim()).length} URLs detected</span>
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="relative z-10 sm:justify-end gap-3 mt-4 border-t border-slate-800/60 pt-6">
             <button 
               onClick={() => setIsBulkModalOpen(false)}
-              className="px-4 py-2 text-slate-400 hover:text-white"
+              className="px-5 py-2.5 text-xs font-bold tracking-widest uppercase text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all"
             >
               Cancel
             </button>
             <button 
               onClick={handleBulkAdd}
               disabled={saving || !bulkUrls.trim()}
-              className="px-6 py-2 bg-brand text-slate-950 font-bold tracking-widest uppercase text-xs rounded hover:bg-brand/90 disabled:opacity-50"
+              className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold tracking-[0.2em] uppercase text-[10px] rounded-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {saving ? 'Adding...' : 'Save Images'}
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Importing
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Import Media
+                </>
+              )}
             </button>
           </DialogFooter>
         </DialogContent>
