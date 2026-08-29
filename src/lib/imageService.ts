@@ -53,7 +53,7 @@ export const imageService = {
 
     const { data, error } = await supabase
       .from('app_images')
-      .insert([{ url, type, sequence_order: nextSeq }])
+      .insert([{ url, type, sequence_order: nextSeq, is_active: true }])
       .select();
       
     if (error) throw error;
@@ -74,7 +74,8 @@ export const imageService = {
     const inserts = urls.map(url => ({
       url: url.trim(),
       type,
-      sequence_order: nextSeq++
+      sequence_order: nextSeq++,
+      is_active: true
     }));
 
     const { data, error } = await supabase

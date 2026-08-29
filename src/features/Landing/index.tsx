@@ -45,14 +45,11 @@ export default function Landing() {
   const [galleryImages, setGalleryImages] = useState<string[]>(FALLBACK_IMAGES);
   
   // Background images for hero
-  const [bgImages, setBgImages] = useState<string[]>([
-    'https://images.unsplash.com/photo-1453873531674-2151bcd01707?q=80&w=2573&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=2689&auto=format&fit=crop'
-  ]);
+  const [bgImages, setBgImages] = useState<string[]>([]);
   const [bgIndex, setBgIndex] = useState(0);
 
   // About images for Features section
-  const [aboutImages, setAboutImages] = useState<string[]>(["https://images.unsplash.com/photo-1555848962-6e79363ec58f?q=80&w=2653&auto=format&fit=crop"]);
+  const [aboutImages, setAboutImages] = useState<string[]>([]);
   const [aboutImgIdx, setAboutImgIdx] = useState(0);
 
   // Drag/Swipe state for hero background
