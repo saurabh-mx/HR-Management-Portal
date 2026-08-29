@@ -2,17 +2,22 @@
 import { useState, useEffect } from "react";
 // Unused import removed
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Edit2, Plus, Search, KeyRound } from "lucide-react";
+import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Edit2, Plus, Search, KeyRound, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import Papa from "papaparse";
 import { fetchAllEmployees } from "@/lib/sync/syncService";
 import { useAuth } from '@/auth/hooks/useAuth';
 import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
 import { logAuditAction } from "@/lib/auditLogger";
+import { getPendingApprovals } from '@/lib/auth';
 import LOASyncModal from '@/features/AdminPanel/components/LOASyncModal';
 import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
 import PenalCodeSyncModal from '@/features/AdminPanel/components/PenalCodeSyncModal';
 import DisciplinarySyncModal from '@/features/AdminPanel/components/DisciplinarySyncModal';
+import OverviewMetrics from '@/features/AdminPanel/components/OverviewMetrics';
+import QuickActions from '@/features/AdminPanel/components/QuickActions';
+import LiveActivityFeed from '@/features/AdminPanel/components/LiveActivityFeed';
+import PriorityQueue from '@/features/AdminPanel/components/PriorityQueue';
 import ImageManagementPanel from '@/features/AdminPanel/components/ImageManagementPanel';
 import OfficerApprovalPanel from '@/features/AdminPanel/components/OfficerApprovalPanel';
 import SOITogglePanel from '@/features/SOIApplications/components/SOITogglePanel';
@@ -76,6 +81,8 @@ export default function AdminPanel() {
   const [_isSyncing, setIsSyncing] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showOfficerApprovalModal, setShowOfficerApprovalModal] = useState(false);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   
   const [showLOASyncModal, setShowLOASyncModal] = useState(false);
   const [showDataSyncModal, setShowDataSyncModal] = useState(false);
@@ -83,6 +90,7 @@ export default function AdminPanel() {
   const [showDisciplinarySyncModal, setShowDisciplinarySyncModal] = useState(false);
   const [showImageManagementModal, setShowImageManagementModal] = useState(false);
   const [showSOIToggleModal, setShowSOIToggleModal] = useState(false);
+  const [showRosterModal, setShowRosterModal] = useState(false);
 
   const [rosterSearch, setRosterSearch] = useState("");
   const [rosterRoleFilter, setRosterRoleFilter] = useState("All");
@@ -93,9 +101,20 @@ export default function AdminPanel() {
   const [editingSyncId, setEditingSyncId] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchEmployees();
+    fetchPendingApprovalsCount();
     checkAdminAccess();
     loadSavedSyncLinks();
   }, [profile]);
+
+  const fetchPendingApprovalsCount = async () => {
+    try {
+      const pending = await getPendingApprovals();
+      setPendingApprovalsCount(pending.length || 0);
+    } catch (e) {
+      console.error("Failed to fetch pending approvals", e);
+    }
+  };
 
   const loadSavedSyncLinks = () => {
     try {
@@ -640,180 +659,54 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Stats Chips */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/40 backdrop-blur-sm border border-white/5 shadow-lg hover:bg-slate-800/80 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(14,165,233,0.2)]/60 transition-all duration-300 border border-slate-700/50">
-              <Users className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-xs font-medium text-slate-300">{employees.length}</span>
-              <span className="text-xs text-slate-500">Personnel</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-medium text-emerald-400">System Online</span>
-            </div>
-          </div>
+          {/* Stats Chips (Removed here since OverviewMetrics handles it) */}
         </div>
         <div className="mt-3 h-px bg-gradient-to-r from-brand/40 via-slate-800 to-transparent" />
       </div>
 
-      {/* ─── QUICK ACTIONS ROW ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ─── ROW 1: OVERVIEW METRICS ─── */}
+      <OverviewMetrics 
+        employees={employees}
+        pendingCount={pendingApprovalsCount} 
+        recentAlertsCount={0}
+        onOpenApprovals={() => setShowOfficerApprovalModal(true)}
+      />
 
-        {/* Image Management */}
-        {(profile?.is_admin || adminSafeMode) && (
-          <button
-            onClick={() => setShowImageManagementModal(true)}
-            disabled={showImageManagementModal}
-            className="group relative overflow-hidden rounded-xl border glass-panel p-5 text-left transition-all duration-300 hover:border-amber-500/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-2xl hover:border-white/10 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] disabled:opacity-60"
-          >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-            <div className="relative flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
-                <ImageIcon className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white mb-0.5">Image Management</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Manage dynamic landing & app imagery</p>
-              </div>
-            </div>
-          </button>
-        )}
-
-        {/* SOI Toggles Quick Action */}
-        {(isHighCommandOrHR(profile) || adminSafeMode) && (
-          <button
-            onClick={() => setShowSOIToggleModal(true)}
-            disabled={showSOIToggleModal}
-            className="group relative overflow-hidden rounded-xl border glass-panel p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-2xl hover:border-white/10 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60"
-          >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-500" />
-            <div className="relative flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-                <Shield className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white mb-0.5">SOI Access Controls</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Manage SOI open/closed status</p>
-              </div>
-            </div>
-          </button>
-        )}
-
-        {/* Onboard Count / Quick Stat */}
-        <div className="group relative overflow-hidden rounded-xl border border-slate-800/60 glass-panel p-5 text-left">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-8 translate-x-8" />
-          <div className="relative flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white mb-0.5">Access Overview</h3>
-              <div className="flex flex-wrap items-center gap-3 mt-1">
-                <span className="text-xs text-slate-500"><span className="text-amber-400 font-semibold">{employees.filter(e => e.role === 'admin' || e.role === 'High Command').length}</span> HC</span>
-                <span className="text-xs text-slate-500"><span className="text-blue-400 font-semibold">{employees.filter(e => e.role === 'Command').length}</span> CMD</span>
-                <span className="text-xs text-slate-500"><span className="text-violet-400 font-semibold">{employees.filter(e => e.role === 'HR').length}</span> HR</span>
-                <span className="text-xs text-slate-500"><span className="text-cyan-400 font-semibold">{employees.filter(e => e.role === 'Supervisor').length}</span> SUP</span>
-                <span className="text-xs text-slate-500"><span className="text-slate-300 font-semibold">{employees.filter(e => e.role === 'Patrol Officer' || !e.role).length}</span> PATROL</span>
-                <span className="text-xs text-slate-500"><span className="text-emerald-400 font-semibold">{employees.filter(e => e.role === 'Student').length}</span> STU</span>
-              </div>
-            </div>
-          </div>
+      {/* ─── ROW 2: QUICK ACTIONS, PRIORITY QUEUE, & LIVE FEED ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+        <div className="lg:col-span-4 h-[460px]">
+          <QuickActions 
+            isAdmin={profile?.is_admin || adminSafeMode || false}
+            isHighCommandOrHR={isHighCommandOrHR(profile) || adminSafeMode || false}
+            onOpenImageManagement={() => setShowImageManagementModal(true)}
+            onOpenSOIToggle={() => setShowSOIToggleModal(true)}
+            onOpenRosterSync={() => setShowDataSyncModal(true)}
+            onOpenLOASync={() => setShowLOASyncModal(true)}
+            onOpenDisciplinarySync={() => setShowDisciplinarySyncModal(true)}
+            onOpenPenalCodeSync={() => setShowPenalCodeSyncModal(true)}
+            onOpenRoster={() => setShowRosterModal(true)}
+          />
+        </div>
+        <div className="lg:col-span-4 h-[460px] flex flex-col">
+          <PriorityQueue />
+        </div>
+        <div className="lg:col-span-4 h-[460px]">
+          <LiveActivityFeed />
         </div>
       </div>
 
-      {/* ─── SYNCS PANEL ─── */}
-      {(profile?.is_admin || adminSafeMode) && (
-        <div className="mb-6">
-          <div className="glass-panel border-slate-800/60 rounded-xl overflow-hidden shadow-xl">
-            <div className="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
-              <div className="flex items-center gap-2.5">
-                <Database className="w-5 h-5 text-emerald-400" />
-                <h2 className="text-base font-semibold text-white">Data Synchronization Hub</h2>
-              </div>
-              <p className="text-xs text-slate-500 hidden sm:block">Manage integrations with external Google Sheets</p>
-            </div>
-            <div className="p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Directory Imports */}
-                <button
-                  onClick={() => setShowDataSyncModal(true)}
-                  disabled={showDataSyncModal}
-                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
-                >
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-                    {showDataSyncModal ? (
-                      <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin" />
-                    ) : (
-                      <Users className="w-5 h-5 text-emerald-400" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-200 mb-1">Roster Sync</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2">Import personnel roster</p>
-                  </div>
-                </button>
-
-                {/* LOA Sync */}
-                <button
-                  onClick={() => setShowLOASyncModal(true)}
-                  disabled={showLOASyncModal}
-                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-fuchsia-500/40 hover:bg-fuchsia-500/5 hover:shadow-[0_0_20px_-5px_rgba(217,70,239,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
-                >
-                  <div className="w-12 h-12 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-fuchsia-500/20 transition-colors">
-                    <CalendarOff className="w-5 h-5 text-fuchsia-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-200 mb-1">LOA Sync</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2">Import leave records</p>
-                  </div>
-                </button>
-
-                {/* Disciplinary Sync */}
-                <button
-                  onClick={() => setShowDisciplinarySyncModal(true)}
-                  disabled={showDisciplinarySyncModal}
-                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-rose-500/40 hover:bg-rose-500/5 hover:shadow-[0_0_20px_-5px_rgba(244,63,94,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
-                >
-                  <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-500/20 transition-colors">
-                    <ShieldAlert className="w-5 h-5 text-rose-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-200 mb-1">Disciplinary Sync</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2">Import strike records</p>
-                  </div>
-                </button>
-
-                {/* Penal Code Sync */}
-                <button
-                  onClick={() => setShowPenalCodeSyncModal(true)}
-                  disabled={showPenalCodeSyncModal}
-                  className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 p-4 text-left transition-all duration-300 hover:border-sky-500/40 hover:bg-sky-500/5 hover:shadow-[0_0_20px_-5px_rgba(14,165,233,0.15)] disabled:opacity-60 flex flex-col items-center text-center gap-3"
-                >
-                  <div className="w-12 h-12 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500/20 transition-colors">
-                    <Download className="w-5 h-5 text-sky-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-200 mb-1">Penal Code Sync</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2">Import charges & fines</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── IMAGE MANAGEMENT MODAL ─── */}
-      <Dialog open={showImageManagementModal} onOpenChange={setShowImageManagementModal}>
-        <DialogContent className="max-w-6xl bg-slate-950 border border-slate-800/60 text-slate-200 h-[85vh] overflow-y-auto p-6 rounded-xl shadow-2xl">
-          <ImageManagementPanel />
+      {/* ─── OFFICER APPROVAL MODAL ─── */}
+      <Dialog open={showOfficerApprovalModal} onOpenChange={setShowOfficerApprovalModal}>
+        <DialogContent className="max-w-4xl bg-slate-950 border border-slate-800/60 text-slate-200 p-6 overflow-y-auto max-h-[90vh] rounded-xl shadow-2xl custom-scrollbar">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-amber-400" />
+              Officer Access Approvals
+            </DialogTitle>
+          </DialogHeader>
+          <OfficerApprovalPanel onApprovalsChange={fetchPendingApprovalsCount} />
         </DialogContent>
       </Dialog>
-
-      {/* ─── OFFICER APPROVAL PANEL ─── */}
-      <div className="mb-6">
-        <OfficerApprovalPanel />
-      </div>
 
       {/* ─── SOI TOGGLES MODAL ─── */}
       <Dialog open={showSOIToggleModal} onOpenChange={setShowSOIToggleModal}>
@@ -822,8 +715,28 @@ export default function AdminPanel() {
         </DialogContent>
       </Dialog>
 
+      {/* ─── DATABASE ROSTER MODAL ─── */}
+      <Dialog open={showRosterModal} onOpenChange={setShowRosterModal}>
+        <DialogContent className="max-w-7xl p-0 bg-slate-950 border border-slate-800/60 text-slate-200 overflow-hidden rounded-xl shadow-2xl flex flex-col h-[90vh]">
+          <DialogHeader className="hidden">
+            <DialogTitle>Access Control</DialogTitle>
+          </DialogHeader>
+
+          {/* Header */}
+          <div className="p-6 pb-4 border-b border-slate-800/60 bg-slate-950/40 shrink-0">
+            <h2 className="text-lg font-bold text-white flex items-center gap-3 tracking-wider uppercase">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                <Users className="w-5 h-5 text-indigo-400" />
+              </div>
+              Access Control
+            </h2>
+            <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Manage personnel, assign roles, and onboard recruits.</p>
+          </div>
+          
+          <div className="p-6 flex-1 flex flex-col gap-6 overflow-y-auto custom-scrollbar bg-slate-950/40">
+
       {/* ─── ONBOARD RECRUIT ─── */}
-      <div className="rounded-xl border border-slate-800/60 glass-panel overflow-hidden">
+      <div className="rounded-xl border border-slate-800/60 glass-panel overflow-hidden shrink-0">
         <div className="px-5 py-3.5 border-b border-slate-800/60 flex items-center gap-2.5">
           <UserPlus className="w-4 h-4 text-rose-400" />
           <h2 className="text-sm font-semibold text-white">Onboard Recruit</h2>
@@ -854,46 +767,46 @@ export default function AdminPanel() {
       </div>
 
       {/* ─── ROSTER TABLE ─── */}
-      <div className="rounded-xl border border-slate-800/60 glass-panel overflow-hidden">
+      <div className="rounded-xl border border-slate-800/60 glass-panel overflow-hidden flex-1 flex flex-col">
         {/* Table Header with Search & Filters */}
         <div className="px-5 py-3.5 border-b border-slate-800/60">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-1">
               <Users className="w-4 h-4 text-slate-400" />
-              <h2 className="text-sm font-semibold text-white">Database Roster & Access Control</h2>
+              <h2 className="text-sm font-semibold text-white">Personnel Roster</h2>
               <span className="text-xs text-slate-600 font-medium ml-1">
                 {filteredEmployees.length === employees.length ? employees.length : `${filteredEmployees.length} / ${employees.length}`}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                <input
-                  type="text"
-                  value={rosterSearch}
-                  onChange={e => setRosterSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="w-48 pl-8 pr-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-xs text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 placeholder:text-slate-600 transition-colors"
-                />
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <input
+                    type="text"
+                    value={rosterSearch}
+                    onChange={e => setRosterSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="w-48 pl-8 pr-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-xs text-white focus:ring-1 focus:ring-primary/50 focus:border-primary/50 placeholder:text-slate-600 transition-colors"
+                  />
+                </div>
               </div>
-            </div>
           </div>
           {/* Role Filter Pills */}
           <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-            {["All", "admin", "High Command", "Command", "HR", "Supervisor", "Patrol Officer", "Student"].map(role => (
-              <button
-                key={role}
-                onClick={() => setRosterRoleFilter(role)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-200 ${
-                  rosterRoleFilter === role
-                    ? "bg-primary/15 text-primary border border-primary/30 shadow-sm"
-                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-transparent"
-                }`}
-              >
-                {role}
-              </button>
-            ))}
-          </div>
+              {["All", "admin", "High Command", "Command", "HR", "Supervisor", "Patrol Officer", "Student"].map(role => (
+                <button
+                  key={role}
+                  onClick={() => setRosterRoleFilter(role)}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-200 ${
+                    rosterRoleFilter === role
+                      ? "bg-primary/15 text-primary border border-primary/30 shadow-sm"
+                      : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-transparent"
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
         </div>
 
         {/* Table Body */}
@@ -1014,7 +927,7 @@ export default function AdminPanel() {
                               <button onClick={() => handleEditClick(emp)} className="p-1.5 rounded-md text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Edit Role/Dept">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
-                              {(profile?.is_admin || adminSafeMode || currentUserRole === 'High Command') && (
+                              {(profile?.is_admin || adminSafeMode || currentUserRole === 'High Command' || currentUserRole === 'HR') && (
                                 <button onClick={() => setConfirmResetTarget({ id: emp.id, name: emp.name })} className="p-1.5 rounded-md text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-all" title="Reset Password">
                                   <KeyRound className="w-3.5 h-3.5" />
                                 </button>
@@ -1046,12 +959,11 @@ export default function AdminPanel() {
           </table>
         </div>
       </div>
+        </div>
+      </DialogContent>
+    </Dialog>
 
       {/* ─── MODALS ─── */}
-      <ImageManagementPanel 
-        isOpen={showImageManagementModal} 
-        onClose={() => setShowImageManagementModal(false)} 
-      />
 
       {/* Temp Password Dialog */}
       <Dialog open={!!resetPasswordTemp} onOpenChange={() => setResetPasswordTemp(null)}>
@@ -1110,6 +1022,18 @@ export default function AdminPanel() {
       </Dialog>
 
       <FlashcardModal employee={selectedEmployee as any} onClose={() => setSelectedEmployee(null)} />
+
+      {/* ─── IMAGE MANAGEMENT MODAL ─── */}
+      <Dialog open={showImageManagementModal} onOpenChange={setShowImageManagementModal}>
+        <DialogContent className="max-w-6xl bg-slate-950 border border-slate-800/60 text-slate-200 h-[85vh] overflow-y-auto p-6 rounded-xl shadow-2xl">
+          <ImageManagementPanel />
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── SOI TOGGLES MODAL ─── */}
+      <Dialog open={showSOIToggleModal} onOpenChange={setShowSOIToggleModal}>
+        <SOITogglePanel />
+      </Dialog>
 
       <DataSyncModal 
         isOpen={showDataSyncModal} 

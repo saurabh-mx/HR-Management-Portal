@@ -203,15 +203,21 @@ export default function ImageManagementPanel() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-light text-slate-200 tracking-wide">Image Management</h2>
-          <p className="text-slate-500 text-sm mt-1">Manage global backgrounds and gallery sequence</p>
+    <div className="space-y-6 flex flex-col h-full bg-slate-950">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-slate-800/60 shrink-0">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold text-white flex items-center gap-3 tracking-wider uppercase">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+              <ImageIcon className="w-5 h-5 text-blue-400" />
+            </div>
+            Image Management
+          </h2>
+          <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Manage global backgrounds and gallery sequence.</p>
         </div>
         <button 
           onClick={() => setIsBulkModalOpen(true)}
-          className="px-4 py-2 bg-emerald-900/30 border border-emerald-500/30 hover:border-emerald-500 text-emerald-400 rounded flex items-center gap-2 transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors text-[10px] tracking-wider uppercase shadow-lg shadow-emerald-900/20"
         >
           <Plus size={16} /> Bulk Add URLs
         </button>

@@ -5,7 +5,11 @@ import type { ApprovalRequest } from '@/lib/auth';
 import { useAuth } from '@/auth/hooks/useAuth';
 import { logAuditAction } from '@/lib/auditLogger';
 
-export default function OfficerApprovalPanel() {
+interface OfficerApprovalPanelProps {
+  onApprovalsChange?: () => void;
+}
+
+export default function OfficerApprovalPanel({ onApprovalsChange }: OfficerApprovalPanelProps) {
   const { profile } = useAuth();
   const [pendingApprovals, setPendingApprovals] = useState<ApprovalRequest[]>([]);
   const [history, setHistory] = useState<ApprovalRequest[]>([]);
@@ -65,6 +69,7 @@ export default function OfficerApprovalPanel() {
 
       await fetchPending();
       if (showHistory) await fetchHistory();
+      if (onApprovalsChange) onApprovalsChange();
     } catch (err) {
       if (err instanceof AuthError) {
         setError(err.message);
@@ -100,6 +105,7 @@ export default function OfficerApprovalPanel() {
 
       await fetchPending();
       if (showHistory) await fetchHistory();
+      if (onApprovalsChange) onApprovalsChange();
     } catch (err) {
       if (err instanceof AuthError) {
         setError(err.message);

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Download, Link as LinkIcon, RotateCcw, X } from "lucide-react";
+import { Download, Link as LinkIcon, RotateCcw, Database, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TITLE_PATTERNS = [
   'TITLE 1:', 'TITLE 2:', 'TITLE 3:', 'TITLE 4:', 'TITLE 5:',
@@ -167,58 +168,67 @@ export default function PenalCodeSyncModal({ isOpen, onClose, onSuccess }: Penal
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-[#0f172a] rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
-              <Download className="w-5 h-5" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl p-0 bg-slate-950 border border-slate-800/60 text-slate-200 overflow-hidden rounded-xl shadow-2xl flex flex-col">
+        <DialogHeader className="hidden">
+          <DialogTitle>Penal Code Import</DialogTitle>
+        </DialogHeader>
+        
+        {/* Header */}
+        <div className="p-6 pb-4 border-b border-slate-800/60 bg-slate-950/40 shrink-0">
+          <h2 className="text-lg font-bold text-white flex items-center gap-3 tracking-wider uppercase">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <Database className="w-5 h-5 text-emerald-400" />
             </div>
-            <h2 className="text-lg font-bold text-white">Penal Code Import</h2>
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+            Penal Code Sync
+          </h2>
+          <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Import penal code classifications from a master CSV link.</p>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-              <LinkIcon className="w-4 h-4" /> CSV Export Link
+        {/* Body */}
+        <div className="p-6 space-y-6 bg-slate-950/40">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <LinkIcon className="w-3.5 h-3.5 text-emerald-500" /> Master CSV Export Link
             </label>
             <input
               type="text"
               value={url}
               onChange={e => setUrl(e.target.value)}
               placeholder="Paste Google Sheets CSV Export Link..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+              className="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+              disabled={isSyncing}
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-[10px] text-slate-500 font-medium pt-1">
               Must be a valid CSV export link. The default link points to the master Penal Code sheet.
             </p>
           </div>
 
           {syncStatus && (
-            <div className={`p-4 rounded-xl border text-sm font-medium ${syncStatus.startsWith('Error') ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
-              {syncStatus}
+            <div className={`p-4 rounded-lg flex items-start gap-3 border ${syncStatus.startsWith('Error') ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+              {syncStatus.startsWith('Error') ? <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" /> : <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />}
+              <div>
+                <h4 className="text-sm font-bold">{syncStatus.startsWith('Error') ? 'Sync Error' : 'Status'}</h4>
+                <p className="text-sm opacity-80 mt-1">{syncStatus}</p>
+              </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-            <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-800/60 mt-2">
+            <button onClick={onClose} className="px-5 py-2.5 rounded-lg font-bold text-[10px] tracking-wider uppercase text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border border-transparent">
               Cancel
             </button>
             <button
               onClick={handleSync}
               disabled={isSyncing || !url}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors disabled:opacity-50 text-[10px] tracking-wider uppercase shadow-lg shadow-emerald-900/20"
             >
               {isSyncing ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
               {isSyncing ? 'Importing...' : 'Start Import'}
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

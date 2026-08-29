@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
 import Papa from "papaparse";
 import { useAuth } from '@/auth/hooks/useAuth';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface LOASyncModalProps {
   isOpen: boolean;
@@ -414,20 +415,84 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-700/50 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-6xl p-0 bg-slate-950 border border-slate-800/60 text-slate-200 overflow-hidden rounded-xl shadow-2xl flex flex-col md:flex-row h-[85vh] gap-0">
+        <DialogHeader className="hidden">
+          <DialogTitle>LOA Import</DialogTitle>
+        </DialogHeader>
         
-        {/* Left Content (Form & Staging) */}
-        <div className="flex-1 flex flex-col min-w-0 bg-slate-900">
+        {/* Left Side: Sync Input & Staged Data */}
+        <div className="flex-1 flex flex-col h-full bg-slate-950/40 relative">
+          
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50 shrink-0">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Database className="w-5 h-5 text-primary" />
-              Sync LOA Records
+          <div className="p-6 pb-0 shrink-0">
+            <h2 className="text-lg font-bold text-white flex items-center gap-3 tracking-wider uppercase">
+              <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center">
+                <Database className="w-5 h-5 text-fuchsia-400" />
+              </div>
+              LOA Sync
             </h2>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-              <X className="w-6 h-6" />
-            </button>
+            <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Import Leave of Absence data from a CSV link.</p>
+          </div>
+
+          {/* Sync Controls */}
+          <div className="p-6 shrink-0">
+            <div className="flex flex-col sm:flex-row gap-3 items-end">
+              <div className="flex-1 w-full space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">CSV Data Source URL</label>
+                <input 
+                  type="text" 
+                  placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:ring-1 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50 transition-colors"
+                  value={csvUrl}
+                  onChange={(e) => setCsvUrl(e.target.value)}
+                  disabled={isSyncing || isCommitting}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleSyncCSV()}
+                  disabled={isSyncing || isCommitting || !csvUrl}
+                  className="px-5 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 text-xs tracking-wider uppercase shadow-lg shadow-fuchsia-900/20"
+                >
+                  {isSyncing ? <><RefreshCw className="w-4 h-4 animate-spin" /> Fetching...</> : <><RefreshCw className="w-4 h-4" /> Run Sync</>}
+                </button>
+                <button 
+                  onClick={handleSaveSyncUrl}
+                  disabled={isSyncing || isCommitting || !csvUrl}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 text-xs tracking-wider uppercase border border-slate-700"
+                >
+                  <Save className="w-4 h-4" /> Save
+                </button>
+              </div>
+            </div>
+
+            {isSavingLink && (
+              <div className="flex gap-2 items-center mt-3 p-3 bg-slate-800/40 rounded-md border border-slate-700 animate-in fade-in slide-in-from-top-2">
+                <input 
+                  type="text"
+                  value={syncProfileName}
+                  onChange={e => setSyncProfileName(e.target.value)}
+                  placeholder="Profile Name (e.g., LSPD Active LOAs)"
+                  className="flex-1 rounded border border-slate-600 bg-slate-900 px-3 py-1.5 text-sm text-white focus:outline-none focus:border-fuchsia-500"
+                  autoFocus
+                />
+                <button 
+                  onClick={confirmSaveSyncUrl}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded text-sm font-medium transition-colors"
+                >
+                  Save
+                </button>
+                <button 
+                  onClick={() => { setIsSavingLink(false); setSyncProfileName(""); }}
+                  className="text-slate-400 hover:text-white px-2"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {syncStatus && <p className="text-fuchsia-400 text-[11px] mt-3 animate-pulse uppercase tracking-wider font-bold">{syncStatus}</p>}
           </div>
 
           {/* Main Area */}
@@ -438,12 +503,12 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                   <CheckCircle2 className="w-10 h-10 text-emerald-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white">Sync Complete!</h3>
-                <p className="text-slate-400">
+                <p className="text-slate-400 text-sm">
                   Successfully imported <span className="text-emerald-400 font-bold">{syncResult.added}</span> new records and updated <span className="text-blue-400 font-bold">{syncResult.updated}</span> existing records.
                 </p>
                 <button 
                   onClick={() => { resetModal(); onSuccess(); onClose(); }}
-                  className="mt-4 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
+                  className="mt-4 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors text-sm"
                 >
                   Close & Refresh
                 </button>
@@ -451,124 +516,59 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
             ) : (
               <div className="space-y-6">
                 
-                <div className="space-y-4">
-                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                    <h3 className="text-sm font-semibold text-slate-300 mb-2">Google Sheets CSV URL</h3>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={csvUrl}
-                        onChange={(e) => setCsvUrl(e.target.value)}
-                        placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary"
-                      />
-                      {!isSavingLink && (
-                        <button 
-                          onClick={handleSaveSyncUrl}
-                          title="Save this link for later"
-                          className="px-3 rounded-md border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-300 transition-colors flex items-center justify-center"
-                        >
-                          <Save className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button 
-                        onClick={() => handleSyncCSV()}
-                        disabled={isSyncing || !csvUrl}
-                        className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 rounded-md text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                        Fetch Data
-                      </button>
+                {/* Beautiful Error UI */}
+                {errorMsg && (
+                  <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg p-4 flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-bold text-rose-400">Sync Error</h4>
+                      <p className="text-sm text-rose-200/80 mt-1">{errorMsg}</p>
                     </div>
-
-                    {isSavingLink && (
-                      <div className="flex gap-2 items-center mt-3 p-3 bg-slate-800/40 rounded-md border border-slate-700 animate-in fade-in slide-in-from-top-2">
-                        <input 
-                          type="text"
-                          value={syncProfileName}
-                          onChange={e => setSyncProfileName(e.target.value)}
-                          placeholder="Profile Name (e.g., LSPD Active LOAs)"
-                          className="flex-1 rounded border border-slate-600 bg-slate-900 px-3 py-1.5 text-sm text-white focus:outline-none focus:border-primary"
-                          autoFocus
-                        />
-                        <button 
-                          onClick={confirmSaveSyncUrl}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded text-sm font-medium transition-colors"
-                        >
-                          Save
-                        </button>
-                        <button 
-                          onClick={() => { setIsSavingLink(false); setSyncProfileName(""); }}
-                          className="text-slate-400 hover:text-white px-2"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-
-                    {syncStatus && <p className="text-primary text-xs mt-3 animate-pulse">{syncStatus}</p>}
                   </div>
-                  
-                  {/* Beautiful Error UI */}
-                  {errorMsg && (
-                    <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg p-4 flex items-start gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)]">
-                      <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-sm font-bold text-rose-400">Sync Error</h4>
-                        <p className="text-sm text-rose-200/80 mt-1">{errorMsg}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
 
                 {stagedRequests.length > 0 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-white">
-                        Staged Records ({selectedStagedIds.size} of {stagedRequests.length} selected)
-                      </h3>
-                    </div>
-
                     <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
-                      <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                      <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                         <table className="w-full text-left text-sm whitespace-nowrap">
-                          <thead className="bg-slate-900 sticky top-0 z-10 border-b border-slate-800 shadow-sm">
-                            <tr>
-                              <th className="px-4 py-3 font-medium text-slate-400 w-10">
+                          <thead className="border-b border-slate-800/60 text-[10px] uppercase tracking-wider text-slate-500 font-bold bg-slate-900/50">
+                            <tr className="border-b border-slate-800/60 text-[10px] uppercase tracking-wider text-slate-500 font-bold bg-slate-900/50">
+                              <th className="p-3 w-10">
                                 <input 
                                   type="checkbox" 
-                                  checked={selectedStagedIds.size === stagedRequests.length}
+                                  checked={selectedStagedIds.size === stagedRequests.length && stagedRequests.length > 0}
                                   onChange={toggleAll}
-                                  className="rounded bg-slate-800 border-slate-700 text-emerald-500 focus:ring-emerald-500"
+                                  className="rounded border-slate-700 text-fuchsia-500 focus:ring-fuchsia-500 bg-slate-950 w-3.5 h-3.5"
                                 />
                               </th>
-                              <th className="px-4 py-3 font-medium text-slate-400">Officer Name</th>
-                              <th className="px-4 py-3 font-medium text-slate-400 whitespace-nowrap">Start Date</th>
-                              <th className="px-4 py-3 font-medium text-slate-400 whitespace-nowrap">End Date</th>
-                              <th className="px-4 py-3 font-medium text-slate-400">Reason</th>
-                              <th className="px-4 py-3 font-medium text-slate-400">Status</th>
+                              <th className="p-3">Status</th>
+                              <th className="p-3">Officer</th>
+                              <th className="p-3">Start Date</th>
+                              <th className="p-3">End Date</th>
+                              <th className="p-3 hidden md:table-cell">Reason</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-800/50">
+                          <tbody className="divide-y divide-slate-800/40 text-sm">
                             {stagedRequests.map((req, idx) => (
-                              <tr key={idx} className="hover:bg-slate-900/50 transition-colors">
-                                <td className="px-4 py-2">
+                              <tr key={idx} className={`hover:bg-slate-800/30 transition-colors ${!selectedStagedIds.has(idx) ? 'opacity-40' : ''}`}>
+                                <td className="p-3">
                                   <input 
-                                    type="checkbox"
+                                    type="checkbox" 
                                     checked={selectedStagedIds.has(idx)}
                                     onChange={() => toggleOne(idx)}
-                                    className="rounded bg-slate-800 border-slate-700 text-emerald-500 focus:ring-emerald-500"
+                                    className="rounded border-slate-700 text-fuchsia-500 focus:ring-fuchsia-500 bg-slate-950 w-3.5 h-3.5"
                                   />
                                 </td>
-                                <td className="px-4 py-2 text-white font-medium">{req.officer_name}</td>
-                                <td className="px-4 py-2 text-slate-300 whitespace-nowrap">{req.start_date}</td>
-                                <td className="px-4 py-2 text-slate-300 whitespace-nowrap">{req.end_date || <span className="text-slate-500 italic">N/A</span>}</td>
-                                <td className="px-4 py-2 text-slate-400 truncate max-w-[150px]" title={req.reason}>{req.reason}</td>
-                                <td className="px-4 py-2">
-                                  <span className="px-2 py-0.5 rounded text-xs border bg-slate-800 border-slate-700 text-slate-300 font-medium shadow-sm">
+                                <td className="p-3">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${req.status === 'Ended' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
                                     {req.status}
                                   </span>
                                 </td>
+                                <td className="p-3 font-medium text-slate-200">{req.officer_name}</td>
+                                <td className="p-3 text-slate-400 font-mono">{req.start_date}</td>
+                                <td className="p-3 text-slate-400 font-mono">{req.end_date || <span className="text-slate-600">N/A</span>}</td>
+                                <td className="p-3 text-slate-500 hidden md:table-cell truncate max-w-[200px]">{req.reason}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -576,37 +576,34 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4">
+                    <div className="flex justify-end">
                       <button
                         onClick={handleCommitSync}
                         disabled={isCommitting || selectedStagedIds.size === 0}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold shadow-lg shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-lg shadow-emerald-900/20 disabled:opacity-50 transition-colors text-sm uppercase tracking-wider"
                       >
                         {isCommitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        {isCommitting ? "Importing..." : `Import ${selectedStagedIds.size} Records`}
+                        {isCommitting ? "Importing..." : `Commit ${selectedStagedIds.size} Records`}
                       </button>
                     </div>
                   </div>
                 )}
-
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Content (Saved Syncs Sidebar) */}
-        <div className="w-80 bg-slate-950 flex flex-col border-l border-slate-800/60 relative overflow-hidden shrink-0">
-          <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+        {/* Right Side: Saved Syncs */}
+        <div className="w-full md:w-[350px] bg-slate-950/80 border-l border-slate-800/60 p-6 flex flex-col relative overflow-hidden shrink-0">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
             <LinkIcon className="w-40 h-40" />
           </div>
           
-          <div className="p-6 pb-2">
-            <h3 className="text-sm font-bold tracking-widest uppercase text-slate-300 flex items-center gap-2 z-10 relative">
-              <LinkIcon className="w-4 h-4 text-primary" /> Saved Syncs
-            </h3>
-          </div>
+          <h3 className="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-4 flex items-center gap-2 z-10">
+            <LinkIcon className="w-3.5 h-3.5 text-fuchsia-400" /> Saved Profiles
+          </h3>
           
-          <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-3 z-10 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-3 z-10 custom-scrollbar pr-2">
             {savedSyncs.length === 0 ? (
               <div className="text-center py-10 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
                 <p className="text-xs text-slate-500 italic">No saved sync configurations.</p>
@@ -675,8 +672,7 @@ export default function LOASyncModal({ isOpen, onClose, onSuccess }: LOASyncModa
             )}
           </div>
         </div>
-
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

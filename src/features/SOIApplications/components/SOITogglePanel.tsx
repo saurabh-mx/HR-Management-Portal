@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Shield, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { logAuditAction } from "@/lib/auditLogger";
@@ -118,22 +118,18 @@ export default function SOITogglePanel() {
 
   if (isLoading) {
     return (
-      <Card className="glass-panel overflow-hidden">
-        <CardContent className="flex items-center justify-center p-6 text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading settings...
-        </CardContent>
-      </Card>
+      <DialogContent className="max-w-md p-6 bg-slate-950 border border-slate-800/60 text-slate-400 flex items-center justify-center">
+        <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading settings...
+      </DialogContent>
     );
   }
 
   if (errorMsg) {
     return (
-      <Card className="glass-panel border-rose-500/30 overflow-hidden">
-        <CardContent className="p-6 text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-5 h-5" />
-          {errorMsg}
-        </CardContent>
-      </Card>
+      <DialogContent className="max-w-md p-6 bg-slate-950 border border-rose-500/30 text-rose-400 flex items-center gap-2">
+        <AlertCircle className="w-5 h-5" />
+        {errorMsg}
+      </DialogContent>
     );
   }
 
@@ -143,20 +139,25 @@ export default function SOITogglePanel() {
   }
 
   return (
-    <Card className="glass-panel overflow-hidden relative group transition-all duration-300">
-      <CardHeader className="border-b border-slate-800/60 bg-slate-900/40 pb-4">
-        <CardTitle className="text-lg font-medium flex items-center justify-between">
-          <div className="flex items-center gap-2 text-emerald-400">
-            <Shield className="w-5 h-5" /> SOI Access Controls
-          </div>
-        </CardTitle>
-        <p className="text-xs text-slate-400">Manage whether your department is accepting new SOI applications.</p>
-      </CardHeader>
+    <DialogContent className="max-w-md p-0 bg-slate-950 border border-slate-800/60 text-slate-200 overflow-hidden rounded-xl shadow-2xl flex flex-col">
+      <DialogHeader className="hidden">
+        <DialogTitle>SOI Access Controls</DialogTitle>
+      </DialogHeader>
       
-      <CardContent className="p-0">
-        <div className="divide-y divide-slate-800/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+      {/* Header */}
+      <div className="p-6 pb-4 border-b border-slate-800/60 bg-slate-950/40 shrink-0">
+        <h2 className="text-lg font-bold text-white flex items-center gap-3 tracking-wider uppercase">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+            <Shield className="w-5 h-5 text-emerald-400" />
+          </div>
+          SOI Controls
+        </h2>
+        <p className="text-[11px] text-slate-500 font-medium ml-[52px] -mt-1">Manage SOI application open/close status.</p>
+      </div>
+
+      <div className="p-0 flex-1 overflow-y-auto max-h-[60vh] custom-scrollbar bg-slate-950/40">
+        <div className="divide-y divide-slate-800/50">
           {settings.filter(setting => authorizedDepartments.has(setting.department)).map((setting) => {
-            const canToggle = true; // since we filtered, they can always toggle what they see
             return (
               <div key={setting.department} className={`p-4 flex items-center justify-between transition-colors hover:bg-slate-800/40`}>
                 <div>
@@ -172,16 +173,15 @@ export default function SOITogglePanel() {
                   </span>
                   
                   <button
-                    disabled={!canToggle}
                     onClick={() => handleToggle(setting.department, setting.is_open)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center shrink-0 ${
                       setting.is_open ? 'bg-emerald-500' : 'bg-slate-700'
-                    } ${!canToggle && 'cursor-not-allowed opacity-50'}`}
+                    }`}
                   >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    <span 
+                      className={`block w-4 h-4 rounded-full bg-white transition-transform ${
                         setting.is_open ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      }`} 
                     />
                   </button>
                 </div>
@@ -189,7 +189,7 @@ export default function SOITogglePanel() {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </DialogContent>
   );
 }
