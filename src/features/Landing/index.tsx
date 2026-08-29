@@ -46,15 +46,13 @@ export default function Landing() {
   
   // Background images for hero
   const [bgImages, setBgImages] = useState<string[]>([
-    '/landing-bg-1.jpg',
-    '/landing-bg-2.jpg',
-    '/landing-bg-3.jpg',
-    '/landing-bg-4.jpg'
+    'https://images.unsplash.com/photo-1453873531674-2151bcd01707?q=80&w=2573&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=2689&auto=format&fit=crop'
   ]);
   const [bgIndex, setBgIndex] = useState(0);
 
   // About images for Features section
-  const [aboutImages, setAboutImages] = useState<string[]>(["/landing-bg-4.jpg"]);
+  const [aboutImages, setAboutImages] = useState<string[]>(["https://images.unsplash.com/photo-1555848962-6e79363ec58f?q=80&w=2653&auto=format&fit=crop"]);
   const [aboutImgIdx, setAboutImgIdx] = useState(0);
 
   // Drag/Swipe state for hero background
@@ -108,7 +106,7 @@ export default function Landing() {
       try {
         const [galleryData, bgData, aboutData] = await Promise.all([
           imageService.getActiveImages('gallery'),
-          imageService.getActiveImages('background'),
+          imageService.getActiveImages('landing_bg'), // Use dedicated landing_bg type
           imageService.getActiveImages('about')
         ]);
         if (galleryData && galleryData.length > 0) {

@@ -197,6 +197,7 @@ export default function ImageManagementPanel() {
   // Group images by type
   const galleryImages = images.filter(img => img.type === 'gallery');
   const backgroundImages = images.filter(img => img.type === 'background');
+  const landingBgImages = images.filter(img => img.type === 'landing_bg');
   const aboutImages = images.filter(img => img.type === 'about');
 
   if (loading) {
@@ -224,7 +225,7 @@ export default function ImageManagementPanel() {
         </button>
       </div>
 
-      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 md:grid-cols-2 gap-6">
         {/* Gallery Section */}
         <div className="bg-slate-950/40 border border-slate-800 p-6 rounded-xl shadow-lg">
             <h3 className="text-lg font-medium text-slate-300 mb-6 flex items-center gap-2">
@@ -244,14 +245,33 @@ export default function ImageManagementPanel() {
             )}
         </div>
 
-        {/* Background Section */}
+        {/* Landing Background Section */}
+        <div className="bg-slate-950/40 border border-slate-800 p-6 rounded-xl shadow-lg">
+            <h3 className="text-lg font-medium text-slate-300 mb-6 flex items-center gap-2">
+                <ImageIcon size={18} className="text-emerald-500" /> Landing Backgrounds
+            </h3>
+            
+            {landingBgImages.length === 0 ? (
+                <div className="text-slate-600 text-center py-8 border border-dashed border-slate-800 rounded">No landing backgrounds found</div>
+            ) : (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={landingBgImages.map(img => img.id)} strategy={verticalListSortingStrategy}>
+                        {landingBgImages.map(image => (
+                        <SortableItem key={image.id} image={image} onDelete={handleDelete} onToggleActive={handleToggleActive} />
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            )}
+        </div>
+
+        {/* App Background Section */}
         <div className="bg-slate-950/40 border border-slate-800 p-6 rounded-xl shadow-lg">
             <h3 className="text-lg font-medium text-slate-300 mb-6 flex items-center gap-2">
                 <ImageIcon size={18} className="text-blue-500" /> App Backgrounds
             </h3>
             
             {backgroundImages.length === 0 ? (
-                <div className="text-slate-600 text-center py-8 border border-dashed border-slate-800 rounded">No background images found</div>
+                <div className="text-slate-600 text-center py-8 border border-dashed border-slate-800 rounded">No app background images found</div>
             ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={backgroundImages.map(img => img.id)} strategy={verticalListSortingStrategy}>
@@ -315,6 +335,7 @@ export default function ImageManagementPanel() {
                   className="w-full bg-slate-900/50 border border-slate-700/50 text-slate-200 rounded-lg p-3.5 appearance-none outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-inner hover:bg-slate-900/80"
                 >
                   <option value="gallery" className="bg-slate-900 text-slate-200">Landing Gallery Sequence</option>
+                  <option value="landing_bg" className="bg-slate-900 text-slate-200">Landing Backgrounds</option>
                   <option value="background" className="bg-slate-900 text-slate-200">App Backgrounds</option>
                   <option value="about" className="bg-slate-900 text-slate-200">About Images</option>
                 </select>
