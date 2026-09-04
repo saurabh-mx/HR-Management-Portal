@@ -45,6 +45,25 @@ export default function Profile() {
   const [subDeptStrikes, setSubDeptStrikes] = useState<any[]>([]);
   const [isBoxFlipped, setIsBoxFlipped] = useState(false);
 
+  const [streamUrl, setStreamUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [isSavingStreamUrl, setIsSavingStreamUrl] = useState(false);
+
+  useEffect(() => {
+    async function fetchStreamUrl() {
+      if (!profile?.id) return;
+      const { data } = await supabase
+        .from('bodycam_streams')
+        .select('stream_url, youtube_url')
+        .eq('officer_id', profile.id)
+        .maybeSingle();
+      
+      if (data?.stream_url) setStreamUrl(data.stream_url);
+      if (data?.youtube_url) setYoutubeUrl(data.youtube_url);
+    }
+    fetchStreamUrl();
+  }, [profile]);
+
   useEffect(() => {
     async function fetchUserStrikes() {
       if (!profile?.name) return;
@@ -246,6 +265,30 @@ ${profile.notes || 'No service notes on file.'}
       toast.success("Profile picture removed");
     }
     setIsSavingAvatar(false);
+  };
+
+  const handleSaveStreamUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile?.id) return toast.error("Profile not found");
+
+    setIsSavingStreamUrl(true);
+    const { error } = await supabase
+      .from('bodycam_streams')
+      .upsert({ 
+        officer_id: profile.id, 
+        badge_number: profile.badge_number,
+        stream_url: streamUrl,
+        youtube_url: youtubeUrl,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'officer_id' });
+
+    if (error) {
+      toast.error("Failed to save stream URL: " + error.message);
+    } else {
+      toast.success("Stream link updated successfully!");
+      logAuditAction("PROFILE_UPDATED", profile.name || "Unknown", "Updated stream URL", profile.name);
+    }
+    setIsSavingStreamUrl(false);
   };
 
   if (!profile) return <div className="p-8 text-slate-400 animate-pulse flex justify-center items-center h-full">Loading Profile...</div>;
@@ -497,6 +540,63 @@ ${profile.notes || 'No service notes on file.'}
                   {isUpdatingPassword ? "Updating Keys..." : "Change Password"}
                 </button>
               </form>
+            </div>
+
+            {/* BODYCAM URL BOX */}
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 shadow-xl">
+              <h3 className="text-xs font-bold tracking-widest uppercase text-slate-300 mb-6 flex items-center gap-2">
+                <Camera className="w-4 h-4 text-primary" /> Bodycam & Streaming
+              </h3>
+              
+              <form onSubmit={handleSaveStreamUrl} className="space-y-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Kick / Twitch Link</label>
+                    <input
+                      type="url"
+                      value={streamUrl}
+                      onChange={(e) => setStreamUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-600"
+                      placeholder="https://kick.com/username"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">YouTube Link</label>
+                    <input
+                      type="url"
+                      value={youtubeUrl}
+                      onChange={(e) => setYoutubeUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-600"
+                      placeholder="https://youtube.com/@username"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSavingStreamUrl}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-colors disabled:opacity-50"
+                >
+                  {isSavingStreamUrl ? "Saving..." : "Save Link"}
+                </button>
+              </form>
+
+              <div className="pt-6 border-t border-slate-800/60 space-y-2">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">OBS Bodycam URL</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${window.location.origin}/bodycam/${profile.badge_number}`}
+                    className="w-full rounded-xl border border-slate-800 bg-black/40 px-3 py-2 text-xs text-slate-400 cursor-copy"
+                    onClick={(e) => {
+                      (e.target as HTMLInputElement).select();
+                      navigator.clipboard.writeText(`${window.location.origin}/bodycam/${profile.badge_number}`);
+                      toast.success("OBS URL copied to clipboard");
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-2">Add this URL as a <strong className="text-slate-300">Browser Source</strong> in OBS for your Axon bodycam overlay. Width: 1920, Height: 1080.</p>
+              </div>
             </div>
           </div>
 

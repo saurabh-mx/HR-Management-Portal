@@ -17,6 +17,7 @@ import Profile from "@/features/Profile";
 import AuditLogs from "@/features/AdminPanel/AuditLogs";
 import SubDepartmentFeed from "@/features/SubDepartment";
 import IdentityCard from "@/features/Identity";
+import BodycamOverlay from "@/features/Bodycam";
 import ForcePasswordChange from "@/auth/components/ForcePasswordChange";
 import PendingApprovalScreen from "@/auth/components/PendingApprovalScreen";
 
@@ -63,6 +64,7 @@ export function AppRoutes() {
       <Routes>
         {/* Public route — no auth required */}
         <Route path="/identity/:badge" element={<IdentityCard />} />
+        <Route path="/bodycam/:badge" element={<BodycamOverlay />} />
 
         {/* Protected routes — require session */}
         {!session ? (

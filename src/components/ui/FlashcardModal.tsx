@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Activity, Shield, AlertTriangle, ScanLine } from 'lucide-react';
 import { supabase } from '@/lib/supabase/supabaseClient';
+import { useAuth } from '@/auth/hooks/useAuth';
+import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
 
 export interface EmployeeForCard {
   id: string;
@@ -62,6 +64,10 @@ interface FlashcardModalProps {
 export default function FlashcardModal({ employee, onClose }: FlashcardModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [employeeStrikes, setEmployeeStrikes] = useState({ strikes: 0, warnings: 0, verbals: 0, revoked: 0 });
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
+  const { profile, adminSafeMode } = useAuth();
+  const isAdmin = adminSafeMode || (profile && isHighCommandOrHR(profile));
 
   useEffect(() => {
     async function fetchUserStrikes() {
@@ -98,6 +104,21 @@ export default function FlashcardModal({ employee, onClose }: FlashcardModalProp
     fetchUserStrikes();
   }, [employee]);
 
+  useEffect(() => {
+    async function fetchStreamUrl() {
+      if (!isAdmin || !employee?.id) return;
+      const { data } = await supabase
+        .from('bodycam_streams')
+        .select('stream_url, youtube_url')
+        .eq('officer_id', employee.id)
+        .maybeSingle();
+      
+      if (data?.stream_url) setStreamUrl(data.stream_url);
+      if (data?.youtube_url) setYoutubeUrl(data.youtube_url);
+    }
+    fetchStreamUrl();
+  }, [employee, isAdmin]);
+
   if (!employee) return null;
 
   return (
@@ -113,7 +134,7 @@ export default function FlashcardModal({ employee, onClose }: FlashcardModalProp
           
           {/* FRONT OF CARD - SMART SECURITY BADGE */}
           <div 
-            className="absolute inset-0 w-full h-full rounded-[24px] bg-slate-900 flex flex-col overflow-hidden backface-hidden"
+            className={`absolute inset-0 w-full h-full rounded-[24px] bg-slate-900 flex flex-col overflow-hidden backface-hidden ${isFlipped ? 'pointer-events-none' : 'pointer-events-auto'}`}
             style={{
               boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 20px ${hexToRgba(getDepartmentColor(employee.department || ''), 0.2)}`
             }}
@@ -258,7 +279,7 @@ export default function FlashcardModal({ employee, onClose }: FlashcardModalProp
 
           {/* BACK OF CARD - INTELLIGENCE DOSSIER (BENTO BOX) */}
           <div 
-            className="absolute inset-0 w-full h-full rounded-[24px] bg-slate-950 flex flex-col overflow-hidden backface-hidden rotate-y-180"
+            className={`absolute inset-0 w-full h-full rounded-[24px] bg-slate-950 flex flex-col overflow-hidden backface-hidden rotate-y-180 ${!isFlipped ? 'pointer-events-none' : 'pointer-events-auto'}`}
             style={{
               boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 30px ${hexToRgba(getDepartmentColor(employee.department || ''), 0.15)}`
             }}
@@ -453,6 +474,40 @@ export default function FlashcardModal({ employee, onClose }: FlashcardModalProp
                   </div>
                 </div>
               </div>
+
+              {/* Bodycam Link for Admins/HC */}
+              {isAdmin && (streamUrl || youtubeUrl) && (
+                <div className="mt-4 pb-2 flex flex-col gap-2 relative z-50">
+                  {streamUrl && (
+                    <a
+                      href={streamUrl.startsWith('http') ? streamUrl : `https://${streamUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className="w-full flex items-center justify-center gap-2 bg-green-600/20 hover:bg-green-600/40 text-green-400 border border-green-500/30 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all shadow-[0_0_15px_rgba(34,197,94,0.2)] hover:shadow-[0_0_25px_rgba(34,197,94,0.4)]"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      Watch LIVE Bodycam (Kick)
+                    </a>
+                  )}
+                  {youtubeUrl && (
+                    <a
+                      href={youtubeUrl.startsWith('http') ? youtubeUrl : `https://${youtubeUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className="w-full flex items-center justify-center gap-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 px-4 py-3 rounded-xl font-bold tracking-widest text-[10px] uppercase transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.4)]"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      Watch LIVE Bodycam (YT)
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
