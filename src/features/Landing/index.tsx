@@ -39,6 +39,36 @@ const FALLBACK_IMAGES = [
   '/group-photo.jpg'
 ];
 
+// --- Tilt Card Component ---
+function TiltCard({ children }: { children: ReactNode }) {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setMousePos({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setMousePos({ x: 0, y: 0 });
+  };
+
+  return (
+    <div 
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative h-full rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/5 p-10 transition-all duration-300 hover:border-emerald-500/30 overflow-hidden flex flex-col will-change-transform"
+      style={{
+        transform: `perspective(1000px) rotateX(${mousePos.y * -5}deg) rotateY(${mousePos.x * 5}deg)`,
+        transformStyle: "preserve-3d"
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [communityImgIdx, setCommunityImgIdx] = useState(0);
@@ -89,8 +119,7 @@ export default function Landing() {
     setTouchEnd(null);
   };
 
-  // For mouse tilt effect on cards
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -132,12 +161,7 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, [bgImages.length]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x, y });
-  };
+
 
   const currentImages = galleryImages.length > 0 ? galleryImages : FALLBACK_IMAGES;
   const nextImgIdx2 = (communityImgIdx + 2) % currentImages.length;
@@ -165,8 +189,8 @@ export default function Landing() {
           </div>
         ))}
         {/* Ambient background glows */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/10 rounded-full blur-[120px] mix-blend-screen animate-pulse duration-[8000ms]"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[150px] mix-blend-screen animate-pulse duration-[10000ms] delay-1000"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/10 rounded-full blur-[120px] mix-blend-screen animate-pulse duration-[8000ms] will-change-opacity transform-gpu"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[150px] mix-blend-screen animate-pulse duration-[10000ms] delay-1000 will-change-opacity transform-gpu"></div>
         {/* Faint grid overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxwYXRoIGQ9Ik00MCAwaC00MHY0MGg0MHYtNDB6IiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBoLTQweiIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMCAuNWg0MG0tNDAgMzlINDIwIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIHN0cm9rZS13aWR0aD0iMSIvPgo8cGF0aCBkPSJNLjUgMHY0MG0zOS00MHY0MCIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-30"></div>
       </div>
@@ -267,14 +291,7 @@ export default function Landing() {
               const isCenter = idx === 1;
               return (
                 <Reveal key={idx} delay={`delay-${(idx + 1) * 100}`} className="h-full">
-                  <div 
-                    onMouseMove={handleMouseMove}
-                    className="group relative h-full rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/5 p-10 transition-all duration-300 hover:border-emerald-500/30 overflow-hidden flex flex-col"
-                    style={{
-                      transform: `perspective(1000px) rotateX(${mousePos.y * -5}deg) rotateY(${mousePos.x * 5}deg)`,
-                      transformStyle: "preserve-3d"
-                    }}
-                  >
+                  <TiltCard>
                     {/* Hover Glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none"></div>
                     
@@ -285,7 +302,7 @@ export default function Landing() {
                     <p className="text-sm text-slate-400 leading-relaxed font-light flex-1">
                       {feature.description}
                     </p>
-                  </div>
+                  </TiltCard>
                 </Reveal>
               );
             })}

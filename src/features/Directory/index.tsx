@@ -1,45 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Shield, Search, Edit, Database, CalendarOff, UserMinus } from "lucide-react";
-import { supabase } from '@/lib/supabase/supabaseClient';
+
 import { logAuditAction } from "@/lib/auditLogger";
 import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
 import { StatCard } from '@/features/Dashboard/components/StatCard';
 import { isHighCommandOrHR } from '@/auth/roles/roleMatrix';
 import { useAuth } from '@/auth/hooks/useAuth';
 import FlashcardModal from '@/components/ui/FlashcardModal';
+import { useEmployees, useUpdateEmployee, type Employee } from "@/hooks/useEmployees";
+import { useDebounce } from "@/hooks/useDebounce";
 
-interface Employee {
-  id: string;
-  name: string;
-  badge_number: string;
-  role: string;
-  department: string;
-  discord_tag?: string;
-  status: string;
-  rank?: string;
-  citizen_id?: string;
-  phone_number?: string;
-  department_join_date?: string;
-  duration_in_department?: string;
-  last_promotion_date?: string;
-  days_since_last_promoted?: number;
-  sub_department?: string;
-  titles?: string;
-  notes?: string;
-  cert_fto?: boolean;
-  cert_asd?: boolean;
-  cert_heat?: boolean;
-  cert_swat?: boolean;
-  cert_cid?: boolean;
-  cert_meu?: boolean;
-  cert_k9?: boolean;
-  cert_sop?: boolean;
-  callsign?: string;
-  is_admin?: boolean;
-  avatar_url?: string;
-  led_sub_departments?: string[];
-}
 
 const getDepartmentColor = (dept: string) => {
   switch (dept) {
@@ -60,22 +31,22 @@ const hexToRgba = (hex: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-export const isStatusActive = (s?: string) => {
+const isStatusActive = (s?: string) => {
   const str = (s || '').trim().toLowerCase();
   return str === 'active' || str === 'active duty' || str === 'approved' || str === 'on duty';
 };
 
-export const isStatusInactive = (s?: string) => {
+const isStatusInactive = (s?: string) => {
   const str = (s || '').trim().toLowerCase();
   return str === 'inactive' || str === 'terminated' || str === 'suspended' || str === 'fired' || str === 'resigned' || str === 'banned';
 };
 
-export const isStatusLOA = (s?: string) => {
+const isStatusLOA = (s?: string) => {
   const str = (s || '').trim().toLowerCase();
   return str === 'loa' || str === 'on loa';
 };
 
-const EmployeeRow = ({ employee, onClick, isAdmin, onUpdateLeads }: { employee: Employee, onClick: () => void, isAdmin: boolean, onUpdateLeads: (empId: string, leads: string[]) => void }) => {
+const EmployeeRow = memo(({ employee, onClick, isAdmin, onUpdateLeads }: { employee: Employee, onClick: () => void, isAdmin: boolean, onUpdateLeads: (empId: string, leads: string[]) => void }) => {
   const deptColor = getDepartmentColor(employee.department);
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -160,124 +131,111 @@ const EmployeeRow = ({ employee, onClick, isAdmin, onUpdateLeads }: { employee: 
       )}
     </tr>
   );
-};
+});
 
 export default function EmployeeDirectory() {
   const { profile, adminSafeMode } = useAuth();
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  
+  // React query hooks
+  const { data: rawEmployees = [], isLoading, refetch: refetchEmployees } = useEmployees();
+  const updateEmployee = useUpdateEmployee();
+
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeDepartment, setActiveDepartment] = useState("All");
   const departmentsList = ["All", "SASP", "LSPD", "BCSO", "SAPR", "SASP Academy"];
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  useEffect(() => {
+    // SECURITY CHECK: Verify if the logged-in user is High Command
+    function checkAdminStatus() {
+      if (adminSafeMode || (profile && isHighCommandOrHR(profile))) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    }
     checkAdminStatus();
   }, [profile, adminSafeMode]);
 
-  // SECURITY CHECK: Verify if the logged-in user is High Command
-  function checkAdminStatus() {
-    if (adminSafeMode || (profile && isHighCommandOrHR(profile))) {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
-  }
-
-  async function fetchEmployees() {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*');
+  const employees = useMemo(() => {
+    const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
+    const rankOrder = [
+      ["Chief", "Sheriff", "Game Warden"],
+      ["Asst. Chief", "Colonel", "Asst. Game Warden"],
+      ["Captain", "major", "Lead Ranger"],
+      ["Lieutenant"],
+      ["Head-Sergeant"],
+      ["Sergeant First Class"],
+      ["Sergeant"],
+      ["Corporal"],
+      ["Senior-Officer", "Senior-deputy", "Senior-ranger"],
+      ["Officer First Class", "deputy First Class", "ranger First Class"],
+      ["Officer", "deputy", "ranger"]
+    ];
     
-    if (error) console.error("Error fetching employees:", error);
-    else if (data) {
-      const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
-      const rankOrder = [
-        ["Chief", "Sheriff", "Game Warden"],
-        ["Asst. Chief", "Colonel", "Asst. Game Warden"],
-        ["Captain", "major", "Lead Ranger"],
-        ["Lieutenant"],
-        ["Head-Sergeant"],
-        ["Sergeant First Class"],
-        ["Sergeant"],
-        ["Corporal"],
-        ["Senior-Officer", "Senior-deputy", "Senior-ranger"],
-        ["Officer First Class", "deputy First Class", "ranger First Class"],
-        ["Officer", "deputy", "ranger"]
-      ];
-      
-      const getDeptIndex = (dept?: string) => {
-        if (!dept) return 999;
-        const i = departmentOrder.indexOf(dept);
-        return i === -1 ? 999 : i;
-      };
-      
-      const getRankIndex = (rank?: string) => {
-        if (!rank) return 999;
-        const lowerRank = rank.toLowerCase();
-        for (let i = 0; i < rankOrder.length; i++) {
-          if (rankOrder[i].some(r => r.toLowerCase() === lowerRank)) {
-            return i;
-          }
+    const getDeptIndex = (dept?: string) => {
+      if (!dept) return 999;
+      const i = departmentOrder.indexOf(dept);
+      return i === -1 ? 999 : i;
+    };
+    
+    const getRankIndex = (rank?: string) => {
+      if (!rank) return 999;
+      const lowerRank = rank.toLowerCase();
+      for (let i = 0; i < rankOrder.length; i++) {
+        if (rankOrder[i].some(r => r.toLowerCase() === lowerRank)) {
+          return i;
         }
-        return 999;
-      };
+      }
+      return 999;
+    };
 
-      const sorted = [...data].sort((a, b) => {
-        const aIsStudent = a.role?.toLowerCase() === 'student';
-        const bIsStudent = b.role?.toLowerCase() === 'student';
-        
-        if (aIsStudent && !bIsStudent) return 1;
-        if (!aIsStudent && bIsStudent) return -1;
-
-        const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
-        if (deptDiff !== 0) return deptDiff;
-        
-        const rankDiff = getRankIndex(a.rank) - getRankIndex(b.rank);
-        if (rankDiff !== 0) return rankDiff;
-        
-        return (a.badge_number || "").localeCompare(b.badge_number || "");
-      });
-      setEmployees(sorted);
-    }
-  }
-
-  const handleUpdateLeads = async (empId: string, newLeads: string[]) => {
-    const updatedEmployees = employees.map(e => e.id === empId ? { ...e, led_sub_departments: newLeads } : e);
-    setEmployees(updatedEmployees);
-    
-    if (selectedEmployee?.id === empId) {
-      setSelectedEmployee({ ...selectedEmployee, led_sub_departments: newLeads });
-    }
-
-    const { error } = await supabase
-      .from('employees')
-      .update({ led_sub_departments: newLeads })
-      .eq('id', empId);
+    return [...rawEmployees].sort((a, b) => {
+      const aIsStudent = a.role?.toLowerCase() === 'student';
+      const bIsStudent = b.role?.toLowerCase() === 'student';
       
-    if (error) {
-       alert("Failed to update leads: " + error.message);
-    } else {
-       const emp = updatedEmployees.find(e => e.id === empId);
-       logAuditAction("PERSONNEL_UPDATED", emp?.name || 'Unknown', `Updated Leads to [${newLeads.join(', ')}]`);
-    }
-  };
+      if (aIsStudent && !bIsStudent) return 1;
+      if (!aIsStudent && bIsStudent) return -1;
 
-  const filteredEmployees = employees.filter((emp) => {
-    const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (emp.badge_number && emp.badge_number.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                          (emp.discord_tag && emp.discord_tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                          (emp.status && emp.status.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesDept = activeDepartment === "All" || emp.department === activeDepartment;
-    
-    return matchesSearch && matchesDept;
-  });
+      const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
+      if (deptDiff !== 0) return deptDiff;
+      
+      const rankDiff = getRankIndex(a.rank) - getRankIndex(b.rank);
+      if (rankDiff !== 0) return rankDiff;
+      
+      return (a.badge_number || "").localeCompare(b.badge_number || "");
+    });
+  }, [rawEmployees]);
+
+  const handleUpdateLeads = useCallback(async (empId: string, newLeads: string[]) => {
+    try {
+      await updateEmployee.mutateAsync({ id: empId, led_sub_departments: newLeads });
+      if (selectedEmployee?.id === empId) {
+        setSelectedEmployee(prev => prev ? { ...prev, led_sub_departments: newLeads } : null);
+      }
+      const emp = employees.find(e => e.id === empId);
+      logAuditAction("PERSONNEL_UPDATED", emp?.name || 'Unknown', `Updated Leads to [${newLeads.join(', ')}]`);
+    } catch (error) {
+      alert("Failed to update leads: " + (error as Error).message);
+    }
+  }, [updateEmployee, selectedEmployee, employees]);
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter((emp) => {
+      const q = debouncedSearchQuery.toLowerCase();
+      const matchesSearch = emp.name.toLowerCase().includes(q) || 
+                            (emp.badge_number && emp.badge_number.toLowerCase().includes(q)) ||
+                            (emp.discord_tag && emp.discord_tag.toLowerCase().includes(q)) ||
+                            (emp.status && emp.status.toLowerCase().includes(q));
+      
+      const matchesDept = activeDepartment === "All" || emp.department === activeDepartment;
+      
+      return matchesSearch && matchesDept;
+    });
+  }, [employees, debouncedSearchQuery, activeDepartment]);
 
   const departmentEmployees = activeDepartment === "All" ? employees : employees.filter(e => e.department === activeDepartment);
 
@@ -298,6 +256,11 @@ export default function EmployeeDirectory() {
 
   return (
     <div className="p-8 space-y-8 bg-transparent min-h-full">
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      )}
       
       {/* Sleek Glassmorphic Header */}
       <div className="relative mb-8">
@@ -419,13 +382,13 @@ export default function EmployeeDirectory() {
         </CardContent>
       </Card>
       {/* Flash Card Modal */}
-      <FlashcardModal employee={selectedEmployee as any} onClose={() => setSelectedEmployee(null)} />
+      <FlashcardModal employee={selectedEmployee as Employee} onClose={() => setSelectedEmployee(null)} />
 
       <DataSyncModal 
         isOpen={isSyncModalOpen} 
         onClose={() => setIsSyncModalOpen(false)} 
         onSuccess={() => {
-          fetchEmployees();
+          refetchEmployees();
         }} 
       />
     </div>

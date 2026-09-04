@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 // Unused import removed
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ShieldAlert, ShieldCheck, UserPlus, Users, Trash2, Shield, RefreshCw, Database, Edit2, Plus, Search, KeyRound, ChevronDown, ChevronUp } from "lucide-react";
@@ -23,6 +23,7 @@ import OfficerApprovalPanel from '@/features/AdminPanel/components/OfficerApprov
 import SOITogglePanel from '@/features/SOIApplications/components/SOITogglePanel';
 import { CalendarOff, Download, ImageIcon } from "lucide-react";
 import FlashcardModal from '@/components/ui/FlashcardModal';
+import { useEmployees } from "@/hooks/useEmployees";
 
 interface Employee {
   id: string;
@@ -55,9 +56,17 @@ interface Employee {
 
 export default function AdminPanel() {
   const { profile, adminSafeMode } = useAuth();
+  const { data: rawEmployees = [] } = useEmployees();
+  
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
+
+  useEffect(() => {
+    if (rawEmployees.length > 0) {
+      setEmployees(rawEmployees as Employee[]);
+    }
+  }, [rawEmployees]);
   const [newEmployee, setNewEmployee] = useState({
     name: "",
     badge_number: "",
@@ -101,7 +110,6 @@ export default function AdminPanel() {
   const [editingSyncId, setEditingSyncId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchEmployees();
     fetchPendingApprovalsCount();
     checkAdminAccess();
     loadSavedSyncLinks();
@@ -174,7 +182,6 @@ export default function AdminPanel() {
     if (adminSafeMode) {
       setIsAdmin(true);
       setCurrentUserRole("admin");
-      fetchEmployees();
       return;
     }
 
@@ -183,7 +190,6 @@ export default function AdminPanel() {
       const { count } = await supabase.from('employees').select('*', { count: 'exact', head: true });
       if (count === 0) {
         setIsAdmin(true);
-        fetchEmployees();
       } else {
         setIsAdmin(false);
       }
@@ -194,69 +200,12 @@ export default function AdminPanel() {
     if (profile.is_admin || adminSafeMode || isHC) {
       setIsAdmin(true);
       setCurrentUserRole(profile.role || "");
-      fetchEmployees(); // Only fetch roster if they are authorized
     } else {
       setIsAdmin(false);
     }
   }
 
-  async function fetchEmployees() {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*');
 
-    if (error) console.error("Error fetching roster:", error);
-    else if (data) {
-      const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
-      const rankOrder = [
-        ["Chief", "Sheriff", "Game Warden"],
-        ["Asst. Chief", "Colonel", "Asst. Game Warden"],
-        ["Captain", "major", "Lead Ranger"],
-        ["Lieutenant"],
-        ["Head-Sergeant"],
-        ["Sergeant First Class"],
-        ["Sergeant"],
-        ["Corporal"],
-        ["Senior-Officer", "Senior-deputy", "Senior-ranger"],
-        ["Officer First Class", "deputy First Class", "ranger First Class"],
-        ["Officer", "deputy", "ranger"]
-      ];
-
-      const getDeptIndex = (dept?: string) => {
-        if (!dept) return 999;
-        const i = departmentOrder.indexOf(dept);
-        return i === -1 ? 999 : i;
-      };
-
-      const getRankIndex = (rank?: string) => {
-        if (!rank) return 999;
-        const lowerRank = rank.toLowerCase();
-        for (let i = 0; i < rankOrder.length; i++) {
-          if (rankOrder[i].some(r => r.toLowerCase() === lowerRank)) {
-            return i;
-          }
-        }
-        return 999;
-      };
-
-      const sorted = [...data].sort((a, b) => {
-        const aIsStudent = a.role?.toLowerCase() === 'student';
-        const bIsStudent = b.role?.toLowerCase() === 'student';
-        
-        if (aIsStudent && !bIsStudent) return 1;
-        if (!aIsStudent && bIsStudent) return -1;
-
-        const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
-        if (deptDiff !== 0) return deptDiff;
-
-        const rankDiff = getRankIndex(a.rank) - getRankIndex(b.rank);
-        if (rankDiff !== 0) return rankDiff;
-
-        return (a.badge_number || "").localeCompare(b.badge_number || "");
-      });
-      setEmployees(sorted);
-    }
-  }
 
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1021,7 +970,7 @@ export default function AdminPanel() {
         </DialogContent>
       </Dialog>
 
-      <FlashcardModal employee={selectedEmployee as any} onClose={() => setSelectedEmployee(null)} />
+      <FlashcardModal employee={selectedEmployee as Employee} onClose={() => setSelectedEmployee(null)} />
 
       {/* ─── IMAGE MANAGEMENT MODAL ─── */}
       <Dialog open={showImageManagementModal} onOpenChange={setShowImageManagementModal}>

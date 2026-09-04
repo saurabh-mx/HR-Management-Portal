@@ -130,7 +130,7 @@ export default function FlashcardModal({ employee, onClose }: FlashcardModalProp
         className="animate-toss relative w-full max-w-[380px] h-[640px] shrink-0 cursor-pointer group/card my-auto"
         onClick={(e) => { e.stopPropagation(); setIsFlipped(!isFlipped); }}
       >
-        <div className={`w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] preserve-3d shadow-2xl ${isFlipped ? 'rotate-y-180' : ''}`}>
+        <div className={`w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] preserve-3d shadow-2xl will-change-transform ${isFlipped ? 'rotate-y-180' : ''}`}>
           
           {/* FRONT OF CARD - SMART SECURITY BADGE */}
           <div 
