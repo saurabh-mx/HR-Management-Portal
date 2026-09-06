@@ -8,17 +8,17 @@ const DocumentButton = ({ doc, isActive, onSelect, index, deptColor, isSidebarCo
     <button
       onClick={() => onSelect(doc)}
       title={isSidebarCollapsed ? doc.title : undefined}
-      className={`group flex w-full items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} rounded-xl px-3 py-3 text-xs font-medium transition-all duration-500 relative overflow-hidden outline-none ${isActive ? 'scale-[1.02] ml-1' : 'hover:scale-[1.03] hover:ml-1'}`}
+      className={`group flex w-full items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} rounded-xl px-3 py-3 text-xs font-medium transition-[transform,margin,background-color,border-color,box-shadow] duration-300 relative overflow-hidden outline-none ${isActive ? 'scale-[1.02] ml-1' : 'hover:scale-[1.03] hover:ml-1'}`}
       style={{
-        animation: `slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
-        animationDelay: `${index * 0.05}s`,
+        animation: `slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+        animationDelay: `${index * 0.03}s`,
         opacity: 0,
         backgroundColor: isActive ? hexToRgba(deptColor, 0.15) : 'rgba(15, 23, 42, 0.4)',
-        backdropFilter: 'blur(12px)',
         border: `1px solid ${isActive ? hexToRgba(deptColor, 0.5) : 'rgba(255,255,255,0.03)'}`,
         boxShadow: isActive
           ? `0 10px 30px -10px ${hexToRgba(deptColor, 0.4)}, inset 0 0 15px ${hexToRgba(deptColor, 0.15)}`
           : `0 4px 15px -10px rgba(0,0,0,0.5)`,
+        willChange: 'transform, opacity'
       }}
     >
       {/* Animated background gradient on hover */}
@@ -82,7 +82,7 @@ export default function DocumentsDashboard() {
   const [activeDoc, setActiveDoc] = useState(documents[0]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   // Use department color based on user's department, fallback to cyan
   const theme = {
@@ -167,9 +167,17 @@ export default function DocumentsDashboard() {
       
       <div className="mx-auto flex h-[85vh] w-full max-w-[1500px] gap-8 relative z-10">
         
+        {/* Mobile Backdrop */}
+        {!isSidebarCollapsed && (
+          <div 
+            className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity animate-fadeSlideIn"
+            onClick={() => setIsSidebarCollapsed(true)}
+          />
+        )}
+
         {/* LEFT SIDEBAR: CONTENTS MENU */}
         <div 
-          className={`flex flex-col rounded-3xl border backdrop-blur-xl shrink-0 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.7)] relative overflow-hidden group/sidebar transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}
+          className={`flex flex-col rounded-3xl border backdrop-blur-xl shrink-0 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.7)] absolute md:relative z-50 h-full overflow-hidden group/sidebar transition-[transform,width,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSidebarCollapsed ? '-translate-x-[110%] md:translate-x-0 md:w-20' : 'translate-x-0 w-[85vw] max-w-[320px] md:w-72'}`}
           style={{ 
             borderColor: hexToRgba(theme.hex, 0.15),
             background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.95) 100%)' 
@@ -246,11 +254,12 @@ export default function DocumentsDashboard() {
 
         {/* RIGHT SIDE: DOCUMENT VIEWER */}
         <div 
-          className="flex flex-1 flex-col rounded-3xl border backdrop-blur-xl shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden transition-all duration-500 bg-[#020617]/60"
+          className="flex flex-1 flex-col rounded-3xl border backdrop-blur-xl shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden transition-[opacity,transform] duration-300 ease-out bg-[#020617]/60"
           style={{ 
             borderColor: hexToRgba(theme.hex, 0.15),
-            transform: isAnimating ? 'scale(0.98)' : 'scale(1)',
-            opacity: isAnimating ? 0.8 : 1
+            transform: isAnimating ? 'scale(0.99)' : 'scale(1)',
+            opacity: isAnimating ? 0.6 : 1,
+            willChange: 'transform, opacity'
           }}
         >
           {activeDoc.sections ? (
@@ -263,6 +272,12 @@ export default function DocumentsDashboard() {
                 
                 <div className={`relative z-10 transition-all duration-700 ${isAnimating ? 'opacity-0 -translate-y-8 blur-md' : 'opacity-100 translate-y-0 blur-0'}`}>
                   <div className="flex items-center gap-4 mb-4">
+                    <button 
+                      onClick={() => setIsSidebarCollapsed(false)}
+                      className="md:hidden p-2 -ml-2 rounded-lg bg-slate-800/50 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                    >
+                      <Menu className="w-5 h-5" />
+                    </button>
                     <span className="px-3 py-1 rounded-md text-[10px] font-black tracking-[0.2em] uppercase border shadow-sm" style={{ color: theme.hex, borderColor: hexToRgba(theme.hex, 0.3), backgroundColor: hexToRgba(theme.hex, 0.1) }}>
                       {activeDoc.id === 'sop' ? 'INTERNAL' : 'EXTERNAL'} ACCESS
                     </span>
@@ -315,12 +330,9 @@ export default function DocumentsDashboard() {
                             <div className="absolute left-0 top-1 bottom-1 w-1 rounded-full transition-all duration-500 group-hover:w-1.5" style={{ backgroundColor: hexToRgba(section.color || theme.hex, 0.8), boxShadow: `0 0 10px ${hexToRgba(section.color || theme.hex, 0.5)}` }}></div>
                             <div className="flex items-center gap-3 flex-wrap">
                               <h3 
-                                className="text-xl md:text-2xl font-black tracking-tight drop-shadow-md transition-all duration-500 hover:scale-[1.01]"
+                                className="text-xl md:text-2xl font-black tracking-tight transition-transform duration-300 hover:scale-[1.01] bg-clip-text text-transparent"
                                 style={{ 
-                                  background: `linear-gradient(135deg, #ffffff 0%, ${hexToRgba(section.color || theme.hex, 0.7)} 100%)`,
-                                  WebkitBackgroundClip: 'text',
-                                  WebkitTextFillColor: 'transparent',
-                                  filter: `drop-shadow(0 0 8px ${hexToRgba(section.color || theme.hex, 0.3)})`
+                                  backgroundImage: `linear-gradient(135deg, #ffffff 0%, ${hexToRgba(section.color || theme.hex, 0.7)} 100%)`
                                 }}
                               >
                                 {section.title}
@@ -358,6 +370,12 @@ export default function DocumentsDashboard() {
                 
                 <div className={`relative z-10 transition-all duration-700 ${isAnimating ? 'opacity-0 -translate-y-8 blur-md' : 'opacity-100 translate-y-0 blur-0'}`}>
                   <div className="flex items-center gap-4 mb-4">
+                    <button 
+                      onClick={() => setIsSidebarCollapsed(false)}
+                      className="md:hidden p-2 -ml-2 rounded-lg bg-slate-800/50 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                    >
+                      <Menu className="w-5 h-5" />
+                    </button>
                     <span className="px-3 py-1 rounded-md text-[10px] font-black tracking-[0.2em] uppercase border shadow-sm" style={{ color: theme.hex, borderColor: hexToRgba(theme.hex, 0.3), backgroundColor: hexToRgba(theme.hex, 0.1) }}>
                       {activeDoc.id === 'sop' ? 'INTERNAL' : 'EXTERNAL'} ACCESS
                     </span>
@@ -401,8 +419,8 @@ export default function DocumentsDashboard() {
 
               {/* Iframe Content */}
               <div className="flex-1 w-full relative p-6">
-                <div className={`w-full h-full rounded-2xl overflow-hidden border shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-slate-900 transition-all duration-700 ease-out ${isAnimating ? 'opacity-0 scale-[0.98] translate-y-4' : 'opacity-100 scale-100 translate-y-0 delay-200'}`}
-                     style={{ borderColor: hexToRgba(theme.hex, 0.3) }}>
+                <div className={`w-full h-full rounded-2xl overflow-hidden border shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-slate-900 transition-[opacity,transform] duration-300 ease-out ${isAnimating ? 'opacity-0 scale-[0.99] translate-y-2' : 'opacity-100 scale-100 translate-y-0 delay-100'}`}
+                     style={{ borderColor: hexToRgba(theme.hex, 0.3), willChange: 'transform, opacity' }}>
                   <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-20 mix-blend-overlay"></div>
                   <iframe
                     src={activeDoc.url}

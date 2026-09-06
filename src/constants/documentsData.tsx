@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Book, ShieldAlert, FileText, Zap, AlertTriangle, Scale, CheckCircle2, XCircle, Map as MapIcon, Crosshair } from 'lucide-react';
 import { PenalCodeComponent } from '@/features/Documents/components/PenalCodeComponent';
+import { UniformGuideComponent } from '@/features/Documents/components/UniformGuideComponent';
+import { RankUniformDetailsComponent } from '@/features/Documents/components/RankUniformDetailsComponent';
+import { SergeantsAboveComponent } from '@/features/Documents/components/SergeantsAboveComponent';
+import { StateImpoundSOPComponent } from '@/features/Documents/components/StateImpoundSOPComponent';
+import { ResponseCodesComponent } from '@/features/Documents/components/ResponseCodesComponent';
+import { PursuitCodesComponent } from '@/features/Documents/components/PursuitCodesComponent';
 
 export const hexToRgba = (hex: string, alpha: number) => {
   if (!hex || hex.length !== 7) return `rgba(255, 255, 255, ${alpha})`;
@@ -248,70 +254,13 @@ export const documents = [
         badge: 'RESPONSE CODES',
         title: 'Response Codes & Meanings',
         color: '#f59e0b',
-        content: (
-          <div className="p-4 sm:p-8 pt-8 space-y-8 text-sm  mt-2 relative">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { code: 'Code 1', desc: 'Routine response. Non-emergency. Obey all traffic laws.', color: '#3b82f6' },
-                { code: 'Code 2', desc: 'Urgent response. Lights only. No sirens. Proceed with caution.', color: '#eab308' },
-                { code: 'Code 3', desc: 'Emergency response. Lights and sirens. Priority dispatch.', color: '#ef4444' },
-                { code: 'Code 4', desc: 'Situation resolved. No further units required.', color: '#10b981' },
-                { code: 'Code 5', desc: 'Felony traffic stop. High risk.', color: '#f97316' },
-                { code: 'Code 77', desc: 'Possible ambush. Use extreme caution.', color: '#8b5cf6' },
-                { code: 'Code 100', desc: 'Barricade situation or units holding position.', color: '#64748b' },
-              ].map((item, i) => (
-                <div 
-                  key={i} 
-                  className="animate-fadeSlideIn opacity-0 relative overflow-hidden flex flex-col gap-2 p-5 rounded-xl border border-white/5 bg-gradient-to-br from-slate-900/40 to-slate-950/40 backdrop-blur-sm hover:scale-[1.03] hover:-translate-y-1 transition-all duration-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_4px_15px_-5px_rgba(0,0,0,0.5)] group cursor-default" 
-                  style={{ '--hover-color': item.color, animationDelay: `${i * 100}ms` } as React.CSSProperties}
-                >
-                  {/* Hover glow */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" style={{ background: `linear-gradient(135deg, ${item.color}, transparent)` }}></div>
-                  {/* Top accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}` }}></div>
-                  
-                  <div className="flex items-center gap-3 relative z-10">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}` }}></div>
-                    <div className="font-black text-lg tracking-widest drop-shadow-sm group-hover:drop-shadow-[0_0_8px_currentColor]" style={{ color: item.color }}>{item.code}</div>
-                  </div>
-                  <div className="text-slate-300/90 font-medium leading-relaxed relative z-10 mt-1">{item.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
+        content: <ResponseCodesComponent />
       },
       {
         badge: 'PURSUIT',
-        title: 'Pursuit Codes (Condition 1, 2, 3)',
+        title: 'Pursuit Codes',
         color: '#ef4444',
-        content: (
-          <div className="p-4 sm:p-8 pt-8 space-y-10 text-sm  mt-2 relative">
-            <div className="space-y-4">
-              {[
-                { cond: 'Condition 1', desc: 'Minor traffic infractions, non-violent fleeing. Max 2 units.', color: '#3b82f6' },
-                { cond: 'Condition 2', desc: 'Felony evasion, stolen vehicle, reckless driving. Max 4 units. Air-1 authorized.', color: '#f59e0b' },
-                { cond: 'Condition 3', desc: 'Violent felonies, shots fired, immediate threat to life. Max 6 units. Air-1 and Interceptor authorized.', color: '#ef4444' }
-              ].map((item, i) => (
-                <div 
-                  key={i} 
-                  className="animate-fadeSlideIn opacity-0 relative overflow-hidden flex flex-col sm:flex-row gap-5 sm:items-center p-6 rounded-2xl border border-white/5 bg-slate-900/30 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-300 group"
-                  style={{ animationDelay: `${i * 150}ms` }}
-                >
-                  <div className="absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 group-hover:w-2" style={{ backgroundColor: item.color, boxShadow: `0 0 15px ${item.color}` }}></div>
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `linear-gradient(90deg, ${hexToRgba(item.color, 0.1)}, transparent)` }}></div>
-                  
-                  <div className="px-5 py-2.5 rounded-xl font-black tracking-widest text-xs uppercase shadow-inner relative z-10 border" style={{ backgroundColor: hexToRgba(item.color, 0.1), color: item.color, borderColor: hexToRgba(item.color, 0.2) }}>
-                    {item.cond}
-                  </div>
-                  <div className="text-slate-200 font-medium flex-1 leading-relaxed relative z-10 text-[15px]">
-                    {item.desc}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
+        content: <PursuitCodesComponent />
       },
       {
         badge: 'RIGHTS',
@@ -324,7 +273,7 @@ export const documents = [
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,_var(--tw-gradient-stops))] from-[#8b5cf6]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               
               <p className="text-xl md:text-2xl font-medium text-slate-200 leading-loose italic relative z-10 pl-4 border-l-2 border-white/10 ml-2">
-                "You have the right to remain silent. Anything you say can and will be used against you in a court of law. You have the right to an attorney. If you cannot afford an attorney, one will be provided for you. Do you understand these rights as I have read them to you?"
+                "You have the right to remain silent, anything you do or say will be used against you in the court of law. You have the right to an attorney. If you cannot afford one, one will be provided to you. Do you understand these rights? With these rights in mind, do you wish to speak to me or any other LEO?"
               </p>
             </div>
             <div className="space-y-3">
@@ -668,7 +617,45 @@ export const documents = [
     description: 'San Andreas State Police — Standardized Uniform and Appearance Regulations.',
     icon: <ShieldAlert className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1WQFtopQVk7K1QxLjvxB6z20EgitXSJVKxNrv7mAt18A/edit',
-    original: 'https://docs.google.com/document/d/1WQFtopQVk7K1QxLjvxB6z20EgitXSJVKxNrv7mAt18A/view'
+    original: 'https://docs.google.com/document/d/1WQFtopQVk7K1QxLjvxB6z20EgitXSJVKxNrv7mAt18A/view',
+    sections: [
+      {
+        badge: 'UNIFORM',
+        title: 'Uniform Guide',
+        color: '#3b82f6',
+        content: <UniformGuideComponent />
+      },
+      {
+        badge: 'OFFICER / DEPUTY',
+        title: 'Officer & Deputy',
+        color: '#10b981',
+        content: <RankUniformDetailsComponent rankId="officer_deputy" defaultTitle="OFFICER / DEPUTY" />
+      },
+      {
+        badge: 'OFFICER FIRST CLASS',
+        title: 'Officer First Class',
+        color: '#34d399',
+        content: <RankUniformDetailsComponent rankId="officer_first_class" defaultTitle="OFFICER / DEPUTY / RANGER FIRST CLASS" />
+      },
+      {
+        badge: 'SENIOR OFFICER',
+        title: 'Senior Officer',
+        color: '#0ea5e9',
+        content: <RankUniformDetailsComponent rankId="senior_officer" defaultTitle="SENIOR OFFICER / DEPUTY / RANGER" />
+      },
+      {
+        badge: 'CORPORAL',
+        title: 'Corporal',
+        color: '#f59e0b',
+        content: <RankUniformDetailsComponent rankId="corporal" defaultTitle="CORPORAL" />
+      },
+      {
+        badge: 'SERGEANTS & ABOVE',
+        title: 'Sergeants & Above',
+        color: '#ec4899',
+        content: <SergeantsAboveComponent />
+      }
+    ]
   },
   {
     id: 'impound',
@@ -676,7 +663,15 @@ export const documents = [
     description: 'San Andreas State Police — Guidelines and protocols for vehicle seizures.',
     icon: <FileText className="w-4 h-4" />,
     url: 'https://docs.google.com/document/d/1EaRgGD-dzD4PhqXNh0wZSoGCyzVWbZswb_bfqXN2hMc/edit',
-    original: 'https://docs.google.com/document/d/1EaRgGD-dzD4PhqXNh0wZSoGCyzVWbZswb_bfqXN2hMc/view'
+    original: 'https://docs.google.com/document/d/1EaRgGD-dzD4PhqXNh0wZSoGCyzVWbZswb_bfqXN2hMc/view',
+    sections: [
+      {
+        badge: 'SOP',
+        title: 'State Impound',
+        color: '#3b82f6',
+        content: <StateImpoundSOPComponent />
+      }
+    ]
   },
   {
     id: 'case law',
