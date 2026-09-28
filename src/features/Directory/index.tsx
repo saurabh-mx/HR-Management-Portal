@@ -195,11 +195,17 @@ export default function EmployeeDirectory() {
     };
 
     return [...rawEmployees].sort((a, b) => {
-      const aIsStudent = a.role?.toLowerCase() === 'student';
-      const bIsStudent = b.role?.toLowerCase() === 'student';
+      const aIsStudent = a.role?.toLowerCase() === 'student' || a.rank?.toLowerCase() === 'student' || a.rank?.toLowerCase() === 'cadet';
+      const bIsStudent = b.role?.toLowerCase() === 'student' || b.rank?.toLowerCase() === 'student' || b.rank?.toLowerCase() === 'cadet';
+      
+      const aIsSolo = a.rank?.toLowerCase() === 'solo cadet' || a.rank?.toLowerCase() === 'solo student' || a.role?.toLowerCase() === 'solo student';
+      const bIsSolo = b.rank?.toLowerCase() === 'solo cadet' || b.rank?.toLowerCase() === 'solo student' || b.role?.toLowerCase() === 'solo student';
       
       if (aIsStudent && !bIsStudent) return 1;
       if (!aIsStudent && bIsStudent) return -1;
+
+      if (aIsSolo && !bIsSolo) return 1;
+      if (!aIsSolo && bIsSolo) return -1;
 
       const deptDiff = getDeptIndex(a.department) - getDeptIndex(b.department);
       if (deptDiff !== 0) return deptDiff;
