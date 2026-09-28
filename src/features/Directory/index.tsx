@@ -359,9 +359,9 @@ export default function EmployeeDirectory() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-slate-400">
+          <div className="overflow-x-auto overflow-y-auto max-h-[600px] animated-scrollbar">
+            <table className="w-full text-left text-sm relative">
+              <thead className="border-b border-slate-800 text-slate-400 sticky top-0 bg-slate-950/90 backdrop-blur-md z-10">
                 <tr>
                   <th className="pb-3 pl-4 font-medium">Officer</th>
                   <th className="pb-3 px-3 font-medium">Status</th>

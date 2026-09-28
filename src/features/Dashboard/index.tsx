@@ -440,7 +440,7 @@ export const Dashboard = () => {
                 </div>
               </div>
               
-              <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800 relative">
+              <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800 relative overflow-y-auto max-h-[300px] animated-scrollbar pr-2">
                 {selectedStrike.action_type && (
                    <span className={`absolute top-3 right-3 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
                           selectedStrike.action_type === 'Strike' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 
@@ -497,7 +497,7 @@ export const Dashboard = () => {
                 <p className="text-base text-slate-200 font-medium md:pr-24">{selectedAnnouncement.title}</p>
               </div>
               
-              <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800">
+              <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800 overflow-y-auto max-h-[400px] animated-scrollbar pr-2">
                 {(() => {
                   const parts = selectedAnnouncement.message.split('[IMAGE]=');
                   const text = parts[0];
