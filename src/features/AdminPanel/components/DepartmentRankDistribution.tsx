@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Building2, Shield, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Building2, Shield, Users } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Employee } from '@/types';
 
 interface DepartmentRankDistributionProps {
@@ -7,12 +8,7 @@ interface DepartmentRankDistributionProps {
 }
 
 export default function DepartmentRankDistribution({ employees }: DepartmentRankDistributionProps) {
-  const [expandedRanks, setExpandedRanks] = useState<Record<string, boolean>>({});
-
-  const toggleExpand = (dept: string, rank: string) => {
-    const key = `${dept}-${rank}`;
-    setExpandedRanks(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  const [selectedRankData, setSelectedRankData] = useState<{ dept: string; rank: string; emps: Employee[] } | null>(null);
 
   const distribution = useMemo(() => {
     const data: Record<string, Record<string, Employee[]>> = {
@@ -102,34 +98,19 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
 
               <div className="flex-1 space-y-2 overflow-y-auto max-h-[300px] custom-scrollbar pr-1">
                 {ranks.map(([rank, emps]) => {
-                  const isExpanded = expandedRanks[`${dept}-${rank}`];
                   return (
                     <div key={rank} className="flex flex-col rounded-lg bg-black/20 border border-white/5 overflow-hidden transition-all">
                       <div 
-                        onClick={() => toggleExpand(dept, rank)}
+                        onClick={() => setSelectedRankData({ dept, rank, emps })}
                         className="flex items-center justify-between p-2 hover:bg-black/40 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2 overflow-hidden pr-2">
-                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-slate-400 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
                           <span className="text-xs font-medium text-slate-300 truncate" title={rank}>{rank}</span>
                         </div>
                         <div className="flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded bg-white/10 text-xs font-bold text-white shadow-sm border border-white/5 shrink-0">
                           {emps.length}
                         </div>
                       </div>
-                      
-                      {isExpanded && (
-                        <div className="px-2 pb-2 pt-1 border-t border-white/5 bg-black/10">
-                          <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
-                            {emps.map(emp => (
-                              <div key={emp.id} className="flex justify-between items-center text-[11px]">
-                                <span className="text-slate-300 truncate mr-2" title={emp.name}>{emp.name}</span>
-                                <span className="text-slate-500 font-mono shrink-0">{emp.badge_number}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
@@ -138,6 +119,37 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
           );
         })}
       </div>
+
+      <Dialog open={!!selectedRankData} onOpenChange={(open) => !open && setSelectedRankData(null)}>
+        <DialogContent className="max-w-md bg-slate-950 border border-slate-800/60 text-slate-200 p-0 overflow-hidden rounded-xl shadow-2xl">
+          <DialogHeader className="p-5 pb-4 border-b border-slate-800/60 bg-slate-900/50">
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Shield className={`w-5 h-5 ${selectedRankData ? getDeptTextClass(selectedRankData.dept) : ''}`} />
+              {selectedRankData?.rank}s in {selectedRankData?.dept}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar bg-slate-950/50">
+            <div className="space-y-2">
+              {selectedRankData?.emps.map(emp => (
+                <div key={emp.id} className="flex items-center justify-between p-3 rounded-lg bg-black/20 border border-white/5 hover:bg-black/40 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-400 uppercase">
+                      {emp.name?.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{emp.name}</p>
+                      <p className="text-xs text-slate-500 font-mono">{emp.badge_number}</p>
+                    </div>
+                  </div>
+                  <div className="px-2 py-1 rounded bg-white/5 border border-white/10 text-xs font-medium text-slate-300">
+                    {emp.role || 'Patrol Officer'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
