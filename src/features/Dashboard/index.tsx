@@ -420,7 +420,7 @@ export const Dashboard = () => {
 
       {/* Strike Preview Modal */}
       <Dialog open={!!selectedStrike} onOpenChange={(open) => !open && setSelectedStrike(null)}>
-        <DialogContent className="glass-panel/95 backdrop-blur-xl border-rose-900/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="glass-panel/95 backdrop-blur-xl border-rose-900/50 text-slate-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto animated-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-widest uppercase text-rose-500 border-b border-rose-900/30 pb-3 flex items-center gap-2">
               <ShieldAlert className="w-5 h-5" /> Disciplinary Action Report
@@ -465,7 +465,7 @@ export const Dashboard = () => {
 
       {/* Announcement Preview Modal */}
       <Dialog open={!!selectedAnnouncement} onOpenChange={(open) => !open && setSelectedAnnouncement(null)}>
-        <DialogContent className="glass-panel/95 backdrop-blur-xl border-primary/50 text-slate-200 shadow-2xl rounded-xl">
+        <DialogContent className="glass-panel/95 backdrop-blur-xl border-primary/50 text-slate-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto animated-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-widest uppercase text-primary border-b border-primary/30 pb-3 flex items-center gap-2">
               <Megaphone className="w-5 h-5" /> Official Announcement
