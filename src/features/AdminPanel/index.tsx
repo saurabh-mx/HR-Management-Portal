@@ -15,6 +15,7 @@ import DataSyncModal from '@/features/AdminPanel/components/DataSyncModal';
 import PenalCodeSyncModal from '@/features/AdminPanel/components/PenalCodeSyncModal';
 import DisciplinarySyncModal from '@/features/AdminPanel/components/DisciplinarySyncModal';
 import OverviewMetrics from '@/features/AdminPanel/components/OverviewMetrics';
+import DepartmentRankDistribution from '@/features/AdminPanel/components/DepartmentRankDistribution';
 import QuickActions from '@/features/AdminPanel/components/QuickActions';
 import LiveActivityFeed from '@/features/AdminPanel/components/LiveActivityFeed';
 import PriorityQueue from '@/features/AdminPanel/components/PriorityQueue';
@@ -620,6 +621,9 @@ export default function AdminPanel() {
         recentAlertsCount={0}
         onOpenApprovals={() => setShowOfficerApprovalModal(true)}
       />
+
+      {/* ─── ROW 1.5: DEPARTMENT RANK DISTRIBUTION ─── */}
+      <DepartmentRankDistribution employees={employees} />
 
       {/* ─── ROW 2: QUICK ACTIONS, PRIORITY QUEUE, & LIVE FEED ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
