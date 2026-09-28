@@ -97,6 +97,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
     if (nameUpper.includes('LSPD')) inferredDept = 'LSPD';
     else if (nameUpper.includes('BCSO')) inferredDept = 'BCSO';
     else if (nameUpper.includes('SAPR')) inferredDept = 'SAPR';
+    else if (nameUpper.includes('DOC')) inferredDept = 'DOC';
     else if (nameUpper.includes('ACADEMY')) inferredDept = 'SASP Academy';
 
     const newSyncs = [...savedSyncs, { name: syncProfileName, url: csvUrl, lastSync: 'Never', defaultDept: inferredDept }];
@@ -591,6 +592,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                 <option value="SASP Academy">SASP Academy</option>
                 <option value="LSPD">LSPD</option>
                 <option value="BCSO">BCSO</option>
+                <option value="DOC">DOC</option>
                 <option value="SAPR">SAPR</option>
               </select>
             </div>
@@ -650,6 +652,7 @@ export default function DataSyncModal({ isOpen, onClose, onSuccess }: DataSyncMo
                         <option value="SASP Academy">SASP Academy</option>
                         <option value="LSPD">LSPD</option>
                         <option value="BCSO">BCSO</option>
+                        <option value="DOC">DOC</option>
                         <option value="SAPR">SAPR</option>
                       </select>
                     </td>

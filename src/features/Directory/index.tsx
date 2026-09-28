@@ -18,6 +18,7 @@ const getDepartmentColor = (dept: string) => {
     case "SAPR": return "#008239";
     case "LSPD": return "#1c4587";
     case "BCSO": return "#d2b14b";
+    case "DOC": return "#ea580c";
     case "SASP Academy": return "#938383";
     default: return "#94a3b8";
   }
@@ -145,7 +146,7 @@ export default function EmployeeDirectory() {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeDepartment, setActiveDepartment] = useState("All");
-  const departmentsList = ["All", "SASP", "LSPD", "BCSO", "SAPR", "SASP Academy"];
+  const departmentsList = ["All", "SASP", "LSPD", "BCSO", "DOC", "SAPR", "SASP Academy"];
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   useEffect(() => {
@@ -161,7 +162,7 @@ export default function EmployeeDirectory() {
   }, [profile, adminSafeMode]);
 
   const employees = useMemo(() => {
-    const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "SASP Academy"];
+    const departmentOrder = ["SASP", "SAPR", "LSPD", "BCSO", "DOC", "SASP Academy"];
     const rankOrder = [
       ["Chief", "Sheriff", "Game Warden"],
       ["Asst. Chief", "Colonel", "Asst. Game Warden"],
@@ -249,6 +250,7 @@ export default function EmployeeDirectory() {
         <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('LSPD') }}><span className="font-bold" style={{ color: getDepartmentColor('LSPD') }}>LSPD</span><span className="font-bold text-slate-200">{getDeptCount(list, 'LSPD')}</span></div>
         <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('BCSO') }}><span className="font-bold" style={{ color: getDepartmentColor('BCSO') }}>BCSO</span><span className="font-bold text-slate-200">{getDeptCount(list, 'BCSO')}</span></div>
         <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SAPR') }}><span className="font-bold" style={{ color: getDepartmentColor('SAPR') }}>SAPR</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SAPR')}</span></div>
+        <div className="flex justify-between items-center bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('DOC') }}><span className="font-bold" style={{ color: getDepartmentColor('DOC') }}>DOC</span><span className="font-bold text-slate-200">{getDeptCount(list, 'DOC')}</span></div>
         <div className="flex justify-between items-center col-span-2 bg-slate-950/40 backdrop-blur-md border border-white/5 shadow-xl hover:shadow-[0_10px_30px_-15px_rgba(14,165,233,0.2)] hover:border-white/10 transition-all duration-500 px-2 py-1 rounded border-l-2" style={{ borderLeftColor: getDepartmentColor('SASP Academy') }}><span className="font-bold" style={{ color: getDepartmentColor('SASP Academy') }}>SASP Academy</span><span className="font-bold text-slate-200">{getDeptCount(list, 'SASP Academy')}</span></div>
       </div>
     </div>

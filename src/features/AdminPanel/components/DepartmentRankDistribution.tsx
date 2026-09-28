@@ -15,6 +15,7 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       'SASP': {},
       'LSPD': {},
       'BCSO': {},
+      'DOC': {},
       'SAPR': {},
       'SASP Academy': {},
     };
@@ -43,6 +44,7 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       'SASP': 'text-blue-400 border-blue-500/30 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.15)]',
       'LSPD': 'text-sky-400 border-sky-500/30 bg-sky-500/10 shadow-[0_0_15px_rgba(14,165,233,0.15)]',
       'BCSO': 'text-amber-400 border-amber-500/30 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
+      'DOC': 'text-orange-400 border-orange-500/30 bg-orange-500/10 shadow-[0_0_15px_rgba(234,88,12,0.15)]',
       'SAPR': 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]',
       'SASP Academy': 'text-violet-400 border-violet-500/30 bg-violet-500/10 shadow-[0_0_15px_rgba(139,92,246,0.15)]',
     };
@@ -54,6 +56,7 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       'SASP': 'text-blue-400',
       'LSPD': 'text-sky-400',
       'BCSO': 'text-amber-400',
+      'DOC': 'text-orange-400',
       'SAPR': 'text-emerald-400',
       'SASP Academy': 'text-violet-400',
     };
@@ -65,6 +68,7 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       'SASP': 'border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.2)]',
       'LSPD': 'border-sky-500/50 shadow-[0_0_30px_rgba(14,165,233,0.2)]',
       'BCSO': 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]',
+      'DOC': 'border-orange-500/50 shadow-[0_0_30px_rgba(234,88,12,0.2)]',
       'SAPR': 'border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]',
       'SASP Academy': 'border-violet-500/50 shadow-[0_0_30px_rgba(139,92,246,0.2)]',
     };
@@ -76,6 +80,7 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       'SASP': 'bg-blue-500/10 border-blue-500/30',
       'LSPD': 'bg-sky-500/10 border-sky-500/30',
       'BCSO': 'bg-amber-500/10 border-amber-500/30',
+      'DOC': 'bg-orange-500/10 border-orange-500/30',
       'SAPR': 'bg-emerald-500/10 border-emerald-500/30',
       'SASP Academy': 'bg-violet-500/10 border-violet-500/30',
     };
