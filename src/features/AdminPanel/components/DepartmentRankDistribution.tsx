@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Building2, Shield, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Building2, Shield, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Employee } from '@/types';
 
 interface DepartmentRankDistributionProps {
@@ -7,8 +7,15 @@ interface DepartmentRankDistributionProps {
 }
 
 export default function DepartmentRankDistribution({ employees }: DepartmentRankDistributionProps) {
+  const [expandedRanks, setExpandedRanks] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (dept: string, rank: string) => {
+    const key = `${dept}-${rank}`;
+    setExpandedRanks(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const distribution = useMemo(() => {
-    const data: Record<string, Record<string, number>> = {
+    const data: Record<string, Record<string, Employee[]>> = {
       'SASP': {},
       'LSPD': {},
       'BCSO': {},
@@ -26,10 +33,10 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       }
 
       if (!data[dept][rank]) {
-        data[dept][rank] = 0;
+        data[dept][rank] = [];
       }
 
-      data[dept][rank]++;
+      data[dept][rank].push(emp);
     });
 
     return data;
@@ -77,8 +84,8 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {activeDepartments.map(dept => {
-          const ranks = Object.entries(distribution[dept]).sort((a, b) => b[1] - a[1]);
-          const totalInDept = ranks.reduce((sum, [_, count]) => sum + count, 0);
+          const ranks = Object.entries(distribution[dept]).sort((a, b) => b[1].length - a[1].length);
+          const totalInDept = ranks.reduce((sum, [_, emps]) => sum + emps.length, 0);
 
           return (
             <div key={dept} className={`rounded-xl border ${getDeptColor(dept)} p-4 flex flex-col transition-transform duration-300 hover:scale-[1.02]`}>
@@ -94,14 +101,38 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
               </div>
 
               <div className="flex-1 space-y-2 overflow-y-auto max-h-[300px] custom-scrollbar pr-1">
-                {ranks.map(([rank, count]) => (
-                  <div key={rank} className="flex items-center justify-between p-2 rounded-lg bg-black/20 hover:bg-black/40 transition-colors border border-white/5">
-                    <span className="text-xs font-medium text-slate-300 truncate pr-2" title={rank}>{rank}</span>
-                    <div className="flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded bg-white/10 text-xs font-bold text-white shadow-sm border border-white/5">
-                      {count}
+                {ranks.map(([rank, emps]) => {
+                  const isExpanded = expandedRanks[`${dept}-${rank}`];
+                  return (
+                    <div key={rank} className="flex flex-col rounded-lg bg-black/20 border border-white/5 overflow-hidden transition-all">
+                      <div 
+                        onClick={() => toggleExpand(dept, rank)}
+                        className="flex items-center justify-between p-2 hover:bg-black/40 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2 overflow-hidden pr-2">
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-slate-400 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                          <span className="text-xs font-medium text-slate-300 truncate" title={rank}>{rank}</span>
+                        </div>
+                        <div className="flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded bg-white/10 text-xs font-bold text-white shadow-sm border border-white/5 shrink-0">
+                          {emps.length}
+                        </div>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="px-2 pb-2 pt-1 border-t border-white/5 bg-black/10">
+                          <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                            {emps.map(emp => (
+                              <div key={emp.id} className="flex justify-between items-center text-[11px]">
+                                <span className="text-slate-300 truncate mr-2" title={emp.name}>{emp.name}</span>
+                                <span className="text-slate-500 font-mono shrink-0">{emp.badge_number}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );
