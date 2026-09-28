@@ -60,6 +60,28 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
     return colors[dept] || 'text-slate-400';
   };
 
+  const getDeptModalBorder = (dept: string) => {
+    const borders: Record<string, string> = {
+      'SASP': 'border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.2)]',
+      'LSPD': 'border-sky-500/50 shadow-[0_0_30px_rgba(14,165,233,0.2)]',
+      'BCSO': 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]',
+      'SAPR': 'border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]',
+      'SASP Academy': 'border-violet-500/50 shadow-[0_0_30px_rgba(139,92,246,0.2)]',
+    };
+    return borders[dept] || 'border-slate-500/50 shadow-[0_0_30px_rgba(100,116,139,0.2)]';
+  };
+
+  const getDeptModalHeader = (dept: string) => {
+    const headers: Record<string, string> = {
+      'SASP': 'bg-blue-500/10 border-blue-500/30',
+      'LSPD': 'bg-sky-500/10 border-sky-500/30',
+      'BCSO': 'bg-amber-500/10 border-amber-500/30',
+      'SAPR': 'bg-emerald-500/10 border-emerald-500/30',
+      'SASP Academy': 'bg-violet-500/10 border-violet-500/30',
+    };
+    return headers[dept] || 'bg-slate-500/10 border-slate-500/30';
+  };
+
   const activeDepartments = Object.keys(distribution).filter(
     dept => Object.keys(distribution[dept]).length > 0
   );
@@ -121,8 +143,8 @@ export default function DepartmentRankDistribution({ employees }: DepartmentRank
       </div>
 
       <Dialog open={!!selectedRankData} onOpenChange={(open) => !open && setSelectedRankData(null)}>
-        <DialogContent className="max-w-md bg-slate-950 border border-slate-800/60 text-slate-200 p-0 overflow-hidden rounded-xl shadow-2xl">
-          <DialogHeader className="p-5 pb-4 border-b border-slate-800/60 bg-slate-900/50">
+        <DialogContent className={`max-w-md bg-slate-950 text-slate-200 p-0 overflow-hidden rounded-xl border ${selectedRankData ? getDeptModalBorder(selectedRankData.dept) : 'border-slate-800/60 shadow-2xl'}`}>
+          <DialogHeader className={`p-5 pb-4 border-b ${selectedRankData ? getDeptModalHeader(selectedRankData.dept) : 'border-slate-800/60 bg-slate-900/50'}`}>
             <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
               <Shield className={`w-5 h-5 ${selectedRankData ? getDeptTextClass(selectedRankData.dept) : ''}`} />
               {selectedRankData?.rank}s in {selectedRankData?.dept}
