@@ -206,7 +206,7 @@ export default function Profile() {
 
 ── Service Timeline ──────────────
 ▸ Join Date:       ${formatDate(profile.department_join_date)}
-▸ Last Promotion:  ${formatDate(profile.last_promotion_date)}${profile.days_since_last_promoted !== undefined ? ` (${profile.days_since_last_promoted} days ago)` : ''}
+▸ Last Promotion:  ${formatDate(profile.last_promotion_date)}${profile.days_since_last_promoted !== undefined ? ` (${String(profile.days_since_last_promoted).replace(/days?/i, '').trim()} days ago)` : ''}
 
 ── Certifications ────────────────
 ▸ ${certs}
@@ -791,7 +791,7 @@ ${profile.notes || 'No service notes on file.'}
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Last Promotion</p>
                     <p className="text-sm font-medium text-slate-200">
                       {formatDate(profile.last_promotion_date)} 
-                      <span className="text-slate-500 text-xs ml-2">({profile.days_since_last_promoted !== undefined ? `${profile.days_since_last_promoted} days ago` : ""})</span>
+                      <span className="text-slate-500 text-xs ml-2">({profile.days_since_last_promoted !== undefined && profile.days_since_last_promoted !== null ? `${String(profile.days_since_last_promoted).replace(/days?/i, '').trim()} days ago` : ""})</span>
                     </p>
                   </div>
                 </div>

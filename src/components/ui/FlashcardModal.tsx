@@ -399,13 +399,13 @@ export default function FlashcardModal({ employee, onClose }: FlashcardModalProp
                   <div className="col-span-2 mt-1">
                     <div className="flex justify-between items-end mb-1">
                       <p className="text-[7px] text-slate-500 uppercase tracking-widest">Last Promoted</p>
-                      <p className="text-[8px] font-bold text-emerald-400">{employee.days_since_last_promoted !== null && employee.days_since_last_promoted !== undefined ? `${employee.days_since_last_promoted} Days Ago` : '—'}</p>
+                      <p className="text-[8px] font-bold text-emerald-400">{employee.days_since_last_promoted !== null && employee.days_since_last_promoted !== undefined ? `${String(employee.days_since_last_promoted).replace(/days?/i, '').trim()} Days Ago` : '—'}</p>
                     </div>
                     <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
                         style={{ 
-                          width: `${Math.min(100, Math.max(5, (Number(employee.days_since_last_promoted) || 0) / 100 * 100))}%` 
+                          width: `${Math.min(100, Math.max(5, (Number(String(employee.days_since_last_promoted).replace(/days?/i, '').trim()) || 0) / 100 * 100))}%` 
                         }} 
                       />
                     </div>
